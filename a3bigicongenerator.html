@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Генератор иконок · Разбор проблем</title>
+<style>
+  body{font:15px system-ui;background:#eef2f7;margin:0;padding:24px;color:#1e293b}
+  h1{margin:0 0 8px}
+  p{color:#64748b;margin:0 0 20px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px;max-width:900px}
+  .card{background:#fff;border-radius:12px;padding:16px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+  .card canvas{background:#f1f5f9;border-radius:8px;display:block;margin:0 auto 10px;max-width:100%}
+  .card b{display:block;font-size:13px;margin-bottom:4px}
+  .card small{color:#94a3b8;font-size:11px}
+  button{background:#4f46e5;color:#fff;border:none;padding:8px 14px;border-radius:6px;cursor:pointer;font-weight:600;margin-top:8px;width:100%}
+  button:hover{background:#4338ca}
+</style>
+</head>
+<body>
+<h1>🖼 Генератор иконок PWA</h1>
+<p>Нажмите «Скачать» под каждой иконкой → положите PNG в папку <code>icons/</code> рядом с <code>index.html</code>.</p>
+
+<div class="grid" id="grid"></div>
+
+<script>
+const SIZES = [
+  { name: 'icon-192.png', size: 192, maskable: false, label: 'Иконка 192×192' },
+  { name: 'icon-512.png', size: 512, maskable: false, label: 'Иконка 512×512' },
+  { name: 'icon-maskable-512.png', size: 512, maskable: true, label: 'Maskable 512×512' },
+  { name: 'apple-touch-icon.png', size: 180, maskable: false, label: 'Apple 180×180' }
+];
+
+function drawIcon(canvas, size, maskable){
+  const c = canvas.getContext('2d');
+  canvas.width = size; canvas.height = size;
+
+  // фон
+  c.fillStyle = '#1e293b';
+  c.fillRect(0, 0, size, size);
+
+  // красная полоса ТЕХНОНИКОЛЬ внизу (для style)
+  c.fillStyle = '#C8102E';
+  const barH = maskable ? size * 0.08 : size * 0.06;
+  c.fillRect(0, size - barH, size, barH);
+
+  // сам значок 🏭 через emoji — масштабируем под safe zone
+  const safe = maskable ? size * 0.7 : size * 0.72; // maskable требует 80% safe zone
+  c.font = `${safe}px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif`;
+  c.textAlign = 'center';
+  c.textBaseline = 'middle';
+  c.fillText('🏭', size / 2, (size - barH) / 2 - size * 0.02);
+
+  // подпись "А3" мелким шрифтом
+  c.fillStyle = '#94a3b8';
+  c.font = `600 ${size * 0.1}px system-ui,-apple-system,Arial,sans-serif`;
+  c.fillText('А3', size / 2, size - barH - size * 0.08);
+}
+
+const grid = document.getElementById('grid');
+SIZES.forEach(({ name, size, maskable, label }) => {
+  const card = document.createElement('div');
+  card.className = 'card';
+  const canvas = document.createElement('canvas');
+  canvas.style.width = '128px';
+  canvas.style.height = '128px';
+  drawIcon(canvas, size, maskable);
+
+  card.innerHTML = `<b>${label}</b><small>${name}</small>`;
+  card.insertBefore(canvas, card.querySelector('button') || null);
+  const btn = document.createElement('button');
+  btn.textContent = '⬇ Скачать';
+  btn.onclick = () => {
+    canvas.toBlob(blob => {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = name;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+    }, 'image/png');
+  };
+  card.appendChild(btn);
+  grid.appendChild(card);
+});
+</script>
+</body>
+</html>
