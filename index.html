@@ -49,6 +49,9 @@
   button.primary:hover{background:#4338ca}
   button.ghost{background:#f1f5f9;border:1px solid #cbd5e1;padding:6px 10px;border-radius:6px;cursor:pointer;font-size:13px}
   button.ghost:hover{background:#e2e8f0}
+  button.ai-btn{background:#8b5cf6;color:#fff;border:none;padding:8px 14px;border-radius:6px;cursor:pointer;font-weight:600;display:flex;align-items:center;gap:6px}
+  button.ai-btn:hover{background:#7c3aed}
+  button.ai-btn:disabled{background:#cbd5e1;cursor:not-allowed}
   table.form-tbl{width:100%;border-collapse:collapse;font-size:13px;background:#fff}
   table.form-tbl th,table.form-tbl td{border:1px solid #cbd5e1;padding:4px 6px;vertical-align:top}
   table.form-tbl th{background:#f1f5f9;font-size:12px;text-align:center;font-weight:600}
@@ -118,6 +121,8 @@
   .a3-form .a3-header-table td:first-child{text-align:right;font-weight:bold;width:140px}
   .a3-form .a3-header-table input{border-bottom:1px solid #000}
   .print-only{display:none}
+  .ai-loader{display:inline-block;width:14px;height:14px;border:2px solid #fff;border-top-color:transparent;border-radius:50%;animation:spin 1s linear infinite;vertical-align:middle;margin-right:6px}
+  @keyframes spin{to{transform:rotate(360deg)}}
   @media (max-width:600px){
     .tabs{gap:2px;padding:8px 8px 0}
     .tab{padding:6px 8px;font-size:11px}
@@ -157,9 +162,8 @@
     <button class="rm-btn" id="settingsBtn" title="Разделы">⚙️</button>
     <button class="rm-btn danger" id="delReportBtn" title="Удалить">🗑</button>
   </div>
-  <!-- ====== PWA: кнопка поделиться ====== -->
   <button class="hbtn" id="shareBtn" style="background:#0ea5e9;border-color:#0ea5e9">📲 Поделиться</button>
-  <!-- ====== /PWA ====== -->
+  <button class="hbtn" id="aiSettingsBtn" style="background:#8b5cf6;border-color:#8b5cf6">🤖 ИИ</button>
   <input id="problemInput" placeholder="Проблема (эффект)">
   <span class="badge" id="syncBadge">Сохранено</span>
   <button class="hbtn" id="modeBtn">📱 Мобильный</button>
@@ -183,6 +187,7 @@
       <input type="text" id="ideaInput" placeholder="Гипотеза..." style="flex:1;min-width:200px">
       <select id="ideaCat" style="width:auto"></select>
       <button class="primary" id="addIdeaBtn">Добавить</button>
+      <button class="ai-btn" id="aiGenerateIdeasBtn" title="Сгенерировать идеи с помощью ИИ">✨ Сгенерировать</button>
     </div>
     <div id="ideaList"></div>
   </section>
@@ -229,9 +234,10 @@
   <section class="tabpane" id="tab-why1">
     <h2>5 почему (линейный)</h2>
     <div id="whyBox1"></div>
-    <div style="margin-top:10px;display:flex;gap:8px">
+    <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
       <button class="ghost" id="addWhy1">+ шаг</button>
       <button class="ghost" id="delWhy1">− шаг</button>
+      <button class="ai-btn" id="aiWhy1Btn" style="margin-left:auto">✨ Построить с ИИ</button>
     </div>
   </section>
 
@@ -291,67 +297,29 @@
   </section>
 </main>
 
-<div class="modal-overlay" id="renameModal">
-  <div class="modal">
-    <div class="modal-header"><h3>✏️ Переименовать отчёт</h3><button class="modal-close" data-close="renameModal">×</button></div>
-    <div class="modal-body"><input type="text" id="renameInput" placeholder="Новое название" maxlength="120"></div>
-    <div class="modal-footer"><button class="ghost" data-close="renameModal">Отмена</button><button class="primary" id="renameSaveBtn">Сохранить</button></div>
-  </div>
-</div>
+<!-- Модалки -->
+<div class="modal-overlay" id="renameModal"><div class="modal"><div class="modal-header"><h3>✏️ Переименовать отчёт</h3><button class="modal-close" data-close="renameModal">×</button></div><div class="modal-body"><input type="text" id="renameInput" placeholder="Новое название" maxlength="120"></div><div class="modal-footer"><button class="ghost" data-close="renameModal">Отмена</button><button class="primary" id="renameSaveBtn">Сохранить</button></div></div></div>
+<div class="modal-overlay" id="mergeModal"><div class="modal"><div class="modal-header"><h3>🔀 Объединение отчётов</h3><button class="modal-close" data-close="mergeModal">×</button></div><div class="modal-body"><p style="margin-top:0;color:#64748b;font-size:13px">Выберите 2+ отчёта. Балл гипотезы при слиянии берётся максимальный.</p><div class="report-list-cb" id="mergeCheckboxes"></div></div><div class="modal-footer"><button class="ghost" data-close="mergeModal">Отмена</button><button class="primary" id="mergeDoBtn">Объединить</button></div></div></div>
+<div class="modal-overlay" id="settingsModal"><div class="modal"><div class="modal-header"><h3>⚙️ Разделы отчёта</h3><button class="modal-close" data-close="settingsModal">×</button></div><div class="modal-body"><p style="margin-top:0;color:#64748b;font-size:13px">Какие вкладки показывать. Отключённые скроются, данные сохранятся.</p><div id="tabCheckboxes"></div></div><div class="modal-footer"><button class="primary" id="settingsSaveBtn">Сохранить</button></div></div></div>
+<div class="modal-overlay" id="exportModal"><div class="modal"><div class="modal-header"><h3>📤 Экспорт JSON</h3><button class="modal-close" data-close="exportModal">×</button></div><div class="modal-body"><label style="display:flex;gap:8px;padding:6px 0"><input type="radio" name="exportScope" value="current" checked><span><b>Текущий отчёт</b></span></label><label style="display:flex;gap:8px;padding:6px 0"><input type="radio" name="exportScope" value="selected"><span><b>Выбранные отчёты</b></span></label><div class="report-list-cb" id="exportCheckboxes" style="display:none"></div><label style="display:flex;gap:8px;padding:6px 0"><input type="radio" name="exportScope" value="all"><span><b>Все отчёты</b></span></label></div><div class="modal-footer"><button class="ghost" data-close="exportModal">Отмена</button><button class="primary" id="downloadBtn">💾 Скачать</button></div></div></div>
+<div class="modal-overlay" id="shareModal"><div class="modal"><div class="modal-header"><h3>📲 Установить / Поделиться</h3><button class="modal-close" data-close="shareModal">×</button></div><div class="modal-body" style="text-align:center"><p style="margin-top:0">Наведите камеру телефона, чтобы открыть приложение:</p><img id="qrCodeImg" src="" alt="QR-код" style="width:200px;height:200px;margin:10px auto;display:block;border:1px solid #cbd5e1;border-radius:8px;"><div style="display:flex;gap:8px;margin-top:15px;flex-wrap:wrap;justify-content:center"><button class="primary" id="doInstallBtn">Установить на это устройство</button><button class="ghost" id="copyLinkBtn">Скопировать ссылку</button></div><div id="installHint" style="margin-top:15px;font-size:13px;color:#64748b;text-align:left;background:#f8fafc;padding:10px;border-radius:8px;display:none"></div></div></div></div>
 
-<div class="modal-overlay" id="mergeModal">
+<!-- Модалка ИИ -->
+<div class="modal-overlay" id="aiModal">
   <div class="modal">
-    <div class="modal-header"><h3>🔀 Объединение отчётов</h3><button class="modal-close" data-close="mergeModal">×</button></div>
+    <div class="modal-header"><h3>🤖 Настройки ИИ</h3><button class="modal-close" data-close="aiModal">×</button></div>
     <div class="modal-body">
-      <p style="margin-top:0;color:#64748b;font-size:13px">Выберите 2+ отчёта. Балл гипотезы при слиянии берётся максимальный.</p>
-      <div class="report-list-cb" id="mergeCheckboxes"></div>
+      <p style="margin-top:0;color:#64748b;font-size:13px">Вставьте API-ключ от OpenAI, OpenRouter или YandexGPT. Ключ сохраняется только в вашем браузере.</p>
+      <label style="font-size:12px;font-weight:bold">API URL</label>
+      <input type="text" id="aiUrl" value="https://openrouter.ai/api/v1/chat/completions" style="margin-bottom:10px">
+      <label style="font-size:12px;font-weight:bold">Модель (Model)</label>
+      <input type="text" id="aiModel" value="openai/gpt-4o-mini" style="margin-bottom:10px">
+      <label style="font-size:12px;font-weight:bold">API Ключ (Token)</label>
+      <input type="password" id="aiKey" placeholder="sk-or-v1-..." style="margin-bottom:10px">
     </div>
-    <div class="modal-footer"><button class="ghost" data-close="mergeModal">Отмена</button><button class="primary" id="mergeDoBtn">Объединить</button></div>
+    <div class="modal-footer"><button class="ghost" data-close="aiModal">Отмена</button><button class="primary" id="aiSaveBtn">Сохранить</button></div>
   </div>
 </div>
-
-<div class="modal-overlay" id="settingsModal">
-  <div class="modal">
-    <div class="modal-header"><h3>⚙️ Разделы отчёта</h3><button class="modal-close" data-close="settingsModal">×</button></div>
-    <div class="modal-body">
-      <p style="margin-top:0;color:#64748b;font-size:13px">Какие вкладки показывать. Отключённые скроются, данные сохранятся.</p>
-      <div id="tabCheckboxes"></div>
-    </div>
-    <div class="modal-footer"><button class="primary" id="settingsSaveBtn">Сохранить</button></div>
-  </div>
-</div>
-
-<div class="modal-overlay" id="exportModal">
-  <div class="modal">
-    <div class="modal-header"><h3>📤 Экспорт JSON</h3><button class="modal-close" data-close="exportModal">×</button></div>
-    <div class="modal-body">
-      <label style="display:flex;gap:8px;padding:6px 0"><input type="radio" name="exportScope" value="current" checked><span><b>Текущий отчёт</b></span></label>
-      <label style="display:flex;gap:8px;padding:6px 0"><input type="radio" name="exportScope" value="selected"><span><b>Выбранные отчёты</b></span></label>
-      <div class="report-list-cb" id="exportCheckboxes" style="display:none"></div>
-      <label style="display:flex;gap:8px;padding:6px 0"><input type="radio" name="exportScope" value="all"><span><b>Все отчёты</b></span></label>
-    </div>
-    <div class="modal-footer"><button class="ghost" data-close="exportModal">Отмена</button><button class="primary" id="downloadBtn">💾 Скачать</button></div>
-  </div>
-</div>
-
-<!-- ====== PWA: Модальное окно поделиться / установить ====== -->
-<div class="modal-overlay" id="shareModal">
-  <div class="modal">
-    <div class="modal-header"><h3>📲 Установить / Поделиться</h3><button class="modal-close" data-close="shareModal">×</button></div>
-    <div class="modal-body" style="text-align:center">
-      <p style="margin-top:0">Наведите камеру телефона, чтобы открыть приложение:</p>
-      <img id="qrCodeImg" src="" alt="QR-код" style="width:200px;height:200px;margin:10px auto;display:block;border:1px solid #cbd5e1;border-radius:8px;">
-      
-      <div style="display:flex;gap:8px;margin-top:15px;flex-wrap:wrap;justify-content:center">
-        <button class="primary" id="doInstallBtn">Установить на это устройство</button>
-        <button class="ghost" id="copyLinkBtn">Скопировать ссылку</button>
-      </div>
-      
-      <div id="installHint" style="margin-top:15px;font-size:13px;color:#64748b;text-align:left;background:#f8fafc;padding:10px;border-radius:8px;display:none"></div>
-    </div>
-  </div>
-</div>
-<!-- ====== /PWA ====== -->
 
 <script>
 "use strict";
@@ -386,8 +354,8 @@ const uid = ()=>Math.random().toString(36).slice(2,9);
 const fmtTime = ts => new Date(ts).toLocaleString('ru-RU',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'});
 
 /* ============ Состояние ============ */
-const LS = 'lean_v17';
-const LEGACY_KEYS = ['lean_v16','lean_v15','lean_v14','lean_v13','lean_v12','lean_v11','lean_v10','lean_v9','lean_v8','lean_v7','lean_v6','lean_v5','lean_multi_v2'];
+const LS = 'lean_v18';
+const LEGACY_KEYS = ['lean_v17','lean_v16','lean_v15','lean_v14','lean_v13','lean_v12','lean_v11','lean_v10','lean_v9','lean_v8','lean_v7','lean_v6','lean_v5','lean_multi_v2'];
 
 function emptyReport(){
   return {
@@ -504,6 +472,72 @@ function reportName(r){
   return r.a3.projectName || r.meta.title || r.problem || 'Новый отчёт';
 }
 
+/* ============ Логика ИИ ============ */
+function getAISettings() {
+  return {
+    url: localStorage.getItem('ai_url') || 'https://openrouter.ai/api/v1/chat/completions',
+    model: localStorage.getItem('ai_model') || 'openai/gpt-4o-mini',
+    key: localStorage.getItem('ai_key') || ''
+  };
+}
+
+async function callAI(prompt, btn) {
+  const settings = getAISettings();
+  if (!settings.key) {
+    alert('Сначала настройте ИИ. Нажмите кнопку "🤖 ИИ" в шапке.');
+    $('#aiModal').classList.add('active');
+    return;
+  }
+
+  const originalText = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '<span class="ai-loader"></span> Думаю...';
+
+  try {
+    const response = await fetch(settings.url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${settings.key}`
+      },
+      body: JSON.stringify({
+        model: settings.model,
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0.7
+      })
+    });
+
+    if (!response.ok) throw new Error('Ошибка API: ' + response.status);
+    const data = await response.json();
+    return data.choices[0].message.content;
+  } catch (err) {
+    console.error(err);
+    alert('Ошибка ИИ: ' + err.message);
+    return null;
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = originalText;
+  }
+}
+
+const aiSettingsBtn = $('#aiSettingsBtn');
+if(aiSettingsBtn) aiSettingsBtn.addEventListener('click', () => {
+  const s = getAISettings();
+  $('#aiUrl').value = s.url;
+  $('#aiModel').value = s.model;
+  $('#aiKey').value = s.key;
+  $('#aiModal').classList.add('active');
+});
+
+const aiSaveBtn = $('#aiSaveBtn');
+if(aiSaveBtn) aiSaveBtn.addEventListener('click', () => {
+  localStorage.setItem('ai_url', $('#aiUrl').value.trim());
+  localStorage.setItem('ai_model', $('#aiModel').value.trim());
+  localStorage.setItem('ai_key', $('#aiKey').value.trim());
+  $('#aiModal').classList.remove('active');
+  alert('Настройки ИИ сохранены!');
+});
+
 /* ============ Вкладки ============ */
 function renderTabs(){
   const r = getR(); if(!r) return;
@@ -597,6 +631,43 @@ if(ideaList) ideaList.addEventListener('click', e=>{
     r.ideas = r.ideas.filter(x=>x.id!==b.dataset.del);
   }
   save(); renderIdeas(); renderFish(); render6M();
+});
+
+// AI Generate Ideas
+const aiGenerateIdeasBtn = $('#aiGenerateIdeasBtn');
+if(aiGenerateIdeasBtn) aiGenerateIdeasBtn.addEventListener('click', async () => {
+  const r = getR();
+  if (!r.problem) {
+    alert('Сначала введите проблему в верхнем поле "Проблема (эффект)"');
+    return;
+  }
+  const prompt = `Ты — эксперт по бережливому производству. У нас есть проблема: "${r.problem}". 
+Предложи ровно 7 гипотез (потенциальных корневых причин) по методологии 6М. 
+Ответ должен быть строго в формате:
+категория | текст гипотезы
+Где категория это одно из: Люди, Метод, Оборудование, Материалы, Измерения, Окружающая среда.
+Без лишних слов, только 7 строк.`;
+
+  const result = await callAI(prompt, aiGenerateIdeasBtn);
+  if (!result) return;
+
+  const lines = result.split('\n').filter(l => l.includes('|'));
+  let added = 0;
+  lines.forEach(line => {
+    const [catName, text] = line.split('|').map(s => s.trim());
+    if (text) {
+      const cat = CATS.find(c => c.name.toLowerCase() === catName.toLowerCase()) || CATS[1];
+      r.ideas.push({id:uid(), text: text, cat: cat.id, root:false, score:0, priority:false});
+      added++;
+    }
+  });
+  
+  if (added > 0) {
+    addLog('ai.ideas', `ИИ сгенерировал ${added} гипотез`);
+    save(); renderIdeas(); renderFish(); render6M();
+  } else {
+    alert('ИИ вернул неверный формат. Попробуйте еще раз.');
+  }
 });
 
 /* ============ Исикава ============ */
@@ -837,6 +908,41 @@ const addWhy1 = $('#addWhy1');
 if(addWhy1) addWhy1.addEventListener('click', ()=>{ getR().why1.chain.push(''); save(); renderWhy1(); });
 const delWhy1 = $('#delWhy1');
 if(delWhy1) delWhy1.addEventListener('click', ()=>{ const c = getR().why1.chain; if(c.length>1){ c.pop(); save(); renderWhy1(); } });
+
+// AI Generate 5 Whys
+const aiWhy1Btn = $('#aiWhy1Btn');
+if(aiWhy1Btn) aiWhy1Btn.addEventListener('click', async () => {
+  const r = getR();
+  if (!r.problem) {
+    alert('Сначала введите проблему в верхнем поле "Проблема (эффект)"');
+    return;
+  }
+  const prompt = `Ты — эксперт по бережливому производству. У нас есть проблема: "${r.problem}". 
+Построй цепочку из 5 вопросов "Почему?" (5 Whys), чтобы найти корневую причину.
+Ответ должен быть строго в формате 5 строк, каждая строка — это причина (ответ на вопрос Почему?), без нумерации.
+Пример:
+Оборудование перегревается
+Вентилятор не работает
+Нет смазки в подшипнике
+Регламент ТО не выполняется
+Ответственный не обучен`;
+
+  const result = await callAI(prompt, aiWhy1Btn);
+  if (!result) return;
+
+  const lines = result.split('\n').map(l => l.replace(/^\d+\.\s*/, '').trim()).filter(Boolean);
+  if (lines.length > 0) {
+    r.why1.chain = lines.slice(0, 5);
+    if (r.why1.chain.length < 5) {
+      while (r.why1.chain.length < 5) r.why1.chain.push('');
+    }
+    addLog('ai.why1', 'ИИ построил цепочку 5 почему');
+    save(); renderWhy1();
+    alert('ИИ заполнил цепочку "5 почему". Проверьте ответы!');
+  } else {
+    alert('ИИ вернул неверный формат. Попробуйте еще раз.');
+  }
+});
 
 /* ============ 5 почему дерево ============ */
 function renderWhy2(){
@@ -1288,7 +1394,7 @@ if(fileInput) fileInput.addEventListener('change', e=>{
   e.target.value = '';
 });
 
-/* ============ ЭКСПОРТ В XLSX (со стилями, через ExcelJS) ============ */
+/* ============ ЭКСПОРТ В XLSX ============ */
 async function exportToXLSX(){
   const r = getR(); if(!r) return;
   if(typeof ExcelJS === 'undefined'){
@@ -1737,20 +1843,11 @@ if(xlsxBtn) xlsxBtn.addEventListener('click', async ()=>{
 
 /* ============ ИМПОРТ ИЗ XLSX ============ */
 const XLSX_CAT_MAP = {
-  'переработка': 'method',
-  'подготовка сырья / наполнитель': 'material',
-  'подготовка сырья': 'material',
-  'наполнитель': 'material',
-  'повторное использование': 'material',
-  'оборудование': 'machine',
-  'оборудование / логистика': 'machine',
-  'логистика': 'method',
-  'утилизация': 'env',
-  'предотвращение образования': 'method',
-  'предотвращение отходов / сбыт': 'method',
-  'технология': 'method',
-  'новые продукты / переработка': 'method',
-  'поиск применений': 'method'
+  'переработка': 'method', 'подготовка сырья / наполнитель': 'material', 'подготовка сырья': 'material',
+  'наполнитель': 'material', 'повторное использование': 'material', 'оборудование': 'machine',
+  'оборудование / логистика': 'machine', 'логистика': 'method', 'утилизация': 'env',
+  'предотвращение образования': 'method', 'предотвращение отходов / сбыт': 'method',
+  'технология': 'method', 'новые продукты / переработка': 'method', 'поиск применений': 'method'
 };
 
 function mapCategory(groupName){
@@ -1810,16 +1907,10 @@ function parseProtocolSheet(ws){
   return data.map(r=>{
     const idea = String(r[colIdea]||'').trim();
     if(!idea) return null;
-    const sum = (Number(r[colEffect])||0) + (Number(r[colFeas])||0) +
-                (Number(r[colSpeed])||0) + (Number(r[colEcon])||0);
+    const sum = (Number(r[colEffect])||0) + (Number(r[colFeas])||0) + (Number(r[colSpeed])||0) + (Number(r[colEcon])||0);
     return {
-      text: idea,
-      group: String(r[colGroup]||'').trim(),
-      comment: String(r[colComment]||'').trim(),
-      sum,
-      score: convertScoreTo3(sum),
-      rank: Number(r[colRank]) || null,
-      status: String(r[colStatus]||'').trim()
+      text: idea, group: String(r[colGroup]||'').trim(), comment: String(r[colComment]||'').trim(),
+      sum, score: convertScoreTo3(sum), rank: Number(r[colRank]) || null, status: String(r[colStatus]||'').trim()
     };
   }).filter(Boolean);
 }
@@ -1839,14 +1930,7 @@ function parsePlanSheet(ws){
     let status = 'План', done = 0;
     if(/в работе/i.test(statusRaw)){ status = 'В работе'; done = 50; }
     else if(/сделано|готово|завершено|выполнено/i.test(statusRaw)){ status = 'Сделано'; done = 100; }
-    return {
-      what,
-      owner: String(r[colOwner]||'').trim(),
-      due: String(r[colDue]||'').trim(),
-      status,
-      done,
-      notes: String(r[colResult]||'').trim()
-    };
+    return { what, owner: String(r[colOwner]||'').trim(), due: String(r[colDue]||'').trim(), status, done, notes: String(r[colResult]||'').trim() };
   }).filter(Boolean);
 }
 
@@ -1955,48 +2039,24 @@ function importFromXLSX(file){
       const a = r.a3;
 
       if(replace){
-        r.ideas = ideas.map(i=>({
-          id: uid(),
-          text: i.text,
-          cat: mapCategory(i.group),
-          root: false,
-          score: i.score,
-          priority: false
-        }));
-        r.plan = planRows.map(p=>({
-          id: uid(),
-          what: p.what,
-          owner: p.owner,
-          start: '',
-          end: '',
-          done: p.done,
-          notes: p.notes
-        }));
+        r.ideas = ideas.map(i=>({ id: uid(), text: i.text, cat: mapCategory(i.group), root: false, score: i.score, priority: false }));
+        r.plan = planRows.map(p=>({ id: uid(), what: p.what, owner: p.owner, start: '', end: '', done: p.done, notes: p.notes }));
       } else {
         const existingTexts = new Set(r.ideas.map(i=>i.text.toLowerCase()));
         ideas.forEach(i=>{
           if(!existingTexts.has(i.text.toLowerCase())){
-            r.ideas.push({
-              id: uid(), text: i.text, cat: mapCategory(i.group),
-              root: false, score: i.score, priority: false
-            });
+            r.ideas.push({ id: uid(), text: i.text, cat: mapCategory(i.group), root: false, score: i.score, priority: false });
             existingTexts.add(i.text.toLowerCase());
           }
         });
         planRows.forEach(p=>{
-          r.plan.push({
-            id: uid(), what: p.what, owner: p.owner,
-            start: '', end: '', done: p.done, notes: p.notes
-          });
+          r.plan.push({ id: uid(), what: p.what, owner: p.owner, start: '', end: '', done: p.done, notes: p.notes });
         });
       }
 
       if(ppu){
         if(ppu['наименование']) a.projectName = ppu['наименование'];
-        if(ppu['проблема']){
-          a.problem = ppu['проблема'];
-          r.problem = ppu['проблема'];
-        }
+        if(ppu['проблема']){ a.problem = ppu['проблема']; r.problem = ppu['проблема']; }
         if(ppu['baseline']) a.currentState = ppu['baseline'];
         if(ppu['предлагаемое улучшение']) a.analysisMethods = ppu['предлагаемое улучшение'];
         if(ppu['ожидаемый эффект']) a.results = ppu['ожидаемый эффект'];
@@ -2012,18 +2072,11 @@ function importFromXLSX(file){
           const cost = Number(panel['затраты/показатель в год, руб.']);
           if(!isNaN(cost)) a.lostProfit = String(cost);
         }
-        if(panel['размер команды'] && !a.team){
-          a.team = `Команда: ${panel['размер команды']} чел.`;
-        }
+        if(panel['размер команды'] && !a.team){ a.team = `Команда: ${panel['размер команды']} чел.`; }
       }
 
-      if(panel['baseline, т/мес.']){
-        r.wasBefore.text = 'Baseline: ' + panel['baseline, т/мес.'] + ' т/мес.';
-      }
-
-      if(conclusion){
-        r.a3.results = (r.a3.results ? r.a3.results + '\n\n' : '') + conclusion;
-      }
+      if(panel['baseline, т/мес.']){ r.wasBefore.text = 'Baseline: ' + panel['baseline, т/мес.'] + ' т/мес.'; }
+      if(conclusion){ r.a3.results = (r.a3.results ? r.a3.results + '\n\n' : '') + conclusion; }
 
       addLog('import.xlsx', `Импортировано из XLSX: гипотез — ${ideas.length}, плана — ${planRows.length}, режим: ${replace?'замена':'добавление'}`);
 
@@ -2059,7 +2112,7 @@ if(importXlsxBtn && xlsxFileInput){
   });
 }
 
-/* ============ ПЕЧАТЬ ВИЗУАЛЬНОГО ОТЧЁТА ============ */
+/* ============ ПЕЧАТЬ ============ */
 function buildPrintView(){
   const r = getR(); if(!r) return;
   const a = r.a3;
@@ -2133,12 +2186,10 @@ function buildPrintView(){
 
   box.innerHTML = `
     <div style="font-family:Arial,sans-serif;color:#000;font-size:11px;border:3px solid #000;padding:10px">
-
       <div style="text-align:center;margin-bottom:10px">
         <div style="font-size:14px;font-weight:bold;letter-spacing:1px">ОТЧЁТ А3</div>
         <div style="font-size:13px;margin-top:2px"><b>${esc(a.projectName||reportName(r))}</b></div>
       </div>
-
       <table style="width:100%;border-collapse:collapse;margin-bottom:10px">
         <tr>
           <td style="border:1px solid #000;padding:4px;width:18%;background:#f0f0f0"><b>ПП, отдел</b></td>
@@ -2157,10 +2208,8 @@ function buildPrintView(){
           <td colspan="3" style="border:1px solid #000;padding:4px">${esc(a.team||'')}</td>
         </tr>
       </table>
-
       ${secTitle('1. Проблема, задача')}
       ${secBlock(`<div style="min-height:36px;white-space:pre-wrap">${esc(a.problem||'')}</div>`)}
-
       ${secTitle('2. Текущее состояние')}
       ${secBlock(`<div style="min-height:60px;white-space:pre-wrap;margin-bottom:6px">${esc(a.currentState||'')}</div>
         <table style="width:100%;border-collapse:collapse">
@@ -2169,7 +2218,6 @@ function buildPrintView(){
           <tr><td style="border:1px solid #000;padding:4px">Потери, мин.</td><td style="border:1px solid #000;padding:4px">${esc(a.timeLoss||'')}</td></tr>
           <tr><td style="border:1px solid #000;padding:4px">Недополученная прибыль, руб.</td><td style="border:1px solid #000;padding:4px">${esc(a.lostProfit||'')}</td></tr>
         </table>`)}
-
       ${secTitle('3. Постановка целей')}
       ${secBlock(`<table style="width:100%;border-collapse:collapse">
         <tr><td style="border:1px solid #000;padding:4px;width:40%">Снижение брака, %</td><td style="border:1px solid #000;padding:4px">${esc(a.goalDefect||'')}</td></tr>
@@ -2177,13 +2225,11 @@ function buildPrintView(){
         <tr><td style="border:1px solid #000;padding:4px">Устранение потерь, %</td><td style="border:1px solid #000;padding:4px">${esc(a.goalLoss||'')}</td></tr>
         <tr><td style="border:1px solid #000;padding:4px">Прибыль, руб.</td><td style="border:1px solid #000;padding:4px">${esc(a.goalProfit||'')}</td></tr>
       </table>`)}
-
       ${secTitle('4. Анализ проблемы, поиск корневых причин')}
       ${secBlock(`<div style="white-space:pre-wrap">${esc(a.analysisMethods||'')}</div>
         <div style="margin-top:6px;border:1px solid #000;padding:6px;background:#fffbeb">
           <b>Корневая причина:</b> ${esc(a.rootCause || (r.why1.chain.filter(x=>x.trim()).slice(-1)[0] || ''))}
         </div>`)}
-
       ${secTitle('5. План мероприятий по устранению корневых причин')}
       ${secBlock(`<table style="width:100%;border-collapse:collapse">
         <thead><tr>
@@ -2195,7 +2241,6 @@ function buildPrintView(){
         </tr></thead>
         <tbody>${measRows || '<tr><td colspan="5" style="border:1px solid #000;padding:6px;text-align:center;color:#666">—</td></tr>'}</tbody>
       </table>`)}
-
       ${secTitle('6. Оценка эффективности проекта')}
       ${secBlock(`<table style="width:100%;border-collapse:collapse">
         <thead><tr>
@@ -2205,10 +2250,8 @@ function buildPrintView(){
         </tr></thead>
         <tbody>${effRows || '<tr><td colspan="3" style="border:1px solid #000;padding:6px;text-align:center;color:#666">—</td></tr>'}</tbody>
       </table>`)}
-
       ${secTitle('7. Результаты проекта')}
       ${secBlock(`<div style="min-height:50px;white-space:pre-wrap">${esc(a.results||'')}</div>`)}
-
       ${secTitle('8. Дальнейшие действия')}
       ${secBlock(`<table style="width:100%;border-collapse:collapse">
         <thead><tr>
@@ -2220,7 +2263,6 @@ function buildPrintView(){
         </tr></thead>
         <tbody>${nextRows || '<tr><td colspan="5" style="border:1px solid #000;padding:6px;text-align:center;color:#666">—</td></tr>'}</tbody>
       </table>`)}
-
       ${secTitle('Рейтинг гипотез (6М)')}
       ${secBlock(`<table style="width:100%;border-collapse:collapse">
         <thead><tr>
@@ -2232,12 +2274,10 @@ function buildPrintView(){
         </tr></thead>
         <tbody>${ratingRows || '<tr><td colspan="5" style="border:1px solid #000;padding:6px;text-align:center;color:#666">—</td></tr>'}</tbody>
       </table>`)}
-
       ${secTitle('5 почему (линейный)')}
       ${secBlock(`<table style="width:100%;border-collapse:collapse">
         <tbody>${whyRows || '<tr><td style="border:1px solid #000;padding:6px;text-align:center;color:#666">—</td></tr>'}</tbody>
       </table>`)}
-
       ${secTitle('Было — Стало')}
       ${secBlock(`<table style="width:100%;border-collapse:collapse">
         <tr>
@@ -2249,7 +2289,6 @@ function buildPrintView(){
           <td style="border:1px solid #000;padding:6px;white-space:pre-wrap;vertical-align:top">${esc(r.wasAfter.text||'')}</td>
         </tr>
       </table>`)}
-
       <div style="margin-top:14px;text-align:center;font-size:10px;color:#666">
         Сформировано: ${new Date().toLocaleString('ru-RU')}
       </div>
@@ -2274,16 +2313,10 @@ if(demoBtn) demoBtn.addEventListener('click', ()=>{
   const r = getR();
   r.problem = 'Сборка линии №2 срывает план на 12%';
   r.a3 = Object.assign(emptyReport().a3, {
-    projectName:'Снижение простоев на линии №2',
-    department:'Производственный отдел',
-    openDate: today(),
-    manager:'Иванов А.А.',
-    team:'Петров С.С., Сидоров В.В.',
-    problem:'Сборка линии срывает план из-за простоев',
-    currentState:'Простой 40 мин/смену, OEE 68%',
-    defectRate:'4.5', claimsCount:'12', timeLoss:'240', lostProfit:'150000',
-    goalDefect:'2.0', goalClaims:'3', goalLoss:'0', goalProfit:'300000',
-    analysisMethods:'5 почему, Исикава', results:'Внедрён регламент'
+    projectName:'Снижение простоев на линии №2', department:'Производственный отдел', openDate: today(),
+    manager:'Иванов А.А.', team:'Петров С.С., Сидоров В.В.', problem:'Сборка линии срывает план из-за простоев',
+    currentState:'Простой 40 мин/смену, OEE 68%', defectRate:'4.5', claimsCount:'12', timeLoss:'240', lostProfit:'150000',
+    goalDefect:'2.0', goalClaims:'3', goalLoss:'0', goalProfit:'300000', analysisMethods:'5 почему, Исикава', results:'Внедрён регламент'
   });
   r.ideas = [
     {id:uid(), text:'Нет эталона', cat:'method', root:false, score:2, priority:false},
@@ -2341,11 +2374,9 @@ if(probInput) probInput.addEventListener('input', ()=>{ getR().problem = probInp
 
 renderAll();
 
-/* ============ PWA: регистрация SW, QR-код и установка ============ */
+/* ============ PWA: SW, QR, Установка ============ */
 const isHttp = location.protocol === 'http:' || location.protocol === 'https:';
 let deferredPrompt = null;
-
-// Переменные для новых элементов
 const shareBtn = document.getElementById('shareBtn');
 const shareModal = document.getElementById('shareModal');
 const qrCodeImg = document.getElementById('qrCodeImg');
@@ -2354,8 +2385,7 @@ const copyLinkBtn = document.getElementById('copyLinkBtn');
 const installHint = document.getElementById('installHint');
 
 function isStandalone(){
-  return window.matchMedia('(display-mode: standalone)').matches
-      || window.navigator.standalone === true;
+  return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
 }
 
 window.addEventListener('beforeinstallprompt', e => {
@@ -2363,38 +2393,27 @@ window.addEventListener('beforeinstallprompt', e => {
   deferredPrompt = e;
 });
 
-// Логика открытия окна с QR-кодом
 if (shareBtn) {
   shareBtn.addEventListener('click', () => {
-    // Генерируем QR-код через надежный API
     const currentUrl = window.location.href;
     qrCodeImg.src = 'https://quickchart.io/qr?text=' + encodeURIComponent(currentUrl) + '&size=250';
-    
-    // Скрываем подсказку при открытии
     installHint.style.display = 'none';
     shareModal.classList.add('active');
   });
 }
 
-// Логика кнопки "Установить на это устройство"
 if (doInstallBtn) {
   doInstallBtn.addEventListener('click', async () => {
-    // Если браузер поддерживает установку
     if (deferredPrompt) {
       deferredPrompt.prompt();
       const { outcome } = await deferredPrompt.userChoice;
-      if (outcome === 'accepted') {
-        shareModal.classList.remove('active');
-      }
+      if (outcome === 'accepted') shareModal.classList.remove('active');
       deferredPrompt = null;
       return;
     }
-
-    // Если установка недоступна, показываем инструкцию
     installHint.style.display = 'block';
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
     const isAndroid = /Android/i.test(navigator.userAgent);
-
     if (isIOS) {
       installHint.innerHTML = '<b>Для iPhone (Safari):</b><br>1. Нажмите кнопку «Поделиться» (квадрат со стрелкой внизу).<br>2. Прокрутите вниз и выберите <b>«На экран "Домой"»</b>.';
     } else if (isAndroid) {
@@ -2405,7 +2424,6 @@ if (doInstallBtn) {
   });
 }
 
-// Кнопка копирования ссылки
 if (copyLinkBtn) {
   copyLinkBtn.addEventListener('click', async () => {
     try {
@@ -2418,7 +2436,6 @@ if (copyLinkBtn) {
   });
 }
 
-// Регистрируем SW только на http(s)
 if ('serviceWorker' in navigator && isHttp) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('./sw.js', { scope: './' }).catch(err => console.warn('SW registration failed:', err));
