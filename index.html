@@ -2366,9 +2366,9 @@ window.addEventListener('beforeinstallprompt', e => {
 // Логика открытия окна с QR-кодом
 if (shareBtn) {
   shareBtn.addEventListener('click', () => {
-    // Генерируем QR-код через бесплатный API (ссылка берется текущая из адресной строки)
+    // Генерируем QR-код через надежный API
     const currentUrl = window.location.href;
-    qrCodeImg.src = 'https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=' + encodeURIComponent(currentUrl);
+    qrCodeImg.src = 'https://quickchart.io/qr?text=' + encodeURIComponent(currentUrl) + '&size=250';
     
     // Скрываем подсказку при открытии
     installHint.style.display = 'none';
