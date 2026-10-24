@@ -1,0 +1,2403 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Разбор проблем · Локальная версия</title>
+<!-- ====== PWA meta (пункт 4.1) ====== -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1e293b">
+<meta name="application-name" content="Разбор проблем">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Разбор">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<!-- ====== /PWA meta ====== -->
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:#eef2f7;color:#1e293b}
+  header{display:flex;gap:8px;align-items:center;padding:10px 18px;background:#1e293b;color:#fff;flex-wrap:wrap}
+  .brand{font-weight:700;white-space:nowrap}
+  .report-manager{display:flex;align-items:center;gap:4px;margin-right:10px}
+  #reportSelect{padding:7px 10px;border-radius:6px;border:1px solid #475569;background:#0f172a;color:#fff;font-size:13px;max-width:180px;outline:none}
+  .rm-btn{background:#334155;border:1px solid #475569;color:#e2e8f0;padding:6px 10px;border-radius:6px;cursor:pointer;font-size:14px;line-height:1}
+  .rm-btn:hover{background:#475569}
+  .rm-btn.danger:hover{background:#ef4444;border-color:#ef4444;color:#fff}
+  #problemInput{flex:1;min-width:200px;padding:9px 12px;border-radius:8px;border:1px solid #475569;background:#0f172a;color:#fff;font-size:14px}
+  .hbtn{background:#334155;border:1px solid #475569;color:#e2e8f0;padding:8px 12px;border-radius:8px;cursor:pointer;font-size:13px}
+  .hbtn:hover{background:#475569}
+  .hbtn:disabled{opacity:0.5;cursor:not-allowed}
+  .badge{font-size:12px;padding:5px 10px;border-radius:20px;background:#334155;color:#cbd5e1}
+  #syncBadge{background:#14532d;color:#bbf7d0}
+  .tabs{display:flex;gap:4px;padding:12px 18px 0;flex-wrap:wrap;align-items:center}
+  .tab{padding:8px 12px;border:1px solid #cbd5e1;border-bottom:none;border-radius:8px 8px 0 0;background:#e2e8f0;cursor:pointer;font-size:13px;white-space:nowrap}
+  .tab.active{background:#fff;font-weight:600;color:#4f46e5}
+  .tn-brand{margin-left:auto;color:#C8102E;font-weight:900;font-size:16px;padding-bottom:8px;text-transform:uppercase;font-family:Arial,sans-serif}
+  main{padding:0 18px 40px}
+  .tabpane{display:none;background:#fff;border:1px solid #cbd5e1;border-radius:0 10px 10px 10px;padding:18px}
+  .tabpane.active{display:block}
+  h2{margin:0 0 12px;font-size:18px}
+  .hint{margin:0 0 14px;color:#64748b;font-size:13px}
+  .row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+  input[type=text],input[type=date],input[type=number],input[type=search],select,textarea{font:inherit;padding:8px 10px;border:1px solid #cbd5e1;border-radius:6px;background:#fff;width:100%}
+  textarea{resize:vertical;min-height:60px}
+  button.primary{background:#4f46e5;color:#fff;border:none;padding:8px 14px;border-radius:6px;cursor:pointer;font-weight:600}
+  button.primary:hover{background:#4338ca}
+  button.ghost{background:#f1f5f9;border:1px solid #cbd5e1;padding:6px 10px;border-radius:6px;cursor:pointer;font-size:13px}
+  button.ghost:hover{background:#e2e8f0}
+  table.form-tbl{width:100%;border-collapse:collapse;font-size:13px;background:#fff}
+  table.form-tbl th,table.form-tbl td{border:1px solid #cbd5e1;padding:4px 6px;vertical-align:top}
+  table.form-tbl th{background:#f1f5f9;font-size:12px;text-align:center;font-weight:600}
+  table.form-tbl td input,table.form-tbl td textarea,table.form-tbl td select{border:none;padding:3px;font-size:13px;background:transparent}
+  .del{background:none;border:none;color:#ef4444;cursor:pointer;font-size:14px}
+  .grp-h{font-weight:600;font-size:13px;color:var(--c);margin-bottom:6px}
+  .cnt{background:#f1f5f9;color:#475569;border-radius:20px;padding:1px 8px;font-size:11px;margin-left:4px}
+  .chips{display:flex;flex-wrap:wrap;gap:6px}
+  .chip{display:flex;align-items:center;gap:4px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:4px 6px 4px 10px;font-size:13px}
+  .chip.is-root{border-color:#f59e0b;background:#fffbeb}
+  .chip-score{background:#e0e7ff;color:#4338ca;border-radius:10px;padding:0 6px;font-size:11px;font-weight:600}
+  .ic{background:none;border:none;cursor:pointer;color:#94a3b8;padding:2px}
+  .fish-wrap{overflow:auto;border:1px dashed #cbd5e1;border-radius:10px;padding:10px}
+  .fish{position:relative;width:1200px;height:700px}
+  .fish svg{position:absolute;inset:0}
+  .fish .bone{position:absolute;background:#fff;border:1px solid #e2e8f0;border-top:3px solid;border-radius:6px;padding:4px 6px;font-size:11px;overflow:auto}
+  .fish .effect{position:absolute;background:#1e293b;color:#fff;border-radius:8px;padding:8px 10px;font-size:12px;font-weight:600;display:flex;align-items:center}
+  .modal-overlay{position:fixed;inset:0;background:rgba(15,23,42,.6);display:none;align-items:center;justify-content:center;z-index:1000;padding:16px}
+  .modal-overlay.active{display:flex}
+  .modal{background:#fff;border-radius:10px;max-width:520px;width:100%;box-shadow:0 20px 50px rgba(0,0,0,.3);max-height:90vh;display:flex;flex-direction:column}
+  .modal-header{padding:14px 18px;border-bottom:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center}
+  .modal-header h3{margin:0;font-size:16px}
+  .modal-close{background:none;border:none;font-size:24px;cursor:pointer;color:#94a3b8}
+  .modal-body{padding:14px 18px;overflow-y:auto}
+  .modal-footer{padding:12px 18px;border-top:1px solid #e2e8f0;display:flex;gap:8px;justify-content:flex-end}
+  .modal label.cb-row{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid #f1f5f9;cursor:pointer;align-items:flex-start}
+  .modal label.cb-row input{margin:3px 0 0 0;width:16px;height:16px;accent-color:#4f46e5}
+  .modal label.cb-row b{display:block;font-size:13px}
+  .report-list-cb{border:1px solid #e2e8f0;border-radius:6px;max-height:280px;overflow-y:auto;background:#f8fafc;margin-bottom:10px}
+  .report-list-cb label{display:flex;gap:8px;padding:6px 10px;cursor:pointer;font-size:13px;border-bottom:1px solid #f1f5f9}
+  .report-list-cb input{margin:2px 0 0 0;width:14px;height:14px;accent-color:#4f46e5}
+  .report-list-cb .cb-sel-all{font-weight:600;background:#eef2f7}
+  /* 6M */
+  .m6-controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px;padding:10px;background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0}
+  .m6-controls label{font-size:13px;display:flex;align-items:center;gap:4px;cursor:pointer}
+  .m6-tbl{width:100%;border-collapse:collapse;font-size:13px;background:#fff}
+  .m6-tbl th,.m6-tbl td{border:1px solid #cbd5e1;padding:6px 8px;vertical-align:middle}
+  .m6-tbl th{background:#f1f5f9;font-size:12px;text-align:left;font-weight:600}
+  .m6-tbl tr.m6-row-prio{background:#fffbeb}
+  .m6-tbl tr.m6-row-prio td:first-child{border-left:3px solid #f59e0b}
+  .m6-tbl input[type=text]{width:100%;border:none;padding:4px 6px;font-size:13px;background:transparent;border-radius:4px}
+  .m6-tbl input[type=text]:focus{outline:1px solid #4f46e5;background:#f8fafc}
+  .m6-tbl select{border:1px solid #e2e8f0;border-radius:4px;padding:3px 6px;font-size:13px;background:#fff}
+  .m6-score{font-weight:700;font-size:14px;text-align:center;width:100%}
+  .m6-score-3{color:#dc2626}
+  .m6-score-2{color:#f59e0b}
+  .m6-score-1{color:#64748b}
+  .m6-score-0{color:#cbd5e1}
+  .m6-prio{width:22px;height:22px;cursor:pointer;accent-color:#f59e0b;margin:0}
+  .summary-tbl{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px;background:#fff}
+  .summary-tbl th,.summary-tbl td{border:1px solid #cbd5e1;padding:6px 8px;vertical-align:middle}
+  .summary-tbl th{background:#f1f5f9;font-size:12px;font-weight:600;color:#475569;text-align:center;padding:8px 6px}
+  .summary-tbl tbody tr:hover{background:#f8fafc}
+  .summary-tbl tr.m6-row-prio{background:#fffbeb}
+  .summary-tbl tfoot td{background:#f8fafc;font-weight:600;border-top:2px solid #94a3b8;font-size:12px}
+  /* A3 */
+  .a3-form{background:#fff;color:#000;font-family:Arial,sans-serif;width:100%;overflow-x:auto}
+  .a3-form-inner{min-width:900px;border:1px solid #000;padding:8px}
+  .a3-form table{width:100%;border-collapse:collapse;font-size:11px}
+  .a3-form th,.a3-form td{border:1px solid #000;padding:3px 5px;vertical-align:top}
+  .a3-form th{background:#f0f0f0;text-align:center;font-weight:bold}
+  .a3-form .section-title{background:#d9d9d9;font-weight:bold;text-align:center;text-transform:uppercase;font-size:12px}
+  .a3-form .sub-title{background:#e6e6e6;font-weight:bold}
+  .a3-form input,.a3-form textarea,.a3-form select{width:100%;border:none;background:transparent;font-size:11px;padding:1px}
+  .a3-form textarea{min-height:50px}
+  .a3-form .a3-header-table td{border:none;padding:2px}
+  .a3-form .a3-header-table td:first-child{text-align:right;font-weight:bold;width:140px}
+  .a3-form .a3-header-table input{border-bottom:1px solid #000}
+  .print-only{display:none}
+  @media (max-width:600px){
+    .tabs{gap:2px;padding:8px 8px 0}
+    .tab{padding:6px 8px;font-size:11px}
+    .modal{max-height:95vh;border-radius:10px 10px 0 0}
+    .modal-overlay{align-items:flex-end;padding:0}
+  }
+  @media print{
+    header,.tabs,.no-print,.modal-overlay{display:none!important}
+    main{padding:0}
+    .tabpane{display:none!important;border:none;padding:0}
+    #tab-a3{display:block!important}
+    body{background:#fff}
+    .a3-form-inner{border:none;padding:0}
+    #a3FormContainer{display:none !important}
+    .a3-form{overflow:visible}
+    #printView{display:block !important}
+    *{-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;color-adjust:exact !important}
+    @page { margin: 12mm; size: A4 portrait; }
+  }
+  body.mobile-mode .report-manager{flex:1 1 100%;order:-1;justify-content:space-between}
+  body.mobile-mode #reportSelect{flex:1;max-width:none}
+  body.mobile-mode .tabs{padding:6px 6px 0}
+  body.mobile-mode .tab{padding:5px 8px;font-size:11px}
+  body.mobile-mode main{padding:0 8px 30px}
+  body.mobile-mode .tabpane{padding:10px}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">🏭 Разбор проблем</div>
+  <div class="report-manager">
+    <select id="reportSelect"></select>
+    <button class="rm-btn" id="newReportBtn" title="Новый отчёт">+</button>
+    <button class="rm-btn" id="renameBtn" title="Переименовать">✏️</button>
+    <button class="rm-btn" id="mergeBtn" title="Объединить">🔀</button>
+    <button class="rm-btn" id="settingsBtn" title="Разделы">⚙️</button>
+    <button class="rm-btn danger" id="delReportBtn" title="Удалить">🗑</button>
+  </div>
+  <!-- ====== PWA: кнопка установки (пункт 4.2) ====== -->
+  <button class="hbtn" id="installBtn" style="display:none;background:#16a34a;border-color:#16a34a">⬇ Установить</button>
+  <!-- ====== /PWA ====== -->
+  <input id="problemInput" placeholder="Проблема (эффект)">
+  <span class="badge" id="syncBadge">Сохранено</span>
+  <button class="hbtn" id="modeBtn">📱 Мобильный</button>
+  <button class="hbtn" id="exportBtn">📤 Экспорт JSON</button>
+  <button class="hbtn" id="xlsxBtn">📊 XLSX</button>
+  <button class="hbtn" id="importXlsxBtn" title="Импорт гипотез из Excel">📥 Импорт XLSX</button>
+  <button class="hbtn" id="importBtn">📥 Импорт JSON</button>
+  <input type="file" id="fileInput" accept=".json" hidden>
+  <input type="file" id="xlsxFileInput" accept=".xlsx,.xls,.csv" hidden>
+</header>
+
+<nav class="tabs" id="tabsNav">
+  <div class="tn-brand">ТЕХНОНИКОЛЬ</div>
+</nav>
+
+<main>
+  <section class="tabpane active" id="tab-brain">
+    <h2>Мозговой штурм</h2>
+    <p class="hint">★ — корневая. Балл 1–3 ставится на вкладке «3. 6М».</p>
+    <div class="row">
+      <input type="text" id="ideaInput" placeholder="Гипотеза..." style="flex:1;min-width:200px">
+      <select id="ideaCat" style="width:auto"></select>
+      <button class="primary" id="addIdeaBtn">Добавить</button>
+    </div>
+    <div id="ideaList"></div>
+  </section>
+
+  <section class="tabpane" id="tab-fish">
+    <h2>Диаграмма Исикавы</h2>
+    <div class="fish-wrap"><div class="fish" id="fish"></div></div>
+  </section>
+
+  <section class="tabpane" id="tab-6m">
+    <h2>Исикава 6М</h2>
+    <p class="hint">Все гипотезы, отсортированные по убыванию балла. Оценка 1–3, ★ — приоритетная.</p>
+    <div class="m6-controls">
+      <label><input type="checkbox" id="m6FilterPrio"> Только приоритетные</label>
+      <button class="ghost" id="m6AddRowBtn" type="button">+ Добавить гипотезу</button>
+      <span style="margin-left:auto;font-size:12px;color:#64748b" id="m6TotalInfo"></span>
+    </div>
+    <div style="overflow-x:auto">
+      <table class="m6-tbl">
+        <thead>
+          <tr>
+            <th style="width:40px">★</th>
+            <th style="width:70px">Балл</th>
+            <th style="width:180px">Категория</th>
+            <th>Гипотеза</th>
+            <th style="width:40px"></th>
+          </tr>
+        </thead>
+        <tbody id="m6Body"></tbody>
+      </table>
+    </div>
+    <div style="margin-top:20px">
+      <h3 style="font-size:15px;color:#475569;margin:0 0 4px">Рейтинг гипотез по баллам</h3>
+      <p style="margin:0 0 8px;color:#94a3b8;font-size:12px">
+        Все гипотезы отсортированы по убыванию балла. Гипотезы с одинаковым баллом имеют одинаковый ранг.
+        🥇🥈🥉 — топ-3. ★ в правой колонке — приоритетная гипотеза.
+      </p>
+      <div style="overflow-x:auto">
+        <table class="summary-tbl" id="m6SummaryTable"></table>
+      </div>
+    </div>
+  </section>
+
+  <section class="tabpane" id="tab-why1">
+    <h2>5 почему (линейный)</h2>
+    <div id="whyBox1"></div>
+    <div style="margin-top:10px;display:flex;gap:8px">
+      <button class="ghost" id="addWhy1">+ шаг</button>
+      <button class="ghost" id="delWhy1">− шаг</button>
+    </div>
+  </section>
+
+  <section class="tabpane" id="tab-why2">
+    <h2>5 почему (дерево)</h2>
+    <div id="why2Container"></div>
+    <button class="ghost" id="addBranchBtn" style="margin-top:10px">+ ветвь</button>
+  </section>
+
+  <section class="tabpane" id="tab-plan">
+    <h2>План мероприятий</h2>
+    <div style="overflow-x:auto">
+      <table class="form-tbl">
+        <thead><tr>
+          <th style="width:40px">№</th><th>Мероприятие</th><th style="width:120px">Исполнитель</th>
+          <th style="width:110px">Начало</th><th style="width:110px">Завершение</th>
+          <th style="width:80px">Готово, %</th><th>Примечания</th><th style="width:30px"></th>
+        </tr></thead>
+        <tbody id="planBody"></tbody>
+      </table>
+    </div>
+    <button class="ghost" id="addPlanRow" style="margin-top:10px">+ мероприятие</button>
+  </section>
+
+  <section class="tabpane" id="tab-was">
+    <h2>Было — Стало</h2>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+      <div>
+        <h3 style="font-size:14px;color:#dc2626;margin:0 0 8px">БЫЛО</h3>
+        <input type="date" id="wasDate" style="margin-bottom:6px">
+        <textarea id="wasText" placeholder="Описание..." style="min-height:300px"></textarea>
+      </div>
+      <div>
+        <h3 style="font-size:14px;color:#16a34a;margin:0 0 8px">СТАЛО</h3>
+        <input type="date" id="becameDate" style="margin-bottom:6px">
+        <textarea id="becameText" placeholder="Описание..." style="min-height:300px"></textarea>
+      </div>
+    </div>
+  </section>
+
+  <section class="tabpane" id="tab-a3">
+    <div class="a3-form">
+      <div class="a3-form-inner" id="a3FormContainer"></div>
+    </div>
+    <div id="printView" class="print-only"></div>
+    <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+      <button class="primary" id="printBtn">🖨 Печать / PDF</button>
+      <button class="ghost" id="demoBtn">Заполнить примером</button>
+      <button class="ghost" id="resetBtn">Очистить текущий</button>
+    </div>
+  </section>
+
+  <section class="tabpane" id="tab-log">
+    <h2>Журнал изменений</h2>
+    <div style="margin-bottom:10px"><input type="search" id="logSearch" placeholder="Поиск…"></div>
+    <div id="logList"></div>
+  </section>
+</main>
+
+<div class="modal-overlay" id="renameModal">
+  <div class="modal">
+    <div class="modal-header"><h3>✏️ Переименовать отчёт</h3><button class="modal-close" data-close="renameModal">×</button></div>
+    <div class="modal-body"><input type="text" id="renameInput" placeholder="Новое название" maxlength="120"></div>
+    <div class="modal-footer"><button class="ghost" data-close="renameModal">Отмена</button><button class="primary" id="renameSaveBtn">Сохранить</button></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="mergeModal">
+  <div class="modal">
+    <div class="modal-header"><h3>🔀 Объединение отчётов</h3><button class="modal-close" data-close="mergeModal">×</button></div>
+    <div class="modal-body">
+      <p style="margin-top:0;color:#64748b;font-size:13px">Выберите 2+ отчёта. Балл гипотезы при слиянии берётся максимальный.</p>
+      <div class="report-list-cb" id="mergeCheckboxes"></div>
+    </div>
+    <div class="modal-footer"><button class="ghost" data-close="mergeModal">Отмена</button><button class="primary" id="mergeDoBtn">Объединить</button></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="settingsModal">
+  <div class="modal">
+    <div class="modal-header"><h3>⚙️ Разделы отчёта</h3><button class="modal-close" data-close="settingsModal">×</button></div>
+    <div class="modal-body">
+      <p style="margin-top:0;color:#64748b;font-size:13px">Какие вкладки показывать. Отключённые скроются, данные сохранятся.</p>
+      <div id="tabCheckboxes"></div>
+    </div>
+    <div class="modal-footer"><button class="primary" id="settingsSaveBtn">Сохранить</button></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="exportModal">
+  <div class="modal">
+    <div class="modal-header"><h3>📤 Экспорт JSON</h3><button class="modal-close" data-close="exportModal">×</button></div>
+    <div class="modal-body">
+      <label style="display:flex;gap:8px;padding:6px 0"><input type="radio" name="exportScope" value="current" checked><span><b>Текущий отчёт</b></span></label>
+      <label style="display:flex;gap:8px;padding:6px 0"><input type="radio" name="exportScope" value="selected"><span><b>Выбранные отчёты</b></span></label>
+      <div class="report-list-cb" id="exportCheckboxes" style="display:none"></div>
+      <label style="display:flex;gap:8px;padding:6px 0"><input type="radio" name="exportScope" value="all"><span><b>Все отчёты</b></span></label>
+    </div>
+    <div class="modal-footer"><button class="ghost" data-close="exportModal">Отмена</button><button class="primary" id="downloadBtn">💾 Скачать</button></div>
+  </div>
+</div>
+
+<script>
+"use strict";
+
+/* ============ Константы ============ */
+const CATS = [
+  {id:'people',name:'Люди',color:'#6366f1'},
+  {id:'method',name:'Метод',color:'#0ea5e9'},
+  {id:'machine',name:'Оборудование',color:'#f59e0b'},
+  {id:'material',name:'Материалы',color:'#10b981'},
+  {id:'measure',name:'Измерения',color:'#ec4899'},
+  {id:'env',name:'Окружающая среда',color:'#8b5cf6'}
+];
+
+const TABS_LIST = [
+  {id:'brain', name:'1. Штурм', defaultOn:true},
+  {id:'fish',  name:'2. Исикава', defaultOn:true},
+  {id:'6m',    name:'3. 6М', defaultOn:true},
+  {id:'why1',  name:'4. 5 почему', defaultOn:true},
+  {id:'why2',  name:'5. Дерево', defaultOn:false},
+  {id:'plan',  name:'6. План', defaultOn:true},
+  {id:'was',   name:'7. Было-Стало', defaultOn:false},
+  {id:'a3',    name:'8. А3', defaultOn:true},
+  {id:'log',   name:'9. Журнал', defaultOn:true}
+];
+
+const $ = (s,r=document)=>r.querySelector(s);
+const $$ = (s,r=document)=>Array.from(r.querySelectorAll(s));
+const esc = s => String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const today = ()=>new Date().toISOString().slice(0,10);
+const uid = ()=>Math.random().toString(36).slice(2,9);
+const fmtTime = ts => new Date(ts).toLocaleString('ru-RU',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'});
+
+/* ============ Состояние ============ */
+const LS = 'lean_v17';
+const LEGACY_KEYS = ['lean_v16','lean_v15','lean_v14','lean_v13','lean_v12','lean_v11','lean_v10','lean_v9','lean_v8','lean_v7','lean_v6','lean_v5','lean_multi_v2'];
+
+function emptyReport(){
+  return {
+    meta:{title:'', date:today(), author:''},
+    problem:'',
+    ideas:[],
+    why1:{ chain:['','','','',''] },
+    why2:{ branches:[
+      {id:uid(), name:'Ветвь А', sub:[
+        {id:uid(), name:'А1', sub:[{id:uid(),name:'А1.1'},{id:uid(),name:'А1.2'}]},
+        {id:uid(), name:'А2', sub:[{id:uid(),name:'А2.1'},{id:uid(),name:'А2.2'}]}
+      ]}
+    ]},
+    plan:[],
+    wasBefore:{date:'', text:''},
+    wasAfter:{date:'', text:''},
+    a3:{
+      projectName:'', department:'', openDate:'', manager:'', team:'',
+      problem:'', currentState:'',
+      defectRate:'', claimsCount:'', timeLoss:'', lostProfit:'',
+      goalDefect:'', goalClaims:'', goalLoss:'', goalProfit:'',
+      analysisMethods:'', rootCause:'', results:'', closeDate:'',
+      titles:{t1:'1. Проблема, задача',t2:'2. Текущее состояние',t3:'3. Постановка целей',t4:'4. Анализ проблемы',t5:'5. План мероприятий',t6:'6. Оценка эффективности',t7:'7. Результаты',t8:'8. Дальнейшие действия'},
+      effRows:[
+        {id:uid(),name:'1. Затраты, тыс. руб.',plan:'',fact:''},
+        {id:uid(),name:'2. Выгода за 12 мес., тыс. руб.',plan:'',fact:''},
+        {id:uid(),name:'3. Выгода за 36 мес., тыс. руб.',plan:'',fact:''},
+        {id:uid(),name:'4. Эффективность, %',plan:'',fact:''},
+        {id:uid(),name:'5. Окупаемость, дней',plan:'',fact:''}
+      ],
+      measures:[],
+      nextSteps:[]
+    },
+    enabledTabs: TABS_LIST.filter(t=>t.defaultOn).map(t=>t.id),
+    log:[],
+    m6Settings: { onlyPriority: false }
+  };
+}
+
+function normalizeReport(r){
+  const base = emptyReport();
+  const out = Object.assign({}, base, r||{});
+  out.ideas = (Array.isArray(r?.ideas) ? r.ideas : []).map(i=>({
+    id: i.id || uid(),
+    text: String(i.text||''),
+    cat: i.cat || 'method',
+    root: !!i.root,
+    score: typeof i.score === 'number' ? i.score : (i.score ? Number(i.score) || 0 : 0),
+    priority: !!i.priority
+  }));
+  out.why1 = Object.assign({}, base.why1, r?.why1||{});
+  out.why1.chain = Array.isArray(out.why1.chain) ? out.why1.chain : ['','','','',''];
+  out.why2 = Object.assign({}, base.why2, r?.why2||{});
+  out.why2.branches = Array.isArray(out.why2.branches) ? out.why2.branches : base.why2.branches;
+  out.plan = Array.isArray(r?.plan) ? r.plan : [];
+  out.wasBefore = Object.assign({}, base.wasBefore, r?.wasBefore||{});
+  out.wasAfter = Object.assign({}, base.wasAfter, r?.wasAfter||{});
+  out.a3 = Object.assign({}, base.a3, r?.a3||{});
+  out.a3.titles = Object.assign({}, base.a3.titles, r?.a3?.titles||{});
+  out.a3.effRows = Array.isArray(r?.a3?.effRows) ? r.a3.effRows : base.a3.effRows;
+  out.a3.measures = Array.isArray(r?.a3?.measures) ? r.a3.measures : [];
+  out.a3.nextSteps = Array.isArray(r?.a3?.nextSteps) ? r.a3.nextSteps : [];
+  out.enabledTabs = Array.isArray(r?.enabledTabs) && r.enabledTabs.length ? r.enabledTabs : base.enabledTabs;
+  out.log = Array.isArray(r?.log) ? r.log : [];
+  out.m6Settings = Object.assign({}, base.m6Settings, r?.m6Settings||{});
+  return out;
+}
+
+let app = { activeId:null, reports:{} };
+
+function loadState(){
+  let data = null;
+  for(const k of [LS, ...LEGACY_KEYS]){
+    data = localStorage.getItem(k);
+    if(data) break;
+  }
+  if(data){
+    try {
+      const parsed = JSON.parse(data);
+      if(parsed && parsed.reports){
+        app.activeId = parsed.activeReportId;
+        Object.keys(parsed.reports).forEach(id=>{
+          app.reports[id] = normalizeReport(parsed.reports[id]);
+        });
+      } else if(parsed){
+        const id = uid();
+        app.reports[id] = normalizeReport(parsed);
+        app.activeId = id;
+      }
+    } catch(e){ console.error('parse error', e); }
+  }
+  if(!app.activeId || !app.reports[app.activeId]){
+    const id = uid();
+    app.reports[id] = emptyReport();
+    app.activeId = id;
+  }
+}
+loadState();
+
+function getR(){ return app.reports[app.activeId]; }
+function save(){
+  try {
+    localStorage.setItem(LS, JSON.stringify({activeReportId:app.activeId, reports:app.reports}));
+  } catch(e){ console.error(e); }
+  const b = $('#syncBadge');
+  if(b) b.textContent = 'Сохранено '+new Date().toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'});
+}
+function addLog(action, detail=''){
+  const r = getR(); if(!r) return;
+  r.log.unshift({id:uid(),action,detail,ts:Date.now()});
+  if(r.log.length>300) r.log = r.log.slice(0,300);
+}
+function reportName(r){
+  return r.a3.projectName || r.meta.title || r.problem || 'Новый отчёт';
+}
+
+/* ============ Вкладки ============ */
+function renderTabs(){
+  const r = getR(); if(!r) return;
+  const nav = $('#tabsNav'); if(!nav) return;
+  const brand = nav.querySelector('.tn-brand');
+  Array.from(nav.querySelectorAll('.tab')).forEach(b=>b.remove());
+
+  TABS_LIST.forEach(t=>{
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'tab';
+    btn.dataset.tab = t.id;
+    btn.textContent = t.name;
+    btn.style.display = r.enabledTabs.includes(t.id) ? '' : 'none';
+    btn.addEventListener('click', ()=>{
+      $$('.tab').forEach(x=>x.classList.toggle('active', x===btn));
+      $$('.tabpane').forEach(s=>s.classList.toggle('active', s.id === 'tab-'+t.id));
+      if(t.id === 'a3') renderA3();
+      if(t.id === '6m') render6M();
+      if(t.id === 'why2') renderWhy2();
+    });
+    nav.insertBefore(btn, brand);
+  });
+
+  const firstVisible = Array.from(nav.querySelectorAll('.tab')).find(b=>b.style.display!=='none');
+  const active = document.querySelector('.tab.active');
+  if(active && active.style.display !== 'none'){
+    const id = active.dataset.tab;
+    $$('.tabpane').forEach(s=>s.classList.toggle('active', s.id === 'tab-'+id));
+  } else if(firstVisible){
+    firstVisible.click();
+  }
+}
+
+/* ============ Список отчётов ============ */
+function renderReportList(){
+  const sel = $('#reportSelect'); if(!sel) return;
+  sel.innerHTML = Object.keys(app.reports).map(id=>{
+    const r = app.reports[id];
+    let name = reportName(r);
+    if(name.length>25) name = name.slice(0,25)+'…';
+    return `<option value="${id}">${esc(name)}</option>`;
+  }).join('');
+  sel.value = app.activeId;
+}
+
+/* ============ Мозговой штурм ============ */
+const ideaCatSel = $('#ideaCat');
+if(ideaCatSel) ideaCatSel.innerHTML = CATS.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+
+function renderIdeas(){
+  const box = $('#ideaList'); if(!box) return;
+  const r = getR(); if(!r) return;
+  if(!r.ideas.length){ box.innerHTML = '<p style="color:#94a3b8;font-style:italic">Пока пусто</p>'; return; }
+  box.innerHTML = CATS.map(c=>{
+    const items = r.ideas.filter(i=>i.cat===c.id);
+    if(!items.length) return '';
+    return `<div style="margin-bottom:12px">
+      <div class="grp-h" style="--c:${c.color}">${c.name}<span class="cnt">${items.length}</span></div>
+      <div class="chips">${items.map(i=>`
+        <div class="chip ${i.root?'is-root':''}">
+          <span>${esc(i.text)}</span>
+          ${i.score ? `<span class="chip-score" title="Балл">${i.score}</span>` : ''}
+          ${i.priority ? '<span title="Приоритетная">🔥</span>' : ''}
+          <button class="ic" data-root="${i.id}" title="Корневая">★</button>
+          <button class="ic" data-del="${i.id}" title="Удалить">✕</button>
+        </div>`).join('')}</div>
+    </div>`;
+  }).join('');
+}
+
+const addIdeaBtn = $('#addIdeaBtn');
+if(addIdeaBtn) addIdeaBtn.addEventListener('click', ()=>{
+  const inp = $('#ideaInput'); if(!inp) return;
+  const txt = inp.value.trim(); if(!txt) return;
+  const r = getR();
+  r.ideas.push({id:uid(), text:txt, cat:($('#ideaCat')?.value)||'method', root:false, score:0, priority:false});
+  addLog('idea.add', txt);
+  inp.value = ''; save(); renderIdeas(); renderFish(); render6M();
+});
+const ideaInput = $('#ideaInput');
+if(ideaInput) ideaInput.addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); $('#addIdeaBtn')?.click(); } });
+
+const ideaList = $('#ideaList');
+if(ideaList) ideaList.addEventListener('click', e=>{
+  const b = e.target.closest('[data-root],[data-del]'); if(!b) return;
+  const r = getR();
+  if(b.dataset.root){
+    const i = r.ideas.find(x=>x.id===b.dataset.root); if(i) i.root = !i.root;
+  } else if(b.dataset.del){
+    r.ideas = r.ideas.filter(x=>x.id!==b.dataset.del);
+  }
+  save(); renderIdeas(); renderFish(); render6M();
+});
+
+/* ============ Исикава ============ */
+function renderFish(){
+  const el = $('#fish'); if(!el) return;
+  const r = getR(); if(!r) return;
+  const TOP = [CATS[0],CATS[1],CATS[2]];
+  const BOT = [CATS[3],CATS[4],CATS[5]];
+  const topX = [260,520,780], botX = [390,650,910];
+  const topY = 150, botY = 550, spineY = 350, dx = 130;
+  let svg = `<line x1="70" y1="${spineY}" x2="950" y2="${spineY}" stroke="#334155" stroke-width="3"/>
+    <polygon points="948,340 980,350 948,360" fill="#334155"/>`;
+  let cards = '';
+  const makeCard = (c, tx, top)=>{
+    const items = r.ideas.filter(x=>x.cat===c.id);
+    return `<div class="bone" style="left:${tx-90}px;top:${top}px;width:180px;max-height:130px;border-top-color:${c.color}">
+      <div style="font-weight:bold;color:${c.color};font-size:11px">${c.name}</div>
+      ${items.length?items.map(x=>`<div style="font-size:10px">${x.root?'★ ':''}${x.score?`[${x.score}] `:''}${esc(x.text)}</div>`).join(''):'<div style="color:#94a3b8;font-size:10px">—</div>'}
+    </div>`;
+  };
+  TOP.forEach((c,i)=>{
+    const tx = topX[i]-dx;
+    svg += `<line x1="${tx}" y1="${topY}" x2="${topX[i]}" y2="${spineY}" stroke="${c.color}" stroke-width="2.5"/>`;
+    cards += makeCard(c, tx, 10);
+  });
+  BOT.forEach((c,i)=>{
+    const tx = botX[i]-dx;
+    svg += `<line x1="${tx}" y1="${botY}" x2="${botX[i]}" y2="${spineY}" stroke="${c.color}" stroke-width="2.5"/>`;
+    cards += makeCard(c, tx, 560);
+  });
+  cards += `<div class="effect" style="left:990px;top:295px;width:190px;height:110px">${esc(r.problem || r.a3.problem || 'Проблема не задана')}</div>`;
+  el.innerHTML = `<svg viewBox="0 0 1200 700" width="1200" height="700">${svg}</svg>${cards}`;
+}
+
+/* ============ 6М ============ */
+function render6M(){
+  const body = $('#m6Body');
+  if(!body) return;
+  const r = getR(); if(!r) return;
+  const onlyPrio = r.m6Settings.onlyPriority;
+
+  let items = r.ideas.slice();
+  if(onlyPrio) items = items.filter(i=>i.priority);
+  items.sort((a,b)=>{
+    if((b.score||0) !== (a.score||0)) return (b.score||0) - (a.score||0);
+    if(a.priority !== b.priority) return (b.priority?1:0) - (a.priority?1:0);
+    return a.text.localeCompare(b.text);
+  });
+
+  const total = r.ideas.length;
+  const withScore = r.ideas.filter(i=>i.score>0).length;
+  const prioCount = r.ideas.filter(i=>i.priority).length;
+  const avg = withScore ? (r.ideas.reduce((s,i)=>s+(i.score||0),0) / withScore).toFixed(2) : '—';
+  const info = $('#m6TotalInfo');
+  if(info) info.textContent = `Гипотез: ${total} · с баллом: ${withScore} · приоритетных: ${prioCount} · ср. балл: ${avg}`;
+
+  if(!items.length){
+    body.innerHTML = `<tr><td colspan="5" style="text-align:center;color:#94a3b8;font-style:italic;padding:14px">${onlyPrio ? 'Нет приоритетных гипотез' : 'Гипотез пока нет. Добавьте в «Мозговом штурме» или нажмите «+ Добавить».'}</td></tr>`;
+  } else {
+    body.innerHTML = items.map(i=>{
+      const scoreClass = 'm6-score-' + (i.score||0);
+      return `<tr class="${i.priority?'m6-row-prio':''}" data-row="${i.id}">
+        <td style="text-align:center">
+          <input type="checkbox" class="m6-prio" ${i.priority?'checked':''} data-prio="${i.id}" title="Приоритетная">
+        </td>
+        <td style="text-align:center">
+          <select data-score="${i.id}" class="m6-score ${scoreClass}">
+            <option value="0" ${!i.score?'selected':''}>—</option>
+            <option value="1" ${i.score===1?'selected':''}>1</option>
+            <option value="2" ${i.score===2?'selected':''}>2</option>
+            <option value="3" ${i.score===3?'selected':''}>3</option>
+          </select>
+        </td>
+        <td>
+          <select data-cat="${i.id}" style="width:100%">
+            ${CATS.map(c=>`<option value="${c.id}" ${i.cat===c.id?'selected':''}>${c.name}</option>`).join('')}
+          </select>
+        </td>
+        <td>
+          <input type="text" value="${esc(i.text)}" data-text="${i.id}" placeholder="Текст гипотезы">
+          ${i.root ? '<span style="font-size:11px;color:#b45309;margin-left:6px">★ корневая</span>' : ''}
+        </td>
+        <td style="text-align:center">
+          <button class="del" data-remove="${i.id}" title="Удалить">✕</button>
+        </td>
+      </tr>`;
+    }).join('');
+  }
+
+  const sumTbl = $('#m6SummaryTable');
+  if(sumTbl){
+    const ranked = r.ideas.slice().sort((a,b)=>{
+      if((b.score||0) !== (a.score||0)) return (b.score||0) - (a.score||0);
+      if(a.priority !== b.priority) return (b.priority?1:0) - (a.priority?1:0);
+      return a.text.localeCompare(b.text);
+    });
+
+    let lastScore = null, lastRank = 0;
+    const rows = ranked.map((i, idx)=>{
+      if(i.score !== lastScore){
+        lastRank = idx + 1;
+        lastScore = i.score;
+      }
+      return { ...i, rank: lastRank, cat: CATS.find(c=>c.id===i.cat) || CATS[1] };
+    });
+
+    if(!rows.length){
+      sumTbl.innerHTML = `<tbody><tr><td style="padding:14px;text-align:center;color:#94a3b8;font-style:italic">Гипотез пока нет</td></tr></tbody>`;
+    } else {
+      const totalSum = r.ideas.reduce((s,i)=>s+(i.score||0),0);
+      const scoredCount = r.ideas.filter(i=>i.score>0).length;
+      sumTbl.innerHTML = `
+        <thead>
+          <tr>
+            <th style="text-align:center;width:60px">Ранг</th>
+            <th style="text-align:left;width:170px">Категория</th>
+            <th style="text-align:left">Гипотеза</th>
+            <th style="text-align:center;width:80px">Балл</th>
+            <th style="text-align:center;width:60px">★</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rows.map(i=>{
+            const rankColor = i.rank===1 ? '#dc2626' : i.rank===2 ? '#f59e0b' : i.rank===3 ? '#16a34a' : '#64748b';
+            const medal = i.rank===1 ? '🥇' : i.rank===2 ? '🥈' : i.rank===3 ? '🥉' : '';
+            return `<tr class="${i.priority?'m6-row-prio':''}" data-row="${i.id}">
+              <td style="text-align:center;font-weight:700;font-size:14px;color:${rankColor}">
+                ${medal ? medal + ' ' : ''}${i.rank}
+              </td>
+              <td style="border-left:4px solid ${i.cat.color}">
+                <span style="font-weight:600">${i.cat.name}</span>
+              </td>
+              <td>
+                ${esc(i.text)}
+                ${i.root ? '<span style="font-size:11px;color:#b45309;margin-left:6px">★ корневая</span>' : ''}
+              </td>
+              <td style="text-align:center">
+                <span style="display:inline-block;min-width:24px;padding:2px 8px;border-radius:12px;font-weight:700;color:#fff;background:${i.score===3?'#dc2626':i.score===2?'#f59e0b':i.score===1?'#64748b':'#cbd5e1'}">
+                  ${i.score || '—'}
+                </span>
+              </td>
+              <td style="text-align:center">
+                <input type="checkbox" class="m6-prio" ${i.priority?'checked':''} data-prio="${i.id}" title="Приоритетная">
+              </td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colspan="3" style="text-align:right;padding-right:12px">Всего гипотез: <b>${rows.length}</b> · сумма баллов: <b>${totalSum}</b> · оценено: <b>${scoredCount}</b></td>
+            <td colspan="2" style="text-align:center">Средний балл: <b>${scoredCount ? (totalSum / scoredCount).toFixed(2) : '—'}</b></td>
+          </tr>
+        </tfoot>
+      `;
+    }
+  }
+
+  body.oninput = (e)=>{
+    const t = e.target;
+    if(t.dataset.text){
+      const i = r.ideas.find(x=>x.id===t.dataset.text);
+      if(i){ i.text = t.value; save(); renderIdeas(); renderFish(); }
+    }
+  };
+  body.onchange = (e)=>{
+    const t = e.target;
+    if(t.dataset.score){
+      const i = r.ideas.find(x=>x.id===t.dataset.score);
+      if(i){ i.score = Number(t.value)||0; save(); renderIdeas(); renderFish(); render6M(); }
+    }
+    if(t.dataset.prio){
+      const i = r.ideas.find(x=>x.id===t.dataset.prio);
+      if(i){ i.priority = t.checked; save(); render6M(); }
+    }
+    if(t.dataset.cat){
+      const i = r.ideas.find(x=>x.id===t.dataset.cat);
+      if(i){ i.cat = t.value; addLog('6m.cat', `${i.text}: ${t.value}`); save(); renderIdeas(); renderFish(); render6M(); }
+    }
+  };
+  body.onclick = (e)=>{
+    const t = e.target;
+    if(t.dataset.remove){
+      if(!confirm('Удалить гипотезу во всех вкладках?')) return;
+      r.ideas = r.ideas.filter(x=>x.id!==t.dataset.remove);
+      addLog('idea.del','удалена с 6М');
+      save(); renderIdeas(); renderFish(); render6M();
+    }
+  };
+
+  if(sumTbl){
+    sumTbl.onchange = (e)=>{
+      const t = e.target;
+      if(t.dataset.prio){
+        const i = r.ideas.find(x=>x.id===t.dataset.prio);
+        if(i){ i.priority = t.checked; save(); render6M(); }
+      }
+    };
+  }
+}
+
+const m6FilterPrio = $('#m6FilterPrio');
+if(m6FilterPrio) m6FilterPrio.addEventListener('change', e=>{ getR().m6Settings.onlyPriority = e.target.checked; save(); render6M(); });
+
+const m6AddRowBtn = $('#m6AddRowBtn');
+if(m6AddRowBtn) m6AddRowBtn.addEventListener('click', ()=>{
+  const r = getR();
+  const txt = prompt('Текст новой гипотезы:');
+  if(!txt || !txt.trim()) return;
+  const clean = txt.trim();
+  if(r.ideas.some(x=>x.text.toLowerCase()===clean.toLowerCase())){
+    alert('Такая гипотеза уже есть'); return;
+  }
+  r.ideas.push({id:uid(), text:clean, cat:'method', root:false, score:0, priority:false});
+  addLog('idea.add', clean);
+  save(); renderIdeas(); renderFish(); render6M();
+});
+
+/* ============ 5 почему линейный ============ */
+function renderWhy1(){
+  const box = $('#whyBox1'); if(!box) return;
+  const r = getR(); if(!r) return;
+  let h = `<div style="padding:8px;background:#f8fafc;border-left:4px solid #4f46e5;margin-bottom:12px;font-size:13px"><b>Проблема:</b> ${esc(r.problem || r.a3.problem || '—')}</div>`;
+  r.why1.chain.forEach((val,i)=>{
+    const q = i===0 ? 'Почему это происходит?' : `Почему «${esc(r.why1.chain[i-1]||'…')}»?`;
+    h += `<div style="display:flex;gap:8px;margin-bottom:8px">
+      <div style="flex:0 0 28px;height:28px;border-radius:50%;background:#e0e7ff;color:#4338ca;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px">${i+1}</div>
+      <div style="flex:1"><div style="font-size:12px;color:#64748b">${q}</div>
+        <input type="text" value="${esc(val)}" data-why1="${i}" autocomplete="off"></div>
+    </div>`;
+  });
+  box.innerHTML = h;
+  box.querySelectorAll('[data-why1]').forEach(inp=>{
+    inp.addEventListener('input', ()=>{ r.why1.chain[+inp.dataset.why1] = inp.value; save(); });
+    inp.addEventListener('change', ()=>renderWhy1());
+  });
+}
+const addWhy1 = $('#addWhy1');
+if(addWhy1) addWhy1.addEventListener('click', ()=>{ getR().why1.chain.push(''); save(); renderWhy1(); });
+const delWhy1 = $('#delWhy1');
+if(delWhy1) delWhy1.addEventListener('click', ()=>{ const c = getR().why1.chain; if(c.length>1){ c.pop(); save(); renderWhy1(); } });
+
+/* ============ 5 почему дерево ============ */
+function renderWhy2(){
+  const box = $('#why2Container'); if(!box) return;
+  const r = getR(); if(!r) return;
+  const branches = r.why2.branches;
+  let h = '';
+  branches.forEach((b,bi)=>{
+    h += `<div style="border:1px solid #e2e8f0;border-radius:8px;padding:10px;margin-bottom:12px;background:#f8fafc">
+      <div style="display:flex;gap:6px;align-items:center;margin-bottom:8px">
+        <input type="text" value="${esc(b.name)}" data-branch="${bi}" style="font-weight:bold;flex:1" placeholder="Ветвь">
+        <button class="del" data-branch-del="${bi}">✕</button>
+      </div>
+      ${b.sub.map((s,si)=>`
+        <div style="margin-left:16px;border-left:2px solid #cbd5e1;padding-left:10px;margin-bottom:8px">
+          <div style="display:flex;gap:6px;align-items:center">
+            <input type="text" value="${esc(s.name)}" data-sub="${bi}:${si}" style="flex:1">
+            <button class="del" data-sub-del="${bi}:${si}">✕</button>
+          </div>
+          ${s.sub.map((ss,ssi)=>`
+            <div style="margin-left:16px;display:flex;gap:6px;margin-top:4px">
+              <input type="text" value="${esc(ss.name)}" data-subsub="${bi}:${si}:${ssi}" style="flex:1">
+              <button class="del" data-subsub-del="${bi}:${si}:${ssi}">✕</button>
+            </div>
+          `).join('')}
+          <button class="ghost" data-subsub-add="${bi}:${si}" style="font-size:11px;margin-top:4px">+ подпричина</button>
+        </div>
+      `).join('')}
+      <button class="ghost" data-sub-add="${bi}" style="font-size:11px">+ причина</button>
+    </div>`;
+  });
+  box.innerHTML = h;
+
+  box.oninput = (e)=>{
+    const t = e.target;
+    if(t.dataset.branch !== undefined && t.dataset.branch !== ''){
+      r.why2.branches[+t.dataset.branch].name = t.value; save();
+    } else if(t.dataset.sub){
+      const [bi,si] = t.dataset.sub.split(':').map(Number);
+      r.why2.branches[bi].sub[si].name = t.value; save();
+    } else if(t.dataset.subsub){
+      const [bi,si,ssi] = t.dataset.subsub.split(':').map(Number);
+      r.why2.branches[bi].sub[si].sub[ssi].name = t.value; save();
+    }
+  };
+  box.onclick = (e)=>{
+    const t = e.target;
+    if(t.dataset.branchDel !== undefined && t.dataset.branchDel !== ''){
+      r.why2.branches.splice(+t.dataset.branchDel,1); save(); renderWhy2();
+    } else if(t.dataset.subDel){
+      const [bi,si] = t.dataset.subDel.split(':').map(Number);
+      r.why2.branches[bi].sub.splice(si,1); save(); renderWhy2();
+    } else if(t.dataset.subsubDel){
+      const [bi,si,ssi] = t.dataset.subsubDel.split(':').map(Number);
+      r.why2.branches[bi].sub[si].sub.splice(ssi,1); save(); renderWhy2();
+    } else if(t.dataset.subAdd !== undefined && t.dataset.subAdd !== ''){
+      r.why2.branches[+t.dataset.subAdd].sub.push({id:uid(),name:'',sub:[]}); save(); renderWhy2();
+    } else if(t.dataset.subsubAdd){
+      const [bi,si] = t.dataset.subsubAdd.split(':').map(Number);
+      r.why2.branches[bi].sub[si].sub.push({id:uid(),name:''}); save(); renderWhy2();
+    }
+  };
+}
+const addBranchBtn = $('#addBranchBtn');
+if(addBranchBtn) addBranchBtn.addEventListener('click', ()=>{
+  getR().why2.branches.push({id:uid(), name:'Новая ветвь', sub:[]});
+  save(); renderWhy2();
+});
+
+/* ============ План ============ */
+function renderPlan(){
+  const body = $('#planBody'); if(!body) return;
+  const r = getR(); if(!r) return;
+  body.innerHTML = r.plan.map((m,idx)=>`
+    <tr>
+      <td style="text-align:center">${idx+1}</td>
+      <td><input type="text" value="${esc(m.what||'')}" data-plan="${idx}" data-f="what"></td>
+      <td><input type="text" value="${esc(m.owner||'')}" data-plan="${idx}" data-f="owner"></td>
+      <td><input type="date" value="${m.start||''}" data-plan="${idx}" data-f="start"></td>
+      <td><input type="date" value="${m.end||''}" data-plan="${idx}" data-f="end"></td>
+      <td><input type="number" value="${m.done||0}" min="0" max="100" step="5" data-plan="${idx}" data-f="done"></td>
+      <td><input type="text" value="${esc(m.notes||'')}" data-plan="${idx}" data-f="notes"></td>
+      <td><button class="del" data-plan-del="${idx}">✕</button></td>
+    </tr>
+  `).join('') || '<tr><td colspan="8" style="text-align:center;color:#94a3b8">Нет мероприятий</td></tr>';
+
+  body.oninput = (e)=>{
+    const t = e.target;
+    if(t.dataset.plan !== undefined && t.dataset.plan !== ''){
+      r.plan[+t.dataset.plan][t.dataset.f] = t.value; save();
+    }
+  };
+  body.onclick = (e)=>{
+    const t = e.target;
+    if(t.dataset.planDel !== undefined && t.dataset.planDel !== ''){
+      r.plan.splice(+t.dataset.planDel,1); save(); renderPlan();
+    }
+  };
+}
+const addPlanRow = $('#addPlanRow');
+if(addPlanRow) addPlanRow.addEventListener('click', ()=>{
+  getR().plan.push({id:uid(), what:'', owner:'', start:'', end:'', done:0, notes:''});
+  save(); renderPlan();
+});
+
+/* ============ Было-Стало ============ */
+function renderWas(){
+  const r = getR(); if(!r) return;
+  if($('#wasDate')) $('#wasDate').value = r.wasBefore.date || '';
+  if($('#wasText')) $('#wasText').value = r.wasBefore.text || '';
+  if($('#becameDate')) $('#becameDate').value = r.wasAfter.date || '';
+  if($('#becameText')) $('#becameText').value = r.wasAfter.text || '';
+}
+['wasDate','wasText','becameDate','becameText'].forEach(id=>{
+  const el = $('#'+id);
+  if(el) el.addEventListener('input', ()=>{
+    const r = getR();
+    if(id==='wasDate') r.wasBefore.date = el.value;
+    else if(id==='wasText') r.wasBefore.text = el.value;
+    else if(id==='becameDate') r.wasAfter.date = el.value;
+    else if(id==='becameText') r.wasAfter.text = el.value;
+    save();
+  });
+});
+
+/* ============ A3 ============ */
+function renderA3(){
+  const container = $('#a3FormContainer'); if(!container) return;
+  const r = getR(); if(!r) return;
+  const a = r.a3;
+  while(container.firstChild) container.removeChild(container.firstChild);
+
+  const f = (field, type='text', extra='')=>{
+    const val = a[field] || '';
+    if(type==='date') return `<input type="date" value="${val}" data-a3="${field}" ${extra}>`;
+    if(type==='textarea') return `<textarea data-a3="${field}" ${extra}>${esc(val)}</textarea>`;
+    return `<input type="text" value="${esc(val)}" data-a3="${field}" ${extra}>`;
+  };
+  const title = key => `<input type="text" value="${esc(a.titles[key])}" data-a3-title="${key}" style="font-weight:bold;text-align:center;font-size:12px">`;
+
+  const measRows = a.measures.map((m,i)=>`
+    <tr>
+      <td style="text-align:center">${i+1}</td>
+      <td><input type="text" value="${esc(m.what||'')}" data-a3-m="${i}" data-f="what"></td>
+      <td><input type="date" value="${m.due||''}" data-a3-m="${i}" data-f="due"></td>
+      <td><input type="text" value="${esc(m.owner||'')}" data-a3-m="${i}" data-f="owner"></td>
+      <td><select data-a3-m="${i}" data-f="status">${['План','В работе','Сделано','Проверено'].map(s=>`<option ${m.status===s?'selected':''}>${s}</option>`).join('')}</select></td>
+      <td class="no-print"><button class="del" data-a3-m-del="${i}">✕</button></td>
+    </tr>
+  `).join('');
+  const effRows = a.effRows.map((e,i)=>`
+    <tr>
+      <td><input type="text" value="${esc(e.name||'')}" data-a3-eff="${i}" data-f="name"></td>
+      <td><input type="text" value="${esc(e.plan||'')}" data-a3-eff="${i}" data-f="plan" style="text-align:center"></td>
+      <td><input type="text" value="${esc(e.fact||'')}" data-a3-eff="${i}" data-f="fact" style="text-align:center"></td>
+      <td class="no-print"><button class="del" data-a3-eff-del="${i}">✕</button></td>
+    </tr>
+  `).join('');
+  const nextRows = a.nextSteps.map((m,i)=>`
+    <tr>
+      <td style="text-align:center">${i+1}</td>
+      <td><input type="text" value="${esc(m.what||'')}" data-a3-n="${i}" data-f="what"></td>
+      <td><input type="date" value="${m.due||''}" data-a3-n="${i}" data-f="due"></td>
+      <td><input type="text" value="${esc(m.owner||'')}" data-a3-n="${i}" data-f="owner"></td>
+      <td><select data-a3-n="${i}" data-f="status">${['План','В работе','Сделано'].map(s=>`<option ${m.status===s?'selected':''}>${s}</option>`).join('')}</select></td>
+      <td class="no-print"><button class="del" data-a3-n-del="${i}">✕</button></td>
+    </tr>
+  `).join('');
+
+  const topPrio = r.ideas.filter(i=>i.priority).sort((a,b)=>(b.score||0)-(a.score||0)).slice(0,3);
+  const topHint = topPrio.length
+    ? `<div style="margin-top:4px;font-size:10px;color:#92400e">Топ (6М): ${topPrio.map(i=>`«${esc(i.text)}»${i.score?` [${i.score}]`:''}`).join('; ')}</div>`
+    : '';
+
+  container.innerHTML = `
+    <table class="a3-header-table" style="margin-bottom:8px">
+      <tr><td>Название проекта:</td><td colspan="3">${f('projectName')}</td><td style="text-align:right">Дата открытия:</td><td>${f('openDate','date')}</td></tr>
+      <tr><td>ПП, отдел, служба:</td><td colspan="3">${f('department')}</td><td style="text-align:right">Руководитель:</td><td>${f('manager')}</td></tr>
+      <tr><td>Команда проекта:</td><td colspan="5">${f('team')}</td></tr>
+    </table>
+    <table>
+      <tr>
+        <td style="width:55%;padding:0;border:none;vertical-align:top">
+          <table>
+            <tr><td class="section-title">${title('t1')}</td></tr>
+            <tr><td>${f('problem','textarea','style="min-height:40px"')}</td></tr>
+            <tr><td class="section-title">${title('t2')}</td></tr>
+            <tr><td>${f('currentState','textarea','style="min-height:60px"')}</td></tr>
+            <tr><td class="sub-title">Цифры:</td></tr>
+            <tr><td>
+              <div style="display:flex;gap:8px;margin-bottom:3px"><span style="flex:1">1. Дефектность, %</span><input type="text" value="${esc(a.defectRate)}" data-a3="defectRate" style="width:70px"></div>
+              <div style="display:flex;gap:8px;margin-bottom:3px"><span style="flex:1">2. Претензии, шт.</span><input type="text" value="${esc(a.claimsCount)}" data-a3="claimsCount" style="width:70px"></div>
+              <div style="display:flex;gap:8px;margin-bottom:3px"><span style="flex:1">3. Потери, мин.</span><input type="text" value="${esc(a.timeLoss)}" data-a3="timeLoss" style="width:70px"></div>
+              <div style="display:flex;gap:8px"><span style="flex:1">4. Недополученная прибыль, руб.</span><input type="text" value="${esc(a.lostProfit)}" data-a3="lostProfit" style="width:70px"></div>
+            </td></tr>
+            <tr><td class="section-title">${title('t3')}</td></tr>
+            <tr><td>
+              <div style="display:flex;gap:8px;margin-bottom:3px"><span style="flex:1">1. Снижение брака, %</span><input type="text" value="${esc(a.goalDefect)}" data-a3="goalDefect" style="width:70px"></div>
+              <div style="display:flex;gap:8px;margin-bottom:3px"><span style="flex:1">2. Сокращение рекламаций</span><input type="text" value="${esc(a.goalClaims)}" data-a3="goalClaims" style="width:70px"></div>
+              <div style="display:flex;gap:8px;margin-bottom:3px"><span style="flex:1">3. Устранение потерь, %</span><input type="text" value="${esc(a.goalLoss)}" data-a3="goalLoss" style="width:70px"></div>
+              <div style="display:flex;gap:8px"><span style="flex:1">4. Прибыль, руб.</span><input type="text" value="${esc(a.goalProfit)}" data-a3="goalProfit" style="width:70px"></div>
+            </td></tr>
+            <tr><td class="section-title">${title('t4')}</td></tr>
+            <tr><td>
+              ${f('analysisMethods','textarea','style="min-height:50px" placeholder="Методы"')}
+              <div style="margin-top:4px;font-weight:bold;font-size:10px">Корневая причина:</div>
+              <input type="text" value="${esc(a.rootCause || (r.why1.chain.filter(x=>x.trim()).slice(-1)[0]||''))}" data-a3="rootCause" readonly style="background:#fffbeb;color:#92400e;font-weight:bold">
+              ${topHint}
+            </td></tr>
+          </table>
+        </td>
+        <td style="width:45%;padding:0;border:none;vertical-align:top">
+          <table>
+            <tr><td class="section-title">${title('t5')}</td></tr>
+            <tr><td style="padding:3px">
+              <table style="border:1px solid #ccc">
+                <thead><tr><th style="width:18px">№</th><th>Мероприятие</th><th style="width:65px">Срок</th><th style="width:80px">Ответственный</th><th style="width:75px">Статус</th><th class="no-print" style="width:20px"></th></tr></thead>
+                <tbody>${measRows || '<tr><td colspan="6" style="text-align:center;color:#94a3b8">Нет</td></tr>'}</tbody>
+              </table>
+              <button class="ghost no-print" data-a3-add-meas style="font-size:10px;margin-top:4px">+</button>
+            </td></tr>
+            <tr><td class="section-title">${title('t6')}</td></tr>
+            <tr><td style="padding:3px">
+              <table style="border:1px solid #ccc">
+                <thead><tr><th>Показатель</th><th style="width:55px">План</th><th style="width:55px">Факт</th><th class="no-print" style="width:20px"></th></tr></thead>
+                <tbody>${effRows || '<tr><td colspan="4" style="text-align:center;color:#94a3b8">Нет</td></tr>'}</tbody>
+              </table>
+              <button class="ghost no-print" data-a3-add-eff style="font-size:10px;margin-top:4px">+</button>
+            </td></tr>
+            <tr><td class="section-title">${title('t7')}</td></tr>
+            <tr><td>${f('results','textarea','style="min-height:60px"')}</td></tr>
+            <tr><td class="section-title">${title('t8')}</td></tr>
+            <tr><td style="padding:3px">
+              <table style="border:1px solid #ccc">
+                <thead><tr><th style="width:18px">№</th><th>Мероприятие</th><th style="width:65px">Срок</th><th style="width:80px">Ответственный</th><th style="width:75px">Статус</th><th class="no-print" style="width:20px"></th></tr></thead>
+                <tbody>${nextRows || '<tr><td colspan="6" style="text-align:center;color:#94a3b8">Нет</td></tr>'}</tbody>
+              </table>
+              <button class="ghost no-print" data-a3-add-next style="font-size:10px;margin-top:4px">+</button>
+            </td></tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+    <table style="margin-top:8px"><tr><td style="text-align:right;font-weight:bold;width:140px">Дата закрытия:</td><td>${f('closeDate','date')}</td></tr></table>
+  `;
+
+  container.oninput = (e)=>{
+    const t = e.target;
+    if(t.dataset.a3) a[t.dataset.a3] = t.value, save();
+    else if(t.dataset.a3Title) a.titles[t.dataset.a3Title] = t.value, save();
+    else if(t.dataset.a3M !== undefined && t.dataset.a3M !== ''){
+      a.measures[+t.dataset.a3M][t.dataset.f] = t.value; save();
+    } else if(t.dataset.a3Eff !== undefined && t.dataset.a3Eff !== ''){
+      a.effRows[+t.dataset.a3Eff][t.dataset.f] = t.value; save();
+    } else if(t.dataset.a3N !== undefined && t.dataset.a3N !== ''){
+      a.nextSteps[+t.dataset.a3N][t.dataset.f] = t.value; save();
+    }
+  };
+  container.onchange = (e)=>{
+    const t = e.target;
+    if(t.dataset.a3M !== undefined && t.dataset.a3M !== ''){
+      a.measures[+t.dataset.a3M][t.dataset.f] = t.value; save();
+    } else if(t.dataset.a3N !== undefined && t.dataset.a3N !== ''){
+      a.nextSteps[+t.dataset.a3N][t.dataset.f] = t.value; save();
+    }
+  };
+  container.onclick = (e)=>{
+    const t = e.target;
+    if(t.hasAttribute('data-a3-add-meas')){
+      a.measures.push({id:uid(), what:'', due:'', owner:'', status:'План'}); save(); renderA3(); return;
+    }
+    if(t.hasAttribute('data-a3-add-eff')){
+      a.effRows.push({id:uid(), name:'', plan:'', fact:''}); save(); renderA3(); return;
+    }
+    if(t.hasAttribute('data-a3-add-next')){
+      a.nextSteps.push({id:uid(), what:'', due:'', owner:'', status:'План'}); save(); renderA3(); return;
+    }
+    if(t.dataset.a3MDel !== undefined && t.dataset.a3MDel !== ''){
+      a.measures.splice(+t.dataset.a3MDel,1); save(); renderA3(); return;
+    }
+    if(t.dataset.a3EffDel !== undefined && t.dataset.a3EffDel !== ''){
+      a.effRows.splice(+t.dataset.a3EffDel,1); save(); renderA3(); return;
+    }
+    if(t.dataset.a3NDel !== undefined && t.dataset.a3NDel !== ''){
+      a.nextSteps.splice(+t.dataset.a3NDel,1); save(); renderA3(); return;
+    }
+  };
+}
+
+/* ============ Журнал ============ */
+function renderLog(){
+  const box = $('#logList'); if(!box) return;
+  const r = getR(); if(!r) return;
+  if(!r.log.length){ box.innerHTML = '<p style="color:#94a3b8;font-style:italic">Записей нет</p>'; return; }
+  box.innerHTML = `<table class="form-tbl"><thead><tr><th style="width:140px">Время</th><th style="width:140px">Действие</th><th>Детали</th></tr></thead><tbody>
+    ${r.log.slice(0,100).map(x=>`<tr><td>${fmtTime(x.ts)}</td><td>${esc(x.action)}</td><td>${esc(x.detail)}</td></tr>`).join('')}
+  </tbody></table>`;
+}
+const logSearch = $('#logSearch');
+if(logSearch) logSearch.addEventListener('input', ()=>{
+  const q = logSearch.value.toLowerCase();
+  const r = getR();
+  $('#logList').innerHTML = `<table class="form-tbl"><thead><tr><th style="width:140px">Время</th><th style="width:140px">Действие</th><th>Детали</th></tr></thead><tbody>
+    ${r.log.filter(x=>(x.action+x.detail).toLowerCase().includes(q)).slice(0,100).map(x=>`<tr><td>${fmtTime(x.ts)}</td><td>${esc(x.action)}</td><td>${esc(x.detail)}</td></tr>`).join('')}
+  </tbody></table>`;
+});
+
+/* ============ Переключение отчётов ============ */
+const reportSelect = $('#reportSelect');
+if(reportSelect) reportSelect.addEventListener('change', e=>{ app.activeId = e.target.value; save(); renderAll(); });
+const newReportBtn = $('#newReportBtn');
+if(newReportBtn) newReportBtn.addEventListener('click', ()=>{
+  const id = uid(); app.reports[id] = emptyReport(); app.activeId = id;
+  save(); renderReportList(); renderAll();
+});
+const delReportBtn = $('#delReportBtn');
+if(delReportBtn) delReportBtn.addEventListener('click', ()=>{
+  if(!confirm('Удалить текущий отчёт?')) return;
+  delete app.reports[app.activeId];
+  const keys = Object.keys(app.reports);
+  if(!keys.length){ const id = uid(); app.reports[id] = emptyReport(); app.activeId = id; }
+  else app.activeId = keys[0];
+  save(); renderReportList(); renderAll();
+});
+
+/* ============ Переименование ============ */
+const renameBtn = $('#renameBtn');
+if(renameBtn) renameBtn.addEventListener('click', ()=>{
+  $('#renameInput').value = getR().a3.projectName || '';
+  $('#renameModal').classList.add('active');
+  setTimeout(()=>$('#renameInput')?.focus(), 50);
+});
+const renameSaveBtn = $('#renameSaveBtn');
+if(renameSaveBtn) renameSaveBtn.addEventListener('click', ()=>{
+  const v = $('#renameInput').value.trim();
+  getR().a3.projectName = v;
+  getR().meta.title = v;
+  save(); renderReportList(); renderA3();
+  $('#renameModal').classList.remove('active');
+});
+
+/* ============ Объединение ============ */
+const mergeBtn = $('#mergeBtn');
+if(mergeBtn) mergeBtn.addEventListener('click', ()=>{
+  const box = $('#mergeCheckboxes');
+  const keys = Object.keys(app.reports);
+  box.innerHTML = `<label class="cb-sel-all"><input type="checkbox" id="cbMergeAll"><span><b>Выбрать все</b></span></label>` +
+    keys.map(id=>`<label><input type="checkbox" value="${id}"><span>${esc(reportName(app.reports[id]))}</span></label>`).join('');
+  $('#mergeModal').classList.add('active');
+});
+const mergeDoBtn = $('#mergeDoBtn');
+if(mergeDoBtn) mergeDoBtn.addEventListener('click', ()=>{
+  const ids = $$('#mergeCheckboxes input:checked').map(c=>c.value).filter(id=>id!=='on');
+  if(ids.length<2){ alert('Выберите 2+ отчёта'); return; }
+  if(!confirm(`Объединить ${ids.length} отчётов?`)) return;
+  const base = JSON.parse(JSON.stringify(app.reports[ids[0]]));
+  const seenMap = new Map(base.ideas.map(i=>[i.text.toLowerCase(), i]));
+  for(let i=1; i<ids.length; i++){
+    const r = app.reports[ids[i]];
+    r.ideas.forEach(idea=>{
+      const key = idea.text.toLowerCase();
+      if(!seenMap.has(key)){ base.ideas.push(idea); seenMap.set(key, idea); }
+      else {
+        const ex = seenMap.get(key);
+        ex.score = Math.max(ex.score||0, idea.score||0);
+        ex.priority = ex.priority || idea.priority;
+      }
+    });
+    base.plan = base.plan.concat(r.plan);
+    base.a3.measures = base.a3.measures.concat(r.a3.measures);
+  }
+  const newId = uid(); app.reports[newId] = base; app.activeId = newId;
+  if(confirm('Удалить исходные?')) ids.forEach(id=>delete app.reports[id]);
+  save(); renderReportList(); renderAll();
+  $('#mergeModal').classList.remove('active');
+});
+
+/* ============ Настройки вкладок ============ */
+const settingsBtn = $('#settingsBtn');
+if(settingsBtn) settingsBtn.addEventListener('click', ()=>{
+  const r = getR();
+  $('#tabCheckboxes').innerHTML = TABS_LIST.map(t=>`
+    <label class="cb-row">
+      <input type="checkbox" value="${t.id}" ${r.enabledTabs.includes(t.id)?'checked':''}>
+      <span><b>${t.name}</b></span>
+    </label>
+  `).join('');
+  $('#settingsModal').classList.add('active');
+});
+const settingsSaveBtn = $('#settingsSaveBtn');
+if(settingsSaveBtn) settingsSaveBtn.addEventListener('click', ()=>{
+  const checked = $$('#tabCheckboxes input:checked').map(c=>c.value);
+  if(!checked.length){ alert('Оставьте хотя бы одну вкладку'); return; }
+  getR().enabledTabs = checked;
+  save(); renderTabs();
+  $('#settingsModal').classList.remove('active');
+});
+
+/* ============ Экспорт JSON / Импорт JSON ============ */
+const exportBtn = $('#exportBtn');
+if(exportBtn) exportBtn.addEventListener('click', ()=>{
+  $('#exportModal').classList.add('active');
+  const box = $('#exportCheckboxes');
+  box.innerHTML = Object.keys(app.reports).map(id=>`<label><input type="checkbox" value="${id}" ${id===app.activeId?'checked':''}><span>${esc(reportName(app.reports[id]))}</span></label>`).join('');
+});
+$$('input[name="exportScope"]').forEach(rd=>{
+  rd.addEventListener('change', ()=>{
+    $('#exportCheckboxes').style.display = (rd.value==='selected' && rd.checked) ? 'block' : 'none';
+  });
+});
+const downloadBtn = $('#downloadBtn');
+if(downloadBtn) downloadBtn.addEventListener('click', ()=>{
+  const scope = $('input[name="exportScope"]:checked').value;
+  let data, name;
+  if(scope==='current'){ data = getR(); name = 'report.json'; }
+  else if(scope==='selected'){
+    const ids = $$('#exportCheckboxes input:checked').map(c=>c.value);
+    if(!ids.length){ alert('Выберите отчёты'); return; }
+    data = { reports: Object.fromEntries(ids.map(id=>[id, app.reports[id]])) };
+    name = 'selected.json';
+  } else {
+    data = { activeReportId: app.activeId, reports: app.reports };
+    name = 'all.json';
+  }
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = name; a.click();
+  $('#exportModal').classList.remove('active');
+});
+const importBtn = $('#importBtn');
+if(importBtn) importBtn.addEventListener('click', ()=>$('#fileInput').click());
+const fileInput = $('#fileInput');
+if(fileInput) fileInput.addEventListener('change', e=>{
+  const f = e.target.files[0]; if(!f) return;
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    try {
+      const data = JSON.parse(reader.result);
+      if(data.reports){
+        Object.entries(data.reports).forEach(([id,r])=>{ app.reports[id] = normalizeReport(r); });
+        if(data.activeReportId) app.activeId = data.activeReportId;
+      } else {
+        const id = uid(); app.reports[id] = normalizeReport(data); app.activeId = id;
+      }
+      save(); renderReportList(); renderAll();
+    } catch(err){ alert('Ошибка: '+err.message); }
+  };
+  reader.readAsText(f);
+  e.target.value = '';
+});
+
+/* ============ ЭКСПОРТ В XLSX (со стилями, через ExcelJS) ============ */
+async function exportToXLSX(){
+  const r = getR(); if(!r) return;
+  if(typeof ExcelJS === 'undefined'){
+    alert('Библиотека ExcelJS не загружена. Проверьте интернет или обновите страницу.');
+    return;
+  }
+  const a = r.a3;
+  const wb = new ExcelJS.Workbook();
+  wb.creator = 'Разбор проблем';
+  wb.created = new Date();
+
+  const fileName = (reportName(r) || 'report').replace(/[\\/:*?"<>|]/g, '_').slice(0, 80);
+
+  const wsA3 = wb.addWorksheet('Отчёт А3', {views:[{showGridLines:false}]});
+  wsA3.columns = [
+    {width: 4}, {width: 14}, {width: 50}, {width: 14}, {width: 18}, {width: 18}
+  ];
+
+  const BORDER = {
+    top: {style:'thin', color:{argb:'FF000000'}},
+    left: {style:'thin', color:{argb:'FF000000'}},
+    bottom: {style:'thin', color:{argb:'FF000000'}},
+    right: {style:'thin', color:{argb:'FF000000'}}
+  };
+  const sectionStyle = {
+    font: {bold:true, size:11, color:{argb:'FF000000'}},
+    fill: {type:'pattern', pattern:'solid', fgColor:{argb:'FFD9D9D9'}},
+    alignment: {horizontal:'center', vertical:'middle', wrapText:true},
+    border: BORDER
+  };
+  const labelStyle = {
+    font: {bold:true, size:11},
+    fill: {type:'pattern', pattern:'solid', fgColor:{argb:'FFF0F0F0'}},
+    alignment: {vertical:'middle', wrapText:true},
+    border: BORDER
+  };
+  const cellStyle = {
+    font: {size:11},
+    alignment: {vertical:'top', wrapText:true},
+    border: BORDER
+  };
+
+  let rowIdx = 1;
+
+  wsA3.mergeCells(`B${rowIdx}:F${rowIdx}`);
+  const titleCell = wsA3.getCell(`B${rowIdx}`);
+  titleCell.value = 'ОТЧЁТ А3';
+  titleCell.font = {bold:true, size:16};
+  titleCell.alignment = {horizontal:'center', vertical:'middle'};
+  wsA3.getRow(rowIdx).height = 24;
+  rowIdx++;
+
+  wsA3.mergeCells(`B${rowIdx}:F${rowIdx}`);
+  const subCell = wsA3.getCell(`B${rowIdx}`);
+  subCell.value = a.projectName || reportName(r);
+  subCell.font = {bold:true, size:13};
+  subCell.alignment = {horizontal:'center', vertical:'middle', wrapText:true};
+  wsA3.getRow(rowIdx).height = 22;
+  rowIdx += 2;
+
+  const addSection = (title) => {
+    wsA3.mergeCells(`B${rowIdx}:F${rowIdx}`);
+    const cell = wsA3.getCell(`B${rowIdx}`);
+    cell.value = title.toUpperCase();
+    cell.font = sectionStyle.font;
+    cell.fill = sectionStyle.fill;
+    cell.alignment = sectionStyle.alignment;
+    for(let c=2; c<=6; c++) wsA3.getCell(rowIdx, c).border = BORDER;
+    rowIdx++;
+  };
+
+  const addField = (label, value) => {
+    wsA3.getCell(rowIdx, 2).value = label;
+    wsA3.getCell(rowIdx, 2).font = labelStyle.font;
+    wsA3.getCell(rowIdx, 2).fill = labelStyle.fill;
+    wsA3.getCell(rowIdx, 2).alignment = labelStyle.alignment;
+    wsA3.getCell(rowIdx, 2).border = BORDER;
+
+    wsA3.mergeCells(`C${rowIdx}:F${rowIdx}`);
+    const val = wsA3.getCell(`C${rowIdx}`);
+    val.value = value || '—';
+    val.font = cellStyle.font;
+    val.alignment = cellStyle.alignment;
+    for(let c=3; c<=6; c++) wsA3.getCell(rowIdx, c).border = BORDER;
+    rowIdx++;
+  };
+
+  const addTextBlock = (text, height=50) => {
+    wsA3.mergeCells(`B${rowIdx}:F${rowIdx}`);
+    const cell = wsA3.getCell(`B${rowIdx}`);
+    cell.value = text || '';
+    cell.font = cellStyle.font;
+    cell.alignment = cellStyle.alignment;
+    for(let c=2; c<=6; c++) wsA3.getCell(rowIdx, c).border = BORDER;
+    wsA3.getRow(rowIdx).height = height;
+    rowIdx++;
+  };
+
+  addField('Название проекта', a.projectName || '');
+  addField('ПП, отдел, служба', a.department || '');
+  addField('Дата открытия', a.openDate || '');
+  addField('Дата закрытия', a.closeDate || '');
+  addField('Руководитель', a.manager || '');
+  addField('Команда проекта', a.team || '');
+  rowIdx++;
+
+  addSection('1. Проблема, задача');
+  addTextBlock(a.problem, 50);
+  rowIdx++;
+
+  addSection('2. Текущее состояние');
+  addTextBlock(a.currentState, 60);
+  addField('Дефектность, %', a.defectRate || '');
+  addField('Претензии, шт.', a.claimsCount || '');
+  addField('Потери, мин.', a.timeLoss || '');
+  addField('Недополученная прибыль, руб.', a.lostProfit || '');
+  rowIdx++;
+
+  addSection('3. Постановка целей');
+  addField('Снижение брака, %', a.goalDefect || '');
+  addField('Сокращение рекламаций', a.goalClaims || '');
+  addField('Устранение потерь, %', a.goalLoss || '');
+  addField('Прибыль, руб.', a.goalProfit || '');
+  rowIdx++;
+
+  addSection('4. Анализ проблемы');
+  addTextBlock(a.analysisMethods, 50);
+  addField('Корневая причина', a.rootCause || (r.why1.chain.filter(x=>x.trim()).slice(-1)[0] || ''));
+  rowIdx++;
+
+  addSection('5. План мероприятий');
+  const mHeaders = ['№', 'Мероприятие', 'Срок', 'Ответственный', 'Статус'];
+  const mCols = [2, 3, 4, 5, 6];
+  mHeaders.forEach((h, i)=>{
+    const cell = wsA3.getCell(rowIdx, mCols[i]);
+    cell.value = h;
+    cell.font = {bold:true, size:11};
+    cell.fill = {type:'pattern', pattern:'solid', fgColor:{argb:'FFF0F0F0'}};
+    cell.alignment = {horizontal:'center', vertical:'middle', wrapText:true};
+    cell.border = BORDER;
+  });
+  rowIdx++;
+  (a.measures || []).forEach((m, idx)=>{
+    wsA3.getCell(rowIdx, 2).value = idx+1;
+    wsA3.getCell(rowIdx, 3).value = m.what || '';
+    wsA3.getCell(rowIdx, 4).value = m.due || '';
+    wsA3.getCell(rowIdx, 5).value = m.owner || '';
+    wsA3.getCell(rowIdx, 6).value = m.status || '';
+    for(let c=2; c<=6; c++){
+      const cell = wsA3.getCell(rowIdx, c);
+      cell.font = {size:11};
+      cell.alignment = {vertical:'top', wrapText:true};
+      cell.border = BORDER;
+    }
+    rowIdx++;
+  });
+  if(!(a.measures||[]).length){
+    wsA3.mergeCells(`B${rowIdx}:F${rowIdx}`);
+    const cell = wsA3.getCell(`B${rowIdx}`);
+    cell.value = 'Нет мероприятий';
+    cell.font = {italic:true, size:11, color:{argb:'FF94A3B8'}};
+    cell.alignment = {horizontal:'center'};
+    for(let c=2; c<=6; c++) wsA3.getCell(rowIdx, c).border = BORDER;
+    rowIdx++;
+  }
+  rowIdx++;
+
+  addSection('6. Оценка эффективности');
+  ['Показатель','План','Факт'].forEach((h, i)=>{
+    const cell = wsA3.getCell(rowIdx, i+2);
+    cell.value = h;
+    cell.font = {bold:true, size:11};
+    cell.fill = {type:'pattern', pattern:'solid', fgColor:{argb:'FFF0F0F0'}};
+    cell.alignment = {horizontal:'center', vertical:'middle'};
+    cell.border = BORDER;
+  });
+  rowIdx++;
+  (a.effRows || []).forEach(e=>{
+    wsA3.getCell(rowIdx, 2).value = e.name || '';
+    wsA3.getCell(rowIdx, 3).value = e.plan || '';
+    wsA3.getCell(rowIdx, 4).value = e.fact || '';
+    for(let c=2; c<=4; c++){
+      const cell = wsA3.getCell(rowIdx, c);
+      cell.font = {size:11};
+      cell.alignment = {vertical:'top', wrapText:true};
+      cell.border = BORDER;
+    }
+    rowIdx++;
+  });
+  rowIdx++;
+
+  addSection('7. Результаты проекта');
+  addTextBlock(a.results, 50);
+  rowIdx++;
+
+  addSection('8. Дальнейшие действия');
+  const nHeaders = ['№', 'Мероприятие', 'Срок', 'Ответственный', 'Статус'];
+  nHeaders.forEach((h, i)=>{
+    const cell = wsA3.getCell(rowIdx, i+2);
+    cell.value = h;
+    cell.font = {bold:true, size:11};
+    cell.fill = {type:'pattern', pattern:'solid', fgColor:{argb:'FFF0F0F0'}};
+    cell.alignment = {horizontal:'center', vertical:'middle'};
+    cell.border = BORDER;
+  });
+  rowIdx++;
+  (a.nextSteps || []).forEach((m, idx)=>{
+    wsA3.getCell(rowIdx, 2).value = idx+1;
+    wsA3.getCell(rowIdx, 3).value = m.what || '';
+    wsA3.getCell(rowIdx, 4).value = m.due || '';
+    wsA3.getCell(rowIdx, 5).value = m.owner || '';
+    wsA3.getCell(rowIdx, 6).value = m.status || '';
+    for(let c=2; c<=6; c++){
+      const cell = wsA3.getCell(rowIdx, c);
+      cell.font = {size:11};
+      cell.alignment = {vertical:'top', wrapText:true};
+      cell.border = BORDER;
+    }
+    rowIdx++;
+  });
+  if(!(a.nextSteps||[]).length){
+    wsA3.mergeCells(`B${rowIdx}:F${rowIdx}`);
+    const cell = wsA3.getCell(`B${rowIdx}`);
+    cell.value = 'Нет действий';
+    cell.font = {italic:true, size:11, color:{argb:'FF94A3B8'}};
+    cell.alignment = {horizontal:'center'};
+    for(let c=2; c<=6; c++) wsA3.getCell(rowIdx, c).border = BORDER;
+    rowIdx++;
+  }
+
+  const wsIdeas = wb.addWorksheet('Гипотезы 6М');
+  wsIdeas.columns = [
+    {width: 6}, {width: 22}, {width: 50}, {width: 8}, {width: 12}, {width: 12}
+  ];
+  const ideaHeaders = ['№', 'Категория', 'Гипотеза', 'Балл', 'Приоритет', 'Корневая'];
+  ideaHeaders.forEach((h, i)=>{
+    const cell = wsIdeas.getCell(1, i+1);
+    cell.value = h;
+    cell.font = {bold:true, size:11};
+    cell.fill = {type:'pattern', pattern:'solid', fgColor:{argb:'FFF0F0F0'}};
+    cell.alignment = {horizontal:'center', vertical:'middle'};
+    cell.border = BORDER;
+  });
+  r.ideas.forEach((i, idx)=>{
+    const cat = CATS.find(c=>c.id===i.cat);
+    const row = wsIdeas.getRow(idx+2);
+    row.getCell(1).value = idx+1;
+    row.getCell(2).value = cat ? cat.name : '';
+    row.getCell(3).value = i.text || '';
+    row.getCell(4).value = i.score || '';
+    row.getCell(5).value = i.priority ? 'Да' : '';
+    row.getCell(6).value = i.root ? 'Да' : '';
+    for(let c=1; c<=6; c++){
+      const cell = row.getCell(c);
+      cell.font = {size:11};
+      cell.alignment = {vertical:'top', wrapText:true};
+      cell.border = BORDER;
+    }
+    if(i.score === 3) row.getCell(4).font = {size:11, bold:true, color:{argb:'FFDC2626'}};
+    else if(i.score === 2) row.getCell(4).font = {size:11, bold:true, color:{argb:'FFF59E0B'}};
+    else if(i.score === 1) row.getCell(4).font = {size:11, bold:true, color:{argb:'FF64748B'}};
+    if(i.priority){
+      for(let c=1; c<=6; c++){
+        row.getCell(c).fill = {type:'pattern', pattern:'solid', fgColor:{argb:'FFFFFBE6'}};
+      }
+    }
+  });
+
+  const wsRating = wb.addWorksheet('Рейтинг гипотез');
+  wsRating.columns = [{width: 8}, {width: 22}, {width: 50}, {width: 8}, {width: 12}];
+  const ratingHeaders = ['Ранг', 'Категория', 'Гипотеза', 'Балл', 'Приоритет'];
+  ratingHeaders.forEach((h, i)=>{
+    const cell = wsRating.getCell(1, i+1);
+    cell.value = h;
+    cell.font = {bold:true, size:11};
+    cell.fill = {type:'pattern', pattern:'solid', fgColor:{argb:'FFF0F0F0'}};
+    cell.alignment = {horizontal:'center', vertical:'middle'};
+    cell.border = BORDER;
+  });
+
+  const ranked = r.ideas.slice().sort((a,b)=>{
+    if((b.score||0) !== (a.score||0)) return (b.score||0) - (a.score||0);
+    if(a.priority !== b.priority) return (b.priority?1:0) - (a.priority?1:0);
+    return a.text.localeCompare(b.text);
+  });
+  let lastScore = null, lastRank = 0;
+  ranked.forEach((i, idx)=>{
+    if(i.score !== lastScore){ lastRank = idx+1; lastScore = i.score; }
+    const cat = CATS.find(c=>c.id===i.cat);
+    const row = wsRating.getRow(idx+2);
+    row.getCell(1).value = lastRank;
+    row.getCell(2).value = cat ? cat.name : '';
+    row.getCell(3).value = i.text || '';
+    row.getCell(4).value = i.score || '';
+    row.getCell(5).value = i.priority ? 'Да' : '';
+    for(let c=1; c<=5; c++){
+      const cell = row.getCell(c);
+      cell.font = {size:11};
+      cell.alignment = {vertical:'top', wrapText:true};
+      cell.border = BORDER;
+    }
+    if(i.score === 3) row.getCell(4).font = {size:11, bold:true, color:{argb:'FFDC2626'}};
+    else if(i.score === 2) row.getCell(4).font = {size:11, bold:true, color:{argb:'FFF59E0B'}};
+    else if(i.score === 1) row.getCell(4).font = {size:11, bold:true, color:{argb:'FF64748B'}};
+    if(i.priority){
+      for(let c=1; c<=5; c++){
+        row.getCell(c).fill = {type:'pattern', pattern:'solid', fgColor:{argb:'FFFFFBE6'}};
+      }
+    }
+  });
+
+  const wsPlan = wb.addWorksheet('План мероприятий');
+  wsPlan.columns = [
+    {width: 6}, {width: 50}, {width: 20}, {width: 14}, {width: 14}, {width: 10}, {width: 30}
+  ];
+  const planHeaders = ['№', 'Мероприятие', 'Исполнитель', 'Начало', 'Завершение', 'Готово %', 'Примечания'];
+  planHeaders.forEach((h, i)=>{
+    const cell = wsPlan.getCell(1, i+1);
+    cell.value = h;
+    cell.font = {bold:true, size:11};
+    cell.fill = {type:'pattern', pattern:'solid', fgColor:{argb:'FFF0F0F0'}};
+    cell.alignment = {horizontal:'center', vertical:'middle'};
+    cell.border = BORDER;
+  });
+  (r.plan || []).forEach((m, idx)=>{
+    const row = wsPlan.getRow(idx+2);
+    row.getCell(1).value = idx+1;
+    row.getCell(2).value = m.what || '';
+    row.getCell(3).value = m.owner || '';
+    row.getCell(4).value = m.start || '';
+    row.getCell(5).value = m.end || '';
+    row.getCell(6).value = m.done || 0;
+    row.getCell(7).value = m.notes || '';
+    for(let c=1; c<=7; c++){
+      const cell = row.getCell(c);
+      cell.font = {size:11};
+      cell.alignment = {vertical:'top', wrapText:true};
+      cell.border = BORDER;
+    }
+  });
+
+  const wsWhy = wb.addWorksheet('5 почему');
+  wsWhy.columns = [{width:6}, {width:60}, {width:60}];
+  ['№','Вопрос','Ответ'].forEach((h, i)=>{
+    const cell = wsWhy.getCell(1, i+1);
+    cell.value = h;
+    cell.font = {bold:true, size:11};
+    cell.fill = {type:'pattern', pattern:'solid', fgColor:{argb:'FFF0F0F0'}};
+    cell.alignment = {horizontal:'center', vertical:'middle'};
+    cell.border = BORDER;
+  });
+  let prev = r.problem || '';
+  r.why1.chain.forEach((val, idx)=>{
+    const q = idx===0 ? 'Почему это происходит?' : `Почему «${prev}»?`;
+    const row = wsWhy.getRow(idx+2);
+    row.getCell(1).value = idx+1;
+    row.getCell(2).value = q;
+    row.getCell(3).value = val || '';
+    for(let c=1; c<=3; c++){
+      const cell = row.getCell(c);
+      cell.font = {size:11};
+      cell.alignment = {vertical:'top', wrapText:true};
+      cell.border = BORDER;
+    }
+    if(val) prev = val;
+  });
+
+  const wsWas = wb.addWorksheet('Было-Стало');
+  wsWas.columns = [{width:40}, {width:4}, {width:40}];
+  ['БЫЛО','','СТАЛО'].forEach((h, i)=>{
+    const cell = wsWas.getCell(1, i+1);
+    cell.value = h;
+    cell.font = {bold:true, size:12};
+    cell.fill = {type:'pattern', pattern:'solid', fgColor:{argb: i===0 ? 'FFFEE2E2' : (i===2 ? 'FFDCFCE7' : 'FFFFFFFF')}};
+    cell.alignment = {horizontal:'center', vertical:'middle'};
+    cell.border = BORDER;
+  });
+  wsWas.getCell(2,1).value = 'Дата: ' + (r.wasBefore.date || '');
+  wsWas.getCell(2,3).value = 'Дата: ' + (r.wasAfter.date || '');
+  wsWas.getCell(2,1).border = BORDER;
+  wsWas.getCell(2,3).border = BORDER;
+  wsWas.getCell(3,1).value = r.wasBefore.text || '';
+  wsWas.getCell(3,3).value = r.wasAfter.text || '';
+  wsWas.getCell(3,1).alignment = {vertical:'top', wrapText:true};
+  wsWas.getCell(3,3).alignment = {vertical:'top', wrapText:true};
+  wsWas.getCell(3,1).border = BORDER;
+  wsWas.getCell(3,3).border = BORDER;
+  wsWas.getRow(3).height = 100;
+
+  const buffer = await wb.xlsx.writeBuffer();
+  const blob = new Blob([buffer], {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+  const finalFileName = fileName + '_' + today() + '.xlsx';
+
+  const file = new File([blob], finalFileName, {type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+  const canShare = navigator.canShare && navigator.canShare({ files: [file] });
+
+  if(canShare && /Android|iPhone|iPad|Mobile/i.test(navigator.userAgent)){
+    try {
+      await navigator.share({
+        files: [file],
+        title: 'Отчёт А3',
+        text: 'Отчёт в формате Excel'
+      });
+      return;
+    } catch(err){
+      if(err.name === 'AbortError') return;
+      console.warn('Share failed, fallback to download', err);
+    }
+  }
+
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = finalFileName;
+  link.style.display = 'none';
+  document.body.appendChild(link);
+  try {
+    link.click();
+  } catch(e) {
+    window.open(url, '_blank');
+  }
+  setTimeout(()=>{
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  }, 2000);
+
+  alert('Файл ' + finalFileName + ' сформирован.\n\nЕсли скачивание не началось — найдите файл в «Загрузках» или разрешите скачивание в браузере.');
+}
+
+const xlsxBtn = $('#xlsxBtn');
+if(xlsxBtn) xlsxBtn.addEventListener('click', async ()=>{
+  const originalText = xlsxBtn.textContent;
+  xlsxBtn.textContent = '⏳ Готовим XLSX…';
+  xlsxBtn.disabled = true;
+  try {
+    await new Promise(r=>setTimeout(r, 100));
+    await exportToXLSX();
+  } catch(err){
+    console.error(err);
+    alert('Не удалось сохранить XLSX: ' + (err.message || err));
+  } finally {
+    xlsxBtn.textContent = originalText;
+    xlsxBtn.disabled = false;
+  }
+});
+
+/* ============ ИМПОРТ ИЗ XLSX ============ */
+const XLSX_CAT_MAP = {
+  'переработка': 'method',
+  'подготовка сырья / наполнитель': 'material',
+  'подготовка сырья': 'material',
+  'наполнитель': 'material',
+  'повторное использование': 'material',
+  'оборудование': 'machine',
+  'оборудование / логистика': 'machine',
+  'логистика': 'method',
+  'утилизация': 'env',
+  'предотвращение образования': 'method',
+  'предотвращение отходов / сбыт': 'method',
+  'технология': 'method',
+  'новые продукты / переработка': 'method',
+  'поиск применений': 'method'
+};
+
+function mapCategory(groupName){
+  if(!groupName) return 'method';
+  const key = String(groupName).trim().toLowerCase();
+  return XLSX_CAT_MAP[key] || 'method';
+}
+
+function convertScoreTo3(sum){
+  const s = Number(sum);
+  if(isNaN(s)) return 0;
+  if(s >= 15) return 3;
+  if(s >= 8) return 2;
+  if(s > 0) return 1;
+  return 0;
+}
+
+function parseSheetRows(ws){
+  const rows = XLSX.utils.sheet_to_json(ws, {header:1, defval:''});
+  let headerIdx = 0, bestCount = 0;
+  for(let i=0; i<Math.min(5, rows.length); i++){
+    const cnt = rows[i].filter(c=>String(c).trim()!=='').length;
+    if(cnt > bestCount){ bestCount = cnt; headerIdx = i; }
+  }
+  const headers = rows[headerIdx].map(h=>String(h).trim().toLowerCase());
+  const data = [];
+  for(let i=headerIdx+1; i<rows.length; i++){
+    const r = rows[i];
+    if(!r || r.every(c=>String(c).trim()==='')) continue;
+    data.push(r);
+  }
+  return { headers, data };
+}
+
+function findCol(headers, names){
+  for(const name of names){
+    const n = name.toLowerCase();
+    for(let i=0; i<headers.length; i++){
+      if(headers[i].includes(n)) return i;
+    }
+  }
+  return -1;
+}
+
+function parseProtocolSheet(ws){
+  const {headers, data} = parseSheetRows(ws);
+  const colIdea = findCol(headers, ['идея']);
+  const colGroup = findCol(headers, ['группа']);
+  const colEffect = findCol(headers, ['эффект (1–5)', 'эффект']);
+  const colFeas = findCol(headers, ['реализуемость']);
+  const colSpeed = findCol(headers, ['скорость']);
+  const colEcon = findCol(headers, ['экономичность']);
+  const colComment = findCol(headers, ['комментарий']);
+  const colRank = findCol(headers, ['ранг']);
+  const colStatus = findCol(headers, ['статус проверки']);
+
+  return data.map(r=>{
+    const idea = String(r[colIdea]||'').trim();
+    if(!idea) return null;
+    const sum = (Number(r[colEffect])||0) + (Number(r[colFeas])||0) +
+                (Number(r[colSpeed])||0) + (Number(r[colEcon])||0);
+    return {
+      text: idea,
+      group: String(r[colGroup]||'').trim(),
+      comment: String(r[colComment]||'').trim(),
+      sum,
+      score: convertScoreTo3(sum),
+      rank: Number(r[colRank]) || null,
+      status: String(r[colStatus]||'').trim()
+    };
+  }).filter(Boolean);
+}
+
+function parsePlanSheet(ws){
+  const {headers, data} = parseSheetRows(ws);
+  const colAction = findCol(headers, ['действие', 'мероприятие']);
+  const colOwner = findCol(headers, ['ответственный']);
+  const colDue = findCol(headers, ['срок']);
+  const colStatus = findCol(headers, ['статус']);
+  const colResult = findCol(headers, ['результат', 'критерий']);
+
+  return data.map(r=>{
+    const what = String(r[colAction]||'').trim();
+    if(!what) return null;
+    const statusRaw = String(r[colStatus]||'').trim();
+    let status = 'План', done = 0;
+    if(/в работе/i.test(statusRaw)){ status = 'В работе'; done = 50; }
+    else if(/сделано|готово|завершено|выполнено/i.test(statusRaw)){ status = 'Сделано'; done = 100; }
+    return {
+      what,
+      owner: String(r[colOwner]||'').trim(),
+      due: String(r[colDue]||'').trim(),
+      status,
+      done,
+      notes: String(r[colResult]||'').trim()
+    };
+  }).filter(Boolean);
+}
+
+function parsePPUSheet(ws){
+  const {headers, data} = parseSheetRows(ws);
+  const colName = findCol(headers, ['наименование']);
+  const colValue = findCol(headers, ['заполнение', 'предложение', 'значение']);
+  const out = {};
+  data.forEach(r=>{
+    const k = String(r[colName]||'').trim();
+    const v = String(r[colValue]||'').trim();
+    if(k) out[k.toLowerCase()] = v;
+  });
+  return out;
+}
+
+function parseTeamSheet(ws){
+  const {headers, data} = parseSheetRows(ws);
+  const colRole = findCol(headers, ['роль']);
+  const out = [];
+  data.forEach(r=>{
+    const role = String(r[colRole]||'').trim();
+    if(!role) return;
+    const clean = role.replace(/<br\s*\/?>/gi, ' / ').replace(/\s+/g,' ').trim();
+    out.push(clean);
+  });
+  return out;
+}
+
+function parsePanelSheet(ws){
+  const {headers, data} = parseSheetRows(ws);
+  const colName = findCol(headers, ['показатель']);
+  const colValue = findCol(headers, ['значение']);
+  const out = {};
+  data.forEach(r=>{
+    const k = String(r[colName]||'').trim();
+    const v = String(r[colValue]||'').trim();
+    if(k) out[k.toLowerCase()] = v;
+  });
+  return out;
+}
+
+function parseConclusionSheet(ws){
+  const rows = XLSX.utils.sheet_to_json(ws, {header:1, defval:''});
+  const parts = [];
+  rows.forEach(r=>{
+    const cells = r.map(c=>String(c).trim()).filter(Boolean);
+    if(!cells.length) return;
+    const joined = cells.join(' ');
+    if(/:\s*$/.test(joined)) return;
+    parts.push(joined);
+  });
+  return parts.join('\n\n');
+}
+
+function importFromXLSX(file){
+  if(typeof XLSX === 'undefined'){
+    alert('Библиотека XLSX не загружена. Проверьте интернет.');
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = (e)=>{
+    try {
+      const data = new Uint8Array(e.target.result);
+      const wb = XLSX.read(data, {type:'array'});
+
+      const findSheet = (names) => {
+        for(const name of names){
+          const found = wb.SheetNames.find(sn => sn.toLowerCase().includes(name.toLowerCase()));
+          if(found) return wb.Sheets[found];
+        }
+        return null;
+      };
+
+      const wsProtocol = findSheet(['протокол идей', 'протокол']);
+      const wsPlan = findSheet(['план 180', 'план мероприятий', 'план']);
+      const wsPPU = findSheet(['ппу']);
+      const wsTeam = findSheet(['команда']);
+      const wsPanel = findSheet(['панель']);
+      const wsConclusion = findSheet(['вывод']);
+
+      if(!wsProtocol && !wsPlan && !wsPPU){
+        alert('Не найден ни один ожидаемый лист (Протокол идей, План 180 дней, ППУ). Проверьте файл.');
+        return;
+      }
+
+      const ideas = wsProtocol ? parseProtocolSheet(wsProtocol) : [];
+      const planRows = wsPlan ? parsePlanSheet(wsPlan) : [];
+      const ppu = wsPPU ? parsePPUSheet(wsPPU) : {};
+      const team = wsTeam ? parseTeamSheet(wsTeam) : [];
+      const panel = wsPanel ? parsePanelSheet(wsPanel) : {};
+      const conclusion = wsConclusion ? parseConclusionSheet(wsConclusion) : '';
+
+      const preview = `Найдено в файле:
+• Гипотез: ${ideas.length}
+• Мероприятий плана: ${planRows.length}
+• Полей ППУ: ${Object.keys(ppu).length}
+• Членов команды: ${team.length}
+• Показателей панели: ${Object.keys(panel).length}
+• Выводов: ${conclusion ? 'да' : 'нет'}
+
+Как применить?`;
+      const replace = confirm(preview + '\n\nОК — ЗАМЕНИТЬ данные текущего отчёта.\nОтмена — ДОБАВИТЬ к существующим.');
+
+      const r = getR();
+      const a = r.a3;
+
+      if(replace){
+        r.ideas = ideas.map(i=>({
+          id: uid(),
+          text: i.text,
+          cat: mapCategory(i.group),
+          root: false,
+          score: i.score,
+          priority: false
+        }));
+        r.plan = planRows.map(p=>({
+          id: uid(),
+          what: p.what,
+          owner: p.owner,
+          start: '',
+          end: '',
+          done: p.done,
+          notes: p.notes
+        }));
+      } else {
+        const existingTexts = new Set(r.ideas.map(i=>i.text.toLowerCase()));
+        ideas.forEach(i=>{
+          if(!existingTexts.has(i.text.toLowerCase())){
+            r.ideas.push({
+              id: uid(), text: i.text, cat: mapCategory(i.group),
+              root: false, score: i.score, priority: false
+            });
+            existingTexts.add(i.text.toLowerCase());
+          }
+        });
+        planRows.forEach(p=>{
+          r.plan.push({
+            id: uid(), what: p.what, owner: p.owner,
+            start: '', end: '', done: p.done, notes: p.notes
+          });
+        });
+      }
+
+      if(ppu){
+        if(ppu['наименование']) a.projectName = ppu['наименование'];
+        if(ppu['проблема']){
+          a.problem = ppu['проблема'];
+          r.problem = ppu['проблема'];
+        }
+        if(ppu['baseline']) a.currentState = ppu['baseline'];
+        if(ppu['предлагаемое улучшение']) a.analysisMethods = ppu['предлагаемое улучшение'];
+        if(ppu['ожидаемый эффект']) a.results = ppu['ожидаемый эффект'];
+        if(ppu['владелец процесса']) a.manager = ppu['владелец процесса'];
+        if(ppu['команда']) a.team = team.length ? team.join('; ') : ppu['команда'];
+        if(ppu['риски и меры']) a.analysisMethods = (a.analysisMethods ? a.analysisMethods + '\n\n' : '') + 'Риски и меры: ' + ppu['риски и меры'];
+        if(ppu['цель']) a.goalDefect = ppu['цель'];
+      }
+
+      if(panel){
+        if(panel['baseline, т/мес.']) a.defectRate = panel['baseline, т/мес.'];
+        if(panel['затраты/показатель в год, руб.']){
+          const cost = Number(panel['затраты/показатель в год, руб.']);
+          if(!isNaN(cost)) a.lostProfit = String(cost);
+        }
+        if(panel['размер команды'] && !a.team){
+          a.team = `Команда: ${panel['размер команды']} чел.`;
+        }
+      }
+
+      if(panel['baseline, т/мес.']){
+        r.wasBefore.text = 'Baseline: ' + panel['baseline, т/мес.'] + ' т/мес.';
+      }
+
+      if(conclusion){
+        r.a3.results = (r.a3.results ? r.a3.results + '\n\n' : '') + conclusion;
+      }
+
+      addLog('import.xlsx', `Импортировано из XLSX: гипотез — ${ideas.length}, плана — ${planRows.length}, режим: ${replace?'замена':'добавление'}`);
+
+      if(replace){
+        const sorted = r.ideas.slice().sort((x,y)=>(y.score||0)-(x.score||0));
+        sorted.slice(0, 7).forEach(i=>{ i.priority = true; });
+      }
+
+      save();
+      renderAll();
+      alert(`Готово!\n• Гипотез: ${ideas.length}\n• Мероприятий: ${planRows.length}\n• Поля А3 заполнены из ППУ, команда, панель, вывод.\n\nОткрываю вкладку «3. 6М» — проверьте баллы и категории.`);
+
+      const tab6m = document.querySelector('.tab[data-tab="6m"]');
+      if(tab6m) tab6m.click();
+
+    } catch(err){
+      console.error(err);
+      alert('Ошибка при чтении XLSX: ' + err.message);
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+const importXlsxBtn = $('#importXlsxBtn');
+const xlsxFileInput = $('#xlsxFileInput');
+if(importXlsxBtn && xlsxFileInput){
+  importXlsxBtn.addEventListener('click', ()=>xlsxFileInput.click());
+  xlsxFileInput.addEventListener('change', e=>{
+    const f = e.target.files[0];
+    if(!f) return;
+    importFromXLSX(f);
+    e.target.value = '';
+  });
+}
+
+/* ============ ПЕЧАТЬ ВИЗУАЛЬНОГО ОТЧЁТА ============ */
+function buildPrintView(){
+  const r = getR(); if(!r) return;
+  const a = r.a3;
+  const box = $('#printView');
+  if(!box) return;
+
+  const ranked = r.ideas.slice().sort((x,y)=>{
+    if((y.score||0) !== (x.score||0)) return (y.score||0) - (x.score||0);
+    if(x.priority !== y.priority) return (y.priority?1:0) - (x.priority?1:0);
+    return x.text.localeCompare(y.text);
+  });
+  let lastScore = null, lastRank = 0;
+  const ratingRows = ranked.map((i, idx)=>{
+    if(i.score !== lastScore){ lastRank = idx+1; lastScore = i.score; }
+    const cat = CATS.find(c=>c.id===i.cat);
+    return `<tr>
+      <td style="border:1px solid #000;padding:4px;text-align:center;width:40px">${lastRank}</td>
+      <td style="border:1px solid #000;padding:4px">${esc(cat?cat.name:'')}</td>
+      <td style="border:1px solid #000;padding:4px">${esc(i.text)}</td>
+      <td style="border:1px solid #000;padding:4px;text-align:center;width:50px">${i.score||'—'}</td>
+      <td style="border:1px solid #000;padding:4px;text-align:center;width:40px">${i.priority?'★':''}</td>
+    </tr>`;
+  }).join('');
+
+  const measRows = (a.measures||[]).map((m,i)=>`
+    <tr>
+      <td style="border:1px solid #000;padding:4px;text-align:center;width:30px">${i+1}</td>
+      <td style="border:1px solid #000;padding:4px">${esc(m.what||'')}</td>
+      <td style="border:1px solid #000;padding:4px;width:80px">${esc(m.due||'')}</td>
+      <td style="border:1px solid #000;padding:4px;width:120px">${esc(m.owner||'')}</td>
+      <td style="border:1px solid #000;padding:4px;width:90px">${esc(m.status||'')}</td>
+    </tr>
+  `).join('');
+
+  const effRows = (a.effRows||[]).map((e,i)=>`
+    <tr>
+      <td style="border:1px solid #000;padding:4px">${esc(e.name||'')}</td>
+      <td style="border:1px solid #000;padding:4px;text-align:center;width:80px">${esc(e.plan||'')}</td>
+      <td style="border:1px solid #000;padding:4px;text-align:center;width:80px">${esc(e.fact||'')}</td>
+    </tr>
+  `).join('');
+
+  const nextRows = (a.nextSteps||[]).map((m,i)=>`
+    <tr>
+      <td style="border:1px solid #000;padding:4px;text-align:center;width:30px">${i+1}</td>
+      <td style="border:1px solid #000;padding:4px">${esc(m.what||'')}</td>
+      <td style="border:1px solid #000;padding:4px;width:80px">${esc(m.due||'')}</td>
+      <td style="border:1px solid #000;padding:4px;width:120px">${esc(m.owner||'')}</td>
+      <td style="border:1px solid #000;padding:4px;width:90px">${esc(m.status||'')}</td>
+    </tr>
+  `).join('');
+
+  let prev = r.problem || '';
+  const whyRows = r.why1.chain.map((val,i)=>{
+    const q = i===0 ? 'Почему это происходит?' : `Почему «${prev}»?`;
+    if(val) prev = val;
+    return `<tr>
+      <td style="border:1px solid #000;padding:4px;text-align:center;width:30px">${i+1}</td>
+      <td style="border:1px solid #000;padding:4px;width:45%">${esc(q)}</td>
+      <td style="border:1px solid #000;padding:4px">${esc(val||'')}</td>
+    </tr>`;
+  }).join('');
+
+  const secTitle = (text) => `<table style="width:100%;border-collapse:collapse;margin-top:10px">
+    <tr><td style="border:2px solid #000;background:#d9d9d9;padding:5px 8px;font-weight:bold;font-size:12px;text-transform:uppercase">${text}</td></tr>
+  </table>`;
+
+  const secBlock = (html) => `<table style="width:100%;border-collapse:collapse;border:2px solid #000">
+    <tr><td style="padding:6px;vertical-align:top">${html}</td></tr>
+  </table>`;
+
+  box.innerHTML = `
+    <div style="font-family:Arial,sans-serif;color:#000;font-size:11px;border:3px solid #000;padding:10px">
+
+      <div style="text-align:center;margin-bottom:10px">
+        <div style="font-size:14px;font-weight:bold;letter-spacing:1px">ОТЧЁТ А3</div>
+        <div style="font-size:13px;margin-top:2px"><b>${esc(a.projectName||reportName(r))}</b></div>
+      </div>
+
+      <table style="width:100%;border-collapse:collapse;margin-bottom:10px">
+        <tr>
+          <td style="border:1px solid #000;padding:4px;width:18%;background:#f0f0f0"><b>ПП, отдел</b></td>
+          <td style="border:1px solid #000;padding:4px">${esc(a.department||'')}</td>
+          <td style="border:1px solid #000;padding:4px;width:18%;background:#f0f0f0"><b>Руководитель</b></td>
+          <td style="border:1px solid #000;padding:4px">${esc(a.manager||'')}</td>
+        </tr>
+        <tr>
+          <td style="border:1px solid #000;padding:4px;background:#f0f0f0"><b>Дата открытия</b></td>
+          <td style="border:1px solid #000;padding:4px">${esc(a.openDate||'')}</td>
+          <td style="border:1px solid #000;padding:4px;background:#f0f0f0"><b>Дата закрытия</b></td>
+          <td style="border:1px solid #000;padding:4px">${esc(a.closeDate||'')}</td>
+        </tr>
+        <tr>
+          <td style="border:1px solid #000;padding:4px;background:#f0f0f0"><b>Команда</b></td>
+          <td colspan="3" style="border:1px solid #000;padding:4px">${esc(a.team||'')}</td>
+        </tr>
+      </table>
+
+      ${secTitle('1. Проблема, задача')}
+      ${secBlock(`<div style="min-height:36px;white-space:pre-wrap">${esc(a.problem||'')}</div>`)}
+
+      ${secTitle('2. Текущее состояние')}
+      ${secBlock(`<div style="min-height:60px;white-space:pre-wrap;margin-bottom:6px">${esc(a.currentState||'')}</div>
+        <table style="width:100%;border-collapse:collapse">
+          <tr><td style="border:1px solid #000;padding:4px;width:40%">Дефектность, %</td><td style="border:1px solid #000;padding:4px">${esc(a.defectRate||'')}</td></tr>
+          <tr><td style="border:1px solid #000;padding:4px">Претензии, шт.</td><td style="border:1px solid #000;padding:4px">${esc(a.claimsCount||'')}</td></tr>
+          <tr><td style="border:1px solid #000;padding:4px">Потери, мин.</td><td style="border:1px solid #000;padding:4px">${esc(a.timeLoss||'')}</td></tr>
+          <tr><td style="border:1px solid #000;padding:4px">Недополученная прибыль, руб.</td><td style="border:1px solid #000;padding:4px">${esc(a.lostProfit||'')}</td></tr>
+        </table>`)}
+
+      ${secTitle('3. Постановка целей')}
+      ${secBlock(`<table style="width:100%;border-collapse:collapse">
+        <tr><td style="border:1px solid #000;padding:4px;width:40%">Снижение брака, %</td><td style="border:1px solid #000;padding:4px">${esc(a.goalDefect||'')}</td></tr>
+        <tr><td style="border:1px solid #000;padding:4px">Сокращение рекламаций</td><td style="border:1px solid #000;padding:4px">${esc(a.goalClaims||'')}</td></tr>
+        <tr><td style="border:1px solid #000;padding:4px">Устранение потерь, %</td><td style="border:1px solid #000;padding:4px">${esc(a.goalLoss||'')}</td></tr>
+        <tr><td style="border:1px solid #000;padding:4px">Прибыль, руб.</td><td style="border:1px solid #000;padding:4px">${esc(a.goalProfit||'')}</td></tr>
+      </table>`)}
+
+      ${secTitle('4. Анализ проблемы, поиск корневых причин')}
+      ${secBlock(`<div style="white-space:pre-wrap">${esc(a.analysisMethods||'')}</div>
+        <div style="margin-top:6px;border:1px solid #000;padding:6px;background:#fffbeb">
+          <b>Корневая причина:</b> ${esc(a.rootCause || (r.why1.chain.filter(x=>x.trim()).slice(-1)[0] || ''))}
+        </div>`)}
+
+      ${secTitle('5. План мероприятий по устранению корневых причин')}
+      ${secBlock(`<table style="width:100%;border-collapse:collapse">
+        <thead><tr>
+          <th style="border:1px solid #000;padding:4px;background:#f0f0f0;width:30px">№</th>
+          <th style="border:1px solid #000;padding:4px;background:#f0f0f0">Мероприятие</th>
+          <th style="border:1px solid #000;padding:4px;background:#f0f0f0;width:80px">Срок</th>
+          <th style="border:1px solid #000;padding:4px;background:#f0f0f0;width:120px">Ответственный</th>
+          <th style="border:1px solid #000;padding:4px;background:#f0f0f0;width:90px">Статус</th>
+        </tr></thead>
+        <tbody>${measRows || '<tr><td colspan="5" style="border:1px solid #000;padding:6px;text-align:center;color:#666">—</td></tr>'}</tbody>
+      </table>`)}
+
+      ${secTitle('6. Оценка эффективности проекта')}
+      ${secBlock(`<table style="width:100%;border-collapse:collapse">
+        <thead><tr>
+          <th style="border:1px solid #000;padding:4px;background:#f0f0f0">Показатель</th>
+          <th style="border:1px solid #000;padding:4px;background:#f0f0f0;width:80px">План</th>
+          <th style="border:1px solid #000;padding:4px;background:#f0f0f0;width:80px">Факт</th>
+        </tr></thead>
+        <tbody>${effRows || '<tr><td colspan="3" style="border:1px solid #000;padding:6px;text-align:center;color:#666">—</td></tr>'}</tbody>
+      </table>`)}
+
+      ${secTitle('7. Результаты проекта')}
+      ${secBlock(`<div style="min-height:50px;white-space:pre-wrap">${esc(a.results||'')}</div>`)}
+
+      ${secTitle('8. Дальнейшие действия')}
+      ${secBlock(`<table style="width:100%;border-collapse:collapse">
+        <thead><tr>
+          <th style="border:1px solid #000;padding:4px;background:#f0f0f0;width:30px">№</th>
+          <th style="border:1px solid #000;padding:4px;background:#f0f0f0">Мероприятие</th>
+          <th style="border:1px solid #000;padding:4px;background:#f0f0f0;width:80px">Срок</th>
+          <th style="border:1px solid #000;padding:4px;background:#f0f0f0;width:120px">Ответственный</th>
+          <th style="border:1px solid #000;padding:4px;background:#f0f0f0;width:90px">Статус</th>
+        </tr></thead>
+        <tbody>${nextRows || '<tr><td colspan="5" style="border:1px solid #000;padding:6px;text-align:center;color:#666">—</td></tr>'}</tbody>
+      </table>`)}
+
+      ${secTitle('Рейтинг гипотез (6М)')}
+      ${secBlock(`<table style="width:100%;border-collapse:collapse">
+        <thead><tr>
+          <th style="border:1px solid #000;padding:4px;background:#f0f0f0;width:40px">Ранг</th>
+          <th style="border:1px solid #000;padding:4px;background:#f0f0f0;width:130px">Категория</th>
+          <th style="border:1px solid #000;padding:4px;background:#f0f0f0">Гипотеза</th>
+          <th style="border:1px solid #000;padding:4px;background:#f0f0f0;width:50px">Балл</th>
+          <th style="border:1px solid #000;padding:4px;background:#f0f0f0;width:40px">★</th>
+        </tr></thead>
+        <tbody>${ratingRows || '<tr><td colspan="5" style="border:1px solid #000;padding:6px;text-align:center;color:#666">—</td></tr>'}</tbody>
+      </table>`)}
+
+      ${secTitle('5 почему (линейный)')}
+      ${secBlock(`<table style="width:100%;border-collapse:collapse">
+        <tbody>${whyRows || '<tr><td style="border:1px solid #000;padding:6px;text-align:center;color:#666">—</td></tr>'}</tbody>
+      </table>`)}
+
+      ${secTitle('Было — Стало')}
+      ${secBlock(`<table style="width:100%;border-collapse:collapse">
+        <tr>
+          <td style="border:1px solid #000;padding:4px;width:50%;background:#fee2e2"><b>БЫЛО</b> ${esc(r.wasBefore.date||'')}</td>
+          <td style="border:1px solid #000;padding:4px;width:50%;background:#dcfce7"><b>СТАЛО</b> ${esc(r.wasAfter.date||'')}</td>
+        </tr>
+        <tr>
+          <td style="border:1px solid #000;padding:6px;white-space:pre-wrap;vertical-align:top">${esc(r.wasBefore.text||'')}</td>
+          <td style="border:1px solid #000;padding:6px;white-space:pre-wrap;vertical-align:top">${esc(r.wasAfter.text||'')}</td>
+        </tr>
+      </table>`)}
+
+      <div style="margin-top:14px;text-align:center;font-size:10px;color:#666">
+        Сформировано: ${new Date().toLocaleString('ru-RU')}
+      </div>
+    </div>
+  `;
+}
+
+const printBtn = $('#printBtn');
+if(printBtn) printBtn.addEventListener('click', ()=>{
+  buildPrintView();
+  setTimeout(()=>window.print(), 150);
+});
+
+/* ============ Модалки ============ */
+$$('[data-close]').forEach(b=>b.addEventListener('click', ()=>$('#'+b.dataset.close).classList.remove('active')));
+$$('.modal-overlay').forEach(m=>m.addEventListener('click', e=>{ if(e.target===m) m.classList.remove('active'); }));
+
+/* ============ Демо/Сброс ============ */
+const demoBtn = $('#demoBtn');
+if(demoBtn) demoBtn.addEventListener('click', ()=>{
+  if(!confirm('Заполнить примером?')) return;
+  const r = getR();
+  r.problem = 'Сборка линии №2 срывает план на 12%';
+  r.a3 = Object.assign(emptyReport().a3, {
+    projectName:'Снижение простоев на линии №2',
+    department:'Производственный отдел',
+    openDate: today(),
+    manager:'Иванов А.А.',
+    team:'Петров С.С., Сидоров В.В.',
+    problem:'Сборка линии срывает план из-за простоев',
+    currentState:'Простой 40 мин/смену, OEE 68%',
+    defectRate:'4.5', claimsCount:'12', timeLoss:'240', lostProfit:'150000',
+    goalDefect:'2.0', goalClaims:'3', goalLoss:'0', goalProfit:'300000',
+    analysisMethods:'5 почему, Исикава', results:'Внедрён регламент'
+  });
+  r.ideas = [
+    {id:uid(), text:'Нет эталона', cat:'method', root:false, score:2, priority:false},
+    {id:uid(), text:'Пневмоинструмент', cat:'machine', root:true, score:3, priority:true},
+    {id:uid(), text:'Износ инструмента', cat:'machine', root:false, score:2, priority:false},
+    {id:uid(), text:'Отклонение партии', cat:'material', root:false, score:2, priority:false},
+    {id:uid(), text:'Плохое освещение', cat:'env', root:false, score:1, priority:false},
+    {id:uid(), text:'Недостаточное обучение', cat:'people', root:false, score:2, priority:true},
+    {id:uid(), text:'Измерение в конце смены', cat:'measure', root:false, score:1, priority:false}
+  ];
+  r.why1.chain = ['Остановка','Болты не тянутся','Нет давления','Утечка','Нет регламента'];
+  r.plan = [{id:uid(), what:'Внести в чек-лист', owner:'Иванов', start:today(), end:'', done:50, notes:''}];
+  r.wasBefore = {date:'', text:'Простой 40 мин'};
+  r.wasAfter = {date:'', text:'Простой 10 мин'};
+  addLog('demo','заполнено примером');
+  save(); renderAll();
+});
+
+const resetBtn = $('#resetBtn');
+if(resetBtn) resetBtn.addEventListener('click', ()=>{
+  if(!confirm('Очистить текущий отчёт?')) return;
+  app.reports[app.activeId] = emptyReport();
+  save(); renderAll();
+});
+
+/* ============ Режим ============ */
+function setMode(mobile){
+  document.body.classList.toggle('mobile-mode', mobile);
+  localStorage.setItem('lean_mode', mobile ? 'mobile' : 'desktop');
+  const b = $('#modeBtn'); if(b) b.textContent = mobile ? '🖥 Компьютер' : '📱 Мобильный';
+}
+const modeBtn = $('#modeBtn');
+if(modeBtn) modeBtn.addEventListener('click', ()=>setMode(!document.body.classList.contains('mobile-mode')));
+setMode(localStorage.getItem('lean_mode')==='mobile' || window.innerWidth<820);
+
+/* ============ Общий рендер ============ */
+function renderAll(){
+  renderReportList();
+  renderTabs();
+  const r = getR(); if(!r) return;
+  if($('#problemInput')) $('#problemInput').value = r.problem || '';
+  renderIdeas();
+  renderFish();
+  render6M();
+  renderWhy1();
+  renderWhy2();
+  renderPlan();
+  renderWas();
+  renderA3();
+  renderLog();
+}
+
+const probInput = $('#problemInput');
+if(probInput) probInput.addEventListener('input', ()=>{ getR().problem = probInput.value; save(); renderFish(); });
+
+renderAll();
+
+/* ============ PWA: регистрация SW + установка (пункт 4.3) ============ */
+const isHttp = location.protocol === 'http:' || location.protocol === 'https:';
+let deferredPrompt = null;
+const installBtn = document.getElementById('installBtn');
+
+function isStandalone(){
+  return window.matchMedia('(display-mode: standalone)').matches
+      || window.navigator.standalone === true;
+}
+
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  if (installBtn && !isStandalone()) installBtn.style.display = '';
+});
+
+if (installBtn) {
+  installBtn.addEventListener('click', async () => {
+    // iOS Safari не поддерживает beforeinstallprompt — покажем подсказку
+    if (!deferredPrompt) {
+      alert('Чтобы установить:\n\n• iPhone/iPad (Safari): «Поделиться» → «На экран Домой».\n• Android (Chrome): меню ⋮ → «Установить приложение».\n• Десктоп (Chrome/Edge): иконка ⊕ справа в адресной строке.');
+      return;
+    }
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    deferredPrompt = null;
+    installBtn.style.display = 'none';
+    if (outcome === 'accepted') {
+      const b = $('#syncBadge');
+      if (b) b.textContent = 'Установлено ✓';
+    }
+  });
+}
+
+window.addEventListener('appinstalled', () => {
+  if (installBtn) installBtn.style.display = 'none';
+});
+
+// Показываем кнопку даже если beforeinstallprompt не пришёл (iOS)
+if (installBtn && !isStandalone()) {
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+  if (isIOS) installBtn.style.display = '';
+}
+
+// Регистрируем SW только на http(s). На file:// просто пропускаем.
+if ('serviceWorker' in navigator && isHttp) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js', { scope: './' })
+      .then(reg => {
+        // Проверка обновлений при каждом запуске
+        reg.update().catch(() => {});
+        reg.addEventListener('updatefound', () => {
+          const b = $('#syncBadge');
+          if (b) {
+            b.textContent = 'Обновление…';
+            b.style.background = '#92400e';
+          }
+          const nw = reg.installing;
+          nw?.addEventListener('statechange', () => {
+            if (nw.state === 'activated') {
+              if (b) { b.textContent = 'Обновлено ✓'; b.style.background = '#14532d'; }
+              setTimeout(() => {
+                if (confirm('Доступна новая версия. Обновить страницу?')) location.reload();
+              }, 400);
+            }
+          });
+        });
+      })
+      .catch(err => console.warn('SW registration failed:', err));
+  });
+}
+
+if (!isHttp) {
+  console.info('[PWA] Открыто по file://. Установка недоступна — запустите через http-сервер (см. README).');
+}
+/* ============ /PWA ============ */
+</script>
+</body>
+</html>
