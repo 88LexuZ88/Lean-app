@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Разбор проблем · Локальная версия</title>
-<!-- ====== PWA meta (пункт 4.1) ====== -->
+<!-- ====== PWA meta ====== -->
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#1e293b">
 <meta name="application-name" content="Разбор проблем">
@@ -157,8 +157,8 @@
     <button class="rm-btn" id="settingsBtn" title="Разделы">⚙️</button>
     <button class="rm-btn danger" id="delReportBtn" title="Удалить">🗑</button>
   </div>
-  <!-- ====== PWA: кнопка установки (пункт 4.2) ====== -->
-  <button class="hbtn" id="installBtn" style="display:none;background:#16a34a;border-color:#16a34a">⬇ Установить</button>
+  <!-- ====== PWA: кнопка поделиться ====== -->
+  <button class="hbtn" id="shareBtn" style="background:#0ea5e9;border-color:#0ea5e9">📲 Поделиться</button>
   <!-- ====== /PWA ====== -->
   <input id="problemInput" placeholder="Проблема (эффект)">
   <span class="badge" id="syncBadge">Сохранено</span>
@@ -333,6 +333,25 @@
     <div class="modal-footer"><button class="ghost" data-close="exportModal">Отмена</button><button class="primary" id="downloadBtn">💾 Скачать</button></div>
   </div>
 </div>
+
+<!-- ====== PWA: Модальное окно поделиться / установить ====== -->
+<div class="modal-overlay" id="shareModal">
+  <div class="modal">
+    <div class="modal-header"><h3>📲 Установить / Поделиться</h3><button class="modal-close" data-close="shareModal">×</button></div>
+    <div class="modal-body" style="text-align:center">
+      <p style="margin-top:0">Наведите камеру телефона, чтобы открыть приложение:</p>
+      <img id="qrCodeImg" src="" alt="QR-код" style="width:200px;height:200px;margin:10px auto;display:block;border:1px solid #cbd5e1;border-radius:8px;">
+      
+      <div style="display:flex;gap:8px;margin-top:15px;flex-wrap:wrap;justify-content:center">
+        <button class="primary" id="doInstallBtn">Установить на это устройство</button>
+        <button class="ghost" id="copyLinkBtn">Скопировать ссылку</button>
+      </div>
+      
+      <div id="installHint" style="margin-top:15px;font-size:13px;color:#64748b;text-align:left;background:#f8fafc;padding:10px;border-radius:8px;display:none"></div>
+    </div>
+  </div>
+</div>
+<!-- ====== /PWA ====== -->
 
 <script>
 "use strict";
@@ -2322,10 +2341,17 @@ if(probInput) probInput.addEventListener('input', ()=>{ getR().problem = probInp
 
 renderAll();
 
-/* ============ PWA: регистрация SW + установка (пункт 4.3) ============ */
+/* ============ PWA: регистрация SW, QR-код и установка ============ */
 const isHttp = location.protocol === 'http:' || location.protocol === 'https:';
 let deferredPrompt = null;
-const installBtn = document.getElementById('installBtn');
+
+// Переменные для новых элементов
+const shareBtn = document.getElementById('shareBtn');
+const shareModal = document.getElementById('shareModal');
+const qrCodeImg = document.getElementById('qrCodeImg');
+const doInstallBtn = document.getElementById('doInstallBtn');
+const copyLinkBtn = document.getElementById('copyLinkBtn');
+const installHint = document.getElementById('installHint');
 
 function isStandalone(){
   return window.matchMedia('(display-mode: standalone)').matches
@@ -2335,69 +2361,69 @@ function isStandalone(){
 window.addEventListener('beforeinstallprompt', e => {
   e.preventDefault();
   deferredPrompt = e;
-  if (installBtn && !isStandalone()) installBtn.style.display = '';
 });
 
-if (installBtn) {
-  installBtn.addEventListener('click', async () => {
-    // iOS Safari не поддерживает beforeinstallprompt — покажем подсказку
-    if (!deferredPrompt) {
-      alert('Чтобы установить:\n\n• iPhone/iPad (Safari): «Поделиться» → «На экран Домой».\n• Android (Chrome): меню ⋮ → «Установить приложение».\n• Десктоп (Chrome/Edge): иконка ⊕ справа в адресной строке.');
+// Логика открытия окна с QR-кодом
+if (shareBtn) {
+  shareBtn.addEventListener('click', () => {
+    // Генерируем QR-код через бесплатный API (ссылка берется текущая из адресной строки)
+    const currentUrl = window.location.href;
+    qrCodeImg.src = 'https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=' + encodeURIComponent(currentUrl);
+    
+    // Скрываем подсказку при открытии
+    installHint.style.display = 'none';
+    shareModal.classList.add('active');
+  });
+}
+
+// Логика кнопки "Установить на это устройство"
+if (doInstallBtn) {
+  doInstallBtn.addEventListener('click', async () => {
+    // Если браузер поддерживает установку
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === 'accepted') {
+        shareModal.classList.remove('active');
+      }
+      deferredPrompt = null;
       return;
     }
-    deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    deferredPrompt = null;
-    installBtn.style.display = 'none';
-    if (outcome === 'accepted') {
-      const b = $('#syncBadge');
-      if (b) b.textContent = 'Установлено ✓';
+
+    // Если установка недоступна, показываем инструкцию
+    installHint.style.display = 'block';
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    const isAndroid = /Android/i.test(navigator.userAgent);
+
+    if (isIOS) {
+      installHint.innerHTML = '<b>Для iPhone (Safari):</b><br>1. Нажмите кнопку «Поделиться» (квадрат со стрелкой внизу).<br>2. Прокрутите вниз и выберите <b>«На экран "Домой"»</b>.';
+    } else if (isAndroid) {
+      installHint.innerHTML = '<b>Для Android (Chrome):</b><br>1. Нажмите на три точки (⋮) в правом верхнем углу браузера.<br>2. Выберите <b>«Установить приложение»</b> (или «Создать ярлык»).';
+    } else {
+      installHint.innerHTML = 'Откройте сайт на смартфоне, чтобы установить приложение.';
     }
   });
 }
 
-window.addEventListener('appinstalled', () => {
-  if (installBtn) installBtn.style.display = 'none';
-});
-
-// Показываем кнопку даже если beforeinstallprompt не пришёл (iOS)
-if (installBtn && !isStandalone()) {
-  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-  if (isIOS) installBtn.style.display = '';
-}
-
-// Регистрируем SW только на http(s). На file:// просто пропускаем.
-if ('serviceWorker' in navigator && isHttp) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js', { scope: './' })
-      .then(reg => {
-        // Проверка обновлений при каждом запуске
-        reg.update().catch(() => {});
-        reg.addEventListener('updatefound', () => {
-          const b = $('#syncBadge');
-          if (b) {
-            b.textContent = 'Обновление…';
-            b.style.background = '#92400e';
-          }
-          const nw = reg.installing;
-          nw?.addEventListener('statechange', () => {
-            if (nw.state === 'activated') {
-              if (b) { b.textContent = 'Обновлено ✓'; b.style.background = '#14532d'; }
-              setTimeout(() => {
-                if (confirm('Доступна новая версия. Обновить страницу?')) location.reload();
-              }, 400);
-            }
-          });
-        });
-      })
-      .catch(err => console.warn('SW registration failed:', err));
+// Кнопка копирования ссылки
+if (copyLinkBtn) {
+  copyLinkBtn.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      copyLinkBtn.textContent = '✅ Скопировано!';
+      setTimeout(() => { copyLinkBtn.textContent = 'Скопировать ссылку'; }, 2000);
+    } catch (err) {
+      alert('Ссылка: ' + window.location.href);
+    }
   });
 }
 
-if (!isHttp) {
-  console.info('[PWA] Открыто по file://. Установка недоступна — запустите через http-сервер (см. README).');
+// Регистрируем SW только на http(s)
+if ('serviceWorker' in navigator && isHttp) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js', { scope: './' }).catch(err => console.warn('SW registration failed:', err));
+  });
 }
-/* ============ /PWA ============ */
 </script>
 </body>
 </html>
