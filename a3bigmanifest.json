@@ -1,0 +1,20 @@
+{
+  "name": "Разбор проблем",
+  "short_name": "Разбор",
+  "description": "Диаграмма Исикавы, 6М, 5 почему, план мероприятий, отчёт А3",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone"],
+  "orientation": "any",
+  "background_color": "#eef2f7",
+  "theme_color": "#1e293b",
+  "lang": "ru",
+  "dir": "ltr",
+  "categories": ["productivity", "business"],
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
