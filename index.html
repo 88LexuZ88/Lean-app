@@ -52,10 +52,10 @@
   button.ai-btn{background:#8b5cf6;color:#fff;border:none;padding:8px 14px;border-radius:6px;cursor:pointer;font-weight:600;display:flex;align-items:center;gap:6px}
   button.ai-btn:hover{background:#7c3aed}
   button.ai-btn:disabled{background:#cbd5e1;cursor:not-allowed}
-  table.form-tbl{width:100%;border-collapse:collapse;font-size:13px;background:#fff}
-  table.form-tbl th,table.form-tbl td{border:1px solid #cbd5e1;padding:4px 6px;vertical-align:top}
+  table.form-tbl{width:100%;border-collapse:collapse;font-size:13px;background:#fff;table-layout:fixed}
+  table.form-tbl th,table.form-tbl td{border:1px solid #cbd5e1;padding:4px 6px;vertical-align:top;word-wrap:break-word;overflow-wrap:break-word}
   table.form-tbl th{background:#f1f5f9;font-size:12px;text-align:center;font-weight:600}
-  table.form-tbl td input,table.form-tbl td textarea,table.form-tbl td select{border:none;padding:3px;font-size:13px;background:transparent}
+  table.form-tbl td input,table.form-tbl td textarea,table.form-tbl td select{border:none;padding:3px;font-size:13px;background:transparent;width:100%}
   .del{background:none;border:none;color:#ef4444;cursor:pointer;font-size:14px}
   .grp-h{font-weight:600;font-size:13px;color:var(--c);margin-bottom:6px}
   .cnt{background:#f1f5f9;color:#475569;border-radius:20px;padding:1px 8px;font-size:11px;margin-left:4px}
@@ -110,8 +110,8 @@
   /* A3 */
   .a3-form{background:#fff;color:#000;font-family:Arial,sans-serif;width:100%;overflow-x:auto}
   .a3-form-inner{min-width:900px;border:1px solid #000;padding:8px}
-  .a3-form table{width:100%;border-collapse:collapse;font-size:11px}
-  .a3-form th,.a3-form td{border:1px solid #000;padding:3px 5px;vertical-align:top}
+  .a3-form table{width:100%;border-collapse:collapse;font-size:11px;table-layout:fixed}
+  .a3-form th,.a3-form td{border:1px solid #000;padding:3px 5px;vertical-align:top;word-wrap:break-word;overflow-wrap:break-word}
   .a3-form th{background:#f0f0f0;text-align:center;font-weight:bold}
   .a3-form .section-title{background:#d9d9d9;font-weight:bold;text-align:center;text-transform:uppercase;font-size:12px}
   .a3-form .sub-title{background:#e6e6e6;font-weight:bold}
@@ -252,7 +252,7 @@
     <div style="overflow-x:auto">
       <table class="form-tbl">
         <thead><tr>
-          <th style="width:40px">№</th><th>Мероприятие</th><th style="width:120px">Исполнитель</th>
+          <th style="width:40px">№</th><th style="width:30%">Мероприятие</th><th style="width:15%">Исполнитель</th>
           <th style="width:110px">Начало</th><th style="width:110px">Завершение</th>
           <th style="width:80px">Готово, %</th><th>Примечания</th><th style="width:30px"></th>
         </tr></thead>
@@ -471,6 +471,77 @@ function addLog(action, detail=''){
 function reportName(r){
   return r.a3.projectName || r.meta.title || r.problem || 'Новый отчёт';
 }
+
+/* ============ Всплывающее окно редактирования ============ */
+function initFloatingEditor() {
+  if (document.getElementById('floating-editor')) return;
+  
+  const div = document.createElement('div');
+  div.id = 'floating-editor';
+  div.style.cssText = 'display:none; position:fixed; top:10px; left:10px; right:10px; z-index:9999; background:#fff; padding:12px; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,0.3); border: 1px solid #cbd5e1;';
+  div.innerHTML = `
+    <div style="font-size:12px; font-weight:600; color:#475569; margin-bottom:6px; display:flex; justify-content:space-between; align-items:center;">
+      <span id="fe-label" style="text-transform:uppercase; letter-spacing:0.5px;">Редактирование</span>
+      <button id="fe-close" style="background:none; border:none; font-size:18px; cursor:pointer; color:#ef4444; padding:0 5px;">✕</button>
+    </div>
+    <textarea id="fe-input" style="width:100%; min-height:100px; font-size:16px; padding:8px; border:1px solid #cbd5e1; border-radius:6px; box-sizing:border-box; font-family:inherit; line-height:1.5;"></textarea>
+    <div style="display:flex; justify-content:flex-end; margin-top:8px;">
+      <button id="fe-save" class="primary" style="padding:8px 16px; font-size:14px;">Готово</button>
+    </div>
+  `;
+  document.body.appendChild(div);
+
+  let activeInput = null;
+
+  document.getElementById('fe-save').addEventListener('click', () => {
+    if (activeInput) {
+      activeInput.value = document.getElementById('fe-input').value;
+      activeInput.dispatchEvent(new Event('input', { bubbles: true }));
+      activeInput.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+    closeEditor();
+  });
+
+  document.getElementById('fe-close').addEventListener('click', closeEditor);
+
+  function closeEditor() {
+    div.style.display = 'none';
+    if (activeInput) {
+      activeInput.blur();
+      activeInput = null;
+    }
+  }
+
+  document.addEventListener('focusin', (e) => {
+    const target = e.target;
+    if (target.closest('#floating-editor')) return;
+    
+    const isTableInput = (target.tagName === 'INPUT' && target.type === 'text') || target.tagName === 'TEXTAREA';
+    const inTable = target.closest('.form-tbl') || target.closest('.a3-form');
+    
+    if (isTableInput && inTable) {
+      activeInput = target;
+      document.getElementById('fe-input').value = target.value;
+      
+      // Определяем заголовок столбца для подсказки
+      const td = target.closest('td');
+      const tr = target.closest('tr');
+      let label = 'Редактирование';
+      if (tr) {
+        const index = Array.from(tr.children).indexOf(td);
+        const th = tr.closest('table').querySelector(`thead th:nth-child(${index + 1})`);
+        if (th) label = th.textContent.trim();
+      }
+      document.getElementById('fe-label').textContent = label;
+      
+      div.style.display = 'block';
+      
+      // Небольшая задержка для корректной работы клавиатуры на iOS/Android
+      setTimeout(() => document.getElementById('fe-input').focus(), 100);
+    }
+  });
+}
+initFloatingEditor();
 
 /* ============ Логика ИИ ============ */
 function getAISettings() {
