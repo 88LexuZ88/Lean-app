@@ -45,29 +45,6 @@
   .row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
   input[type=text],input[type=date],input[type=number],input[type=search],select,textarea{font:inherit;padding:8px 10px;border:1px solid #cbd5e1;border-radius:6px;background:#fff;width:100%}
   textarea{resize:vertical;min-height:60px}
-  
-  /* Стили для авто-расширяемых ячеек */
-  table.form-tbl{table-layout:fixed;width:100%;border-collapse:collapse;font-size:13px;background:#fff}
-  table.form-tbl th,table.form-tbl td{border:1px solid #cbd5e1;padding:4px 6px;vertical-align:top;word-wrap:break-word;overflow-wrap:break-word}
-  table.form-tbl th{background:#f1f5f9;font-size:12px;text-align:center;font-weight:600}
-  textarea.auto-expand{
-    resize:none;
-    overflow:hidden;
-    min-height:32px;
-    line-height:1.4;
-    padding:4px;
-    border:none;
-    background:transparent;
-    font-size:13px;
-    width:100%;
-    font-family:inherit;
-    white-space:pre-wrap;
-    word-wrap:break-word;
-    overflow-wrap:break-word;
-    box-sizing:border-box;
-    display:block;
-  }
-
   button.primary{background:#4f46e5;color:#fff;border:none;padding:8px 14px;border-radius:6px;cursor:pointer;font-weight:600}
   button.primary:hover{background:#4338ca}
   button.ghost{background:#f1f5f9;border:1px solid #cbd5e1;padding:6px 10px;border-radius:6px;cursor:pointer;font-size:13px}
@@ -75,6 +52,10 @@
   button.ai-btn{background:#8b5cf6;color:#fff;border:none;padding:8px 14px;border-radius:6px;cursor:pointer;font-weight:600;display:flex;align-items:center;gap:6px}
   button.ai-btn:hover{background:#7c3aed}
   button.ai-btn:disabled{background:#cbd5e1;cursor:not-allowed}
+  table.form-tbl{width:100%;border-collapse:collapse;font-size:13px;background:#fff}
+  table.form-tbl th,table.form-tbl td{border:1px solid #cbd5e1;padding:4px 6px;vertical-align:top}
+  table.form-tbl th{background:#f1f5f9;font-size:12px;text-align:center;font-weight:600}
+  table.form-tbl td input,table.form-tbl td textarea,table.form-tbl td select{border:none;padding:3px;font-size:13px;background:transparent}
   .del{background:none;border:none;color:#ef4444;cursor:pointer;font-size:14px}
   .grp-h{font-weight:600;font-size:13px;color:var(--c);margin-bottom:6px}
   .cnt{background:#f1f5f9;color:#475569;border-radius:20px;padding:1px 8px;font-size:11px;margin-left:4px}
@@ -129,13 +110,13 @@
   /* A3 */
   .a3-form{background:#fff;color:#000;font-family:Arial,sans-serif;width:100%;overflow-x:auto}
   .a3-form-inner{min-width:900px;border:1px solid #000;padding:8px}
-  .a3-form table{width:100%;border-collapse:collapse;font-size:11px;table-layout:fixed}
-  .a3-form th,.a3-form td{border:1px solid #000;padding:3px 5px;vertical-align:top;word-wrap:break-word;overflow-wrap:break-word}
+  .a3-form table{width:100%;border-collapse:collapse;font-size:11px}
+  .a3-form th,.a3-form td{border:1px solid #000;padding:3px 5px;vertical-align:top}
   .a3-form th{background:#f0f0f0;text-align:center;font-weight:bold}
   .a3-form .section-title{background:#d9d9d9;font-weight:bold;text-align:center;text-transform:uppercase;font-size:12px}
   .a3-form .sub-title{background:#e6e6e6;font-weight:bold}
-  .a3-form input,.a3-form select{width:100%;border:none;background:transparent;font-size:11px;padding:1px}
-  .a3-form textarea{width:100%;border:none;background:transparent;font-size:11px;padding:1px;min-height:40px;resize:vertical}
+  .a3-form input,.a3-form textarea,.a3-form select{width:100%;border:none;background:transparent;font-size:11px;padding:1px}
+  .a3-form textarea{min-height:50px}
   .a3-form .a3-header-table td{border:none;padding:2px}
   .a3-form .a3-header-table td:first-child{text-align:right;font-weight:bold;width:140px}
   .a3-form .a3-header-table input{border-bottom:1px solid #000}
@@ -271,9 +252,9 @@
     <div style="overflow-x:auto">
       <table class="form-tbl">
         <thead><tr>
-          <th style="width:40px">№</th><th style="width:30%">Мероприятие</th><th style="width:15%">Исполнитель</th>
-          <th style="width:100px">Начало</th><th style="width:100px">Завершение</th>
-          <th style="width:70px">Готово, %</th><th>Примечания</th><th style="width:30px"></th>
+          <th style="width:40px">№</th><th>Мероприятие</th><th style="width:120px">Исполнитель</th>
+          <th style="width:110px">Начало</th><th style="width:110px">Завершение</th>
+          <th style="width:80px">Готово, %</th><th>Примечания</th><th style="width:30px"></th>
         </tr></thead>
         <tbody id="planBody"></tbody>
       </table>
@@ -491,14 +472,6 @@ function reportName(r){
   return r.a3.projectName || r.meta.title || r.problem || 'Новый отчёт';
 }
 
-/* ============ Авто-расширение Textarea ============ */
-function autoResizeAllTextareas() {
-  document.querySelectorAll('textarea.auto-expand').forEach(ta => {
-    ta.style.height = 'auto';
-    ta.style.height = ta.scrollHeight + 'px';
-  });
-}
-
 /* ============ Логика ИИ ============ */
 function getAISettings() {
   return {
@@ -585,7 +558,6 @@ function renderTabs(){
       if(t.id === 'a3') renderA3();
       if(t.id === '6m') render6M();
       if(t.id === 'why2') renderWhy2();
-      setTimeout(autoResizeAllTextareas, 50);
     });
     nav.insertBefore(btn, brand);
   });
@@ -1044,30 +1016,18 @@ if(addBranchBtn) addBranchBtn.addEventListener('click', ()=>{
 function renderPlan(){
   const body = $('#planBody'); if(!body) return;
   const r = getR(); if(!r) return;
-  
   body.innerHTML = r.plan.map((m,idx)=>`
     <tr>
       <td style="text-align:center">${idx+1}</td>
-      <td><textarea rows="1" class="auto-expand" data-plan="${idx}" data-f="what" placeholder="Мероприятие">${esc(m.what||'')}</textarea></td>
-      <td><textarea rows="1" class="auto-expand" data-plan="${idx}" data-f="owner" placeholder="Исполнитель">${esc(m.owner||'')}</textarea></td>
+      <td><input type="text" value="${esc(m.what||'')}" data-plan="${idx}" data-f="what"></td>
+      <td><input type="text" value="${esc(m.owner||'')}" data-plan="${idx}" data-f="owner"></td>
       <td><input type="date" value="${m.start||''}" data-plan="${idx}" data-f="start"></td>
       <td><input type="date" value="${m.end||''}" data-plan="${idx}" data-f="end"></td>
       <td><input type="number" value="${m.done||0}" min="0" max="100" step="5" data-plan="${idx}" data-f="done"></td>
-      <td><textarea rows="1" class="auto-expand" data-plan="${idx}" data-f="notes" placeholder="Примечания">${esc(m.notes||'')}</textarea></td>
+      <td><input type="text" value="${esc(m.notes||'')}" data-plan="${idx}" data-f="notes"></td>
       <td><button class="del" data-plan-del="${idx}">✕</button></td>
     </tr>
   `).join('') || '<tr><td colspan="8" style="text-align:center;color:#94a3b8">Нет мероприятий</td></tr>';
-
-  // Привязка событий для textarea
-  body.querySelectorAll('textarea.auto-expand').forEach(ta => {
-    ta.addEventListener('input', function() {
-      this.style.height = 'auto';
-      this.style.height = this.scrollHeight + 'px';
-    });
-  });
-
-  // Вызываем после отрисовки, чтобы высота посчиталась правильно
-  setTimeout(autoResizeAllTextareas, 50);
 
   body.oninput = (e)=>{
     const t = e.target;
@@ -1126,29 +1086,27 @@ function renderA3(){
   const measRows = a.measures.map((m,i)=>`
     <tr>
       <td style="text-align:center">${i+1}</td>
-      <td><textarea rows="1" class="auto-expand" data-a3-m="${i}" data-f="what">${esc(m.what||'')}</textarea></td>
+      <td><input type="text" value="${esc(m.what||'')}" data-a3-m="${i}" data-f="what"></td>
       <td><input type="date" value="${m.due||''}" data-a3-m="${i}" data-f="due"></td>
-      <td><textarea rows="1" class="auto-expand" data-a3-m="${i}" data-f="owner">${esc(m.owner||'')}</textarea></td>
+      <td><input type="text" value="${esc(m.owner||'')}" data-a3-m="${i}" data-f="owner"></td>
       <td><select data-a3-m="${i}" data-f="status">${['План','В работе','Сделано','Проверено'].map(s=>`<option ${m.status===s?'selected':''}>${s}</option>`).join('')}</select></td>
       <td class="no-print"><button class="del" data-a3-m-del="${i}">✕</button></td>
     </tr>
   `).join('');
-
   const effRows = a.effRows.map((e,i)=>`
     <tr>
-      <td><textarea rows="1" class="auto-expand" data-a3-eff="${i}" data-f="name">${esc(e.name||'')}</textarea></td>
+      <td><input type="text" value="${esc(e.name||'')}" data-a3-eff="${i}" data-f="name"></td>
       <td><input type="text" value="${esc(e.plan||'')}" data-a3-eff="${i}" data-f="plan" style="text-align:center"></td>
       <td><input type="text" value="${esc(e.fact||'')}" data-a3-eff="${i}" data-f="fact" style="text-align:center"></td>
       <td class="no-print"><button class="del" data-a3-eff-del="${i}">✕</button></td>
     </tr>
   `).join('');
-
   const nextRows = a.nextSteps.map((m,i)=>`
     <tr>
       <td style="text-align:center">${i+1}</td>
-      <td><textarea rows="1" class="auto-expand" data-a3-n="${i}" data-f="what">${esc(m.what||'')}</textarea></td>
+      <td><input type="text" value="${esc(m.what||'')}" data-a3-n="${i}" data-f="what"></td>
       <td><input type="date" value="${m.due||''}" data-a3-n="${i}" data-f="due"></td>
-      <td><textarea rows="1" class="auto-expand" data-a3-n="${i}" data-f="owner">${esc(m.owner||'')}</textarea></td>
+      <td><input type="text" value="${esc(m.owner||'')}" data-a3-n="${i}" data-f="owner"></td>
       <td><select data-a3-n="${i}" data-f="status">${['План','В работе','Сделано'].map(s=>`<option ${m.status===s?'selected':''}>${s}</option>`).join('')}</select></td>
       <td class="no-print"><button class="del" data-a3-n-del="${i}">✕</button></td>
     </tr>
@@ -1230,15 +1188,6 @@ function renderA3(){
     </table>
     <table style="margin-top:8px"><tr><td style="text-align:right;font-weight:bold;width:140px">Дата закрытия:</td><td>${f('closeDate','date')}</td></tr></table>
   `;
-
-  // Привязка событий и расчет высоты
-  container.querySelectorAll('textarea.auto-expand').forEach(ta => {
-    ta.addEventListener('input', function() {
-      this.style.height = 'auto';
-      this.style.height = this.scrollHeight + 'px';
-    });
-  });
-  setTimeout(autoResizeAllTextareas, 50);
 
   container.oninput = (e)=>{
     const t = e.target;
@@ -2418,7 +2367,6 @@ function renderAll(){
   renderWas();
   renderA3();
   renderLog();
-  setTimeout(autoResizeAllTextareas, 50);
 }
 
 const probInput = $('#problemInput');
