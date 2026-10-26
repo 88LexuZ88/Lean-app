@@ -136,7 +136,11 @@
     .a3-form{overflow:visible}
     #printView{display:block !important}
     *{-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;color-adjust:exact !important}
-    @page { margin: 12mm; size: A4 portrait; }
+    @page { margin: 8mm; size: A3 landscape; }
+    #printView .a3-page{ page-break-after: always; }
+    #printView .a3-page:last-child{ page-break-after: auto; }
+    #printView tr{ page-break-inside: avoid; }
+    #printView td{ page-break-inside: avoid; }
   }
   body.mobile-mode .report-manager{flex:1 1 100%;order:-1;justify-content:space-between}
   body.mobile-mode #reportSelect{flex:1;max-width:none}
@@ -321,9 +325,9 @@ const debounce = (fn, ms = 250) => { let t; return (...args) => { clearTimeout(t
 const fmtTime = ts => new Date(ts).toLocaleString('ru-RU',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'});
 const normKey = s => String(s||'').trim().toLowerCase().replace(/\s+/g,' ');
 
-const LS = 'lean_v19';
+const LS = 'lean_v20';
 const SCHEMA_VERSION = 1;
-const LEGACY_KEYS = ['lean_v18','lean_v17','lean_v16','lean_v15','lean_v14','lean_v13','lean_v12','lean_v11','lean_v10','lean_v9','lean_v8','lean_v7','lean_v6','lean_v5','lean_multi_v2'];
+const LEGACY_KEYS = ['lean_v19','lean_v18','lean_v17','lean_v16','lean_v15','lean_v14','lean_v13','lean_v12','lean_v11','lean_v10','lean_v9','lean_v8','lean_v7','lean_v6','lean_v5','lean_multi_v2'];
 
 function emptyReport(){
   return {
@@ -342,6 +346,10 @@ function emptyReport(){
     wasBefore:{date:'', text:''},
     wasAfter:{date:'', text:''},
     a3:{
+      labels:{ defectRate:'1. Дефектность, %', claimsCount:'2. Претензии, шт.',
+               timeLoss:'3. Потери, мин.', lostProfit:'4. Недополученная прибыль, руб.',
+               goalDefect:'1. Снижение брака, %', goalClaims:'2. Сокращение рекламаций',
+               goalLoss:'3. Устранение потерь, %', goalProfit:'4. Прибыль, руб.' },
       projectName:'', department:'', openDate:'', manager:'', team:'',
       problem:'', currentState:'',
       defectRate:'', claimsCount:'', timeLoss:'', lostProfit:'',
@@ -385,6 +393,7 @@ function normalizeReport(r){
   out.wasBefore = Object.assign({}, base.wasBefore, r?.wasBefore||{});
   out.wasAfter = Object.assign({}, base.wasAfter, r?.wasAfter||{});
   out.a3 = Object.assign({}, base.a3, r?.a3||{});
+  out.a3.labels = Object.assign({}, base.a3.labels, r?.a3?.labels||{});
   out.a3.titles = Object.assign({}, base.a3.titles, r?.a3?.titles||{});
   out.a3.effRows = (Array.isArray(r?.a3?.effRows) ? r.a3.effRows : base.a3.effRows).map(e => ({ ...(e||{}), id: safeId(e?.id) }));
   out.a3.measures = (Array.isArray(r?.a3?.measures) ? r.a3.measures : []).map(m => ({ ...(m||{}), id: safeId(m?.id) }));
@@ -895,20 +904,28 @@ function renderA3(){
         <tr><td>${f('currentState','textarea','style="min-height:60px"')}</td></tr>
         <tr><td class="sub-title">Цифры:</td></tr>
         <tr><td>
-          <div style="display:flex;gap:8px;margin-bottom:3px"><span style="flex:1">1. Дефектность, %</span><input type="text" value="${esc(a.defectRate)}" data-a3="defectRate" style="width:70px"></div>
-          <div style="display:flex;gap:8px;margin-bottom:3px"><span style="flex:1">2. Претензии, шт.</span><input type="text" value="${esc(a.claimsCount)}" data-a3="claimsCount" style="width:70px"></div>
-          <div style="display:flex;gap:8px;margin-bottom:3px"><span style="flex:1">3. Потери, мин.</span><input type="text" value="${esc(a.timeLoss)}" data-a3="timeLoss" style="width:70px"></div>
-          <div style="display:flex;gap:8px"><span style="flex:1">4. Недополученная прибыль, руб.</span><input type="text" value="${esc(a.lostProfit)}" data-a3="lostProfit" style="width:70px"></div>
+          ${['defectRate','claimsCount','timeLoss','lostProfit'].map(k => `
+            <div style="display:flex;gap:6px;margin-bottom:3px;align-items:center">
+              <input type="text" value="${esc(a.labels[k])}" data-a3-label="${k}" style="flex:1;font-size:10px;background:#f8fafc;color:#475569">
+              <input type="text" value="${esc(a[k])}" data-a3="${k}" style="width:80px">
+            </div>`).join('')}
         </td></tr>
         <tr><td class="section-title">${title('t3')}</td></tr>
         <tr><td>
-          <div style="display:flex;gap:8px;margin-bottom:3px"><span style="flex:1">1. Снижение брака, %</span><input type="text" value="${esc(a.goalDefect)}" data-a3="goalDefect" style="width:70px"></div>
-          <div style="display:flex;gap:8px;margin-bottom:3px"><span style="flex:1">2. Сокращение рекламаций</span><input type="text" value="${esc(a.goalClaims)}" data-a3="goalClaims" style="width:70px"></div>
-          <div style="display:flex;gap:8px;margin-bottom:3px"><span style="flex:1">3. Устранение потерь, %</span><input type="text" value="${esc(a.goalLoss)}" data-a3="goalLoss" style="width:70px"></div>
-          <div style="display:flex;gap:8px"><span style="flex:1">4. Прибыль, руб.</span><input type="text" value="${esc(a.goalProfit)}" data-a3="goalProfit" style="width:70px"></div>
+          ${['goalDefect','goalClaims','goalLoss','goalProfit'].map(k => `
+            <div style="display:flex;gap:6px;margin-bottom:3px;align-items:center">
+              <input type="text" value="${esc(a.labels[k])}" data-a3-label="${k}" style="flex:1;font-size:10px;background:#f8fafc;color:#475569">
+              <input type="text" value="${esc(a[k])}" data-a3="${k}" style="width:80px">
+            </div>`).join('')}
         </td></tr>
         <tr><td class="section-title">${title('t4')}</td></tr>
-        <tr><td>${f('analysisMethods','textarea','style="min-height:50px" placeholder="Методы"')}<div style="margin-top:4px;font-weight:bold;font-size:10px">Корневая причина:</div><input type="text" value="${esc(a.rootCause || (r.why1.chain.filter(x=>x.trim()).slice(-1)[0]||''))}" data-a3="rootCause" readonly style="background:#fffbeb;color:#92400e;font-weight:bold">${topHint}</td></tr>
+        <tr><td>${f('analysisMethods','textarea','style="min-height:50px" placeholder="Методы"')}
+          <div style="margin-top:4px;font-weight:bold;font-size:10px;display:flex;gap:6px;align-items:center">
+            Корневая причина:
+            <button class="ghost no-print" data-a3-sync-root="1" style="font-size:9px;padding:2px 6px">↻ из «5 почему»</button>
+          </div>
+          <input type="text" value="${esc(a.rootCause || '')}" data-a3="rootCause" style="background:#fffbeb;color:#92400e;font-weight:bold">${topHint}
+        </td></tr>
       </table></td>
       <td style="width:45%;padding:0;border:none;vertical-align:top"><table>
         <tr><td class="section-title">${title('t5')}</td></tr>
@@ -924,6 +941,7 @@ function renderA3(){
     <table style="margin-top:8px"><tr><td style="text-align:right;font-weight:bold;width:140px">Дата закрытия:</td><td>${f('closeDate','date')}</td></tr></table>`;
   container.oninput = (e)=>{
     const t = e.target;
+    if(t.dataset.a3Label){ a.labels[t.dataset.a3Label] = t.value; save(); return; }
     if(t.dataset.a3) a[t.dataset.a3] = t.value, save();
     else if(t.dataset.a3Title) a.titles[t.dataset.a3Title] = t.value, save();
     else if(t.dataset.a3M !== undefined && t.dataset.a3M !== ''){ a.measures[+t.dataset.a3M][t.dataset.f] = t.value; save(); }
@@ -937,6 +955,7 @@ function renderA3(){
   };
   container.onclick = (e)=>{
     const t = e.target;
+    if(t.hasAttribute('data-a3-sync-root')){ a.rootCause = r.why1.chain.filter(x=>x.trim()).slice(-1)[0] || ''; save(); renderA3(); return; }
     if(t.hasAttribute('data-a3-add-meas')){ a.measures.push({id:uid(), what:'', due:'', owner:'', status:'План'}); save(); renderA3(); return; }
     if(t.hasAttribute('data-a3-add-eff')){ a.effRows.push({id:uid(), name:'', plan:'', fact:''}); save(); renderA3(); return; }
     if(t.hasAttribute('data-a3-add-next')){ a.nextSteps.push({id:uid(), what:'', due:'', owner:'', status:'План'}); save(); renderA3(); return; }
@@ -1129,16 +1148,16 @@ async function exportToXLSX(){
   rowIdx++;
   addSection(a.titles.t1); addTextBlock(a.problem, 50); rowIdx++;
   addSection(a.titles.t2); addTextBlock(a.currentState, 60);
-  addField('Дефектность, %', a.defectRate || '');
-  addField('Претензии, шт.', a.claimsCount || '');
-  addField('Потери, мин.', a.timeLoss || '');
-  addField('Недополученная прибыль, руб.', a.lostProfit || '');
+  addField(a.labels.defectRate, a.defectRate || '');
+  addField(a.labels.claimsCount, a.claimsCount || '');
+  addField(a.labels.timeLoss, a.timeLoss || '');
+  addField(a.labels.lostProfit, a.lostProfit || '');
   rowIdx++;
   addSection(a.titles.t3);
-  addField('Снижение брака, %', a.goalDefect || '');
-  addField('Сокращение рекламаций', a.goalClaims || '');
-  addField('Устранение потерь, %', a.goalLoss || '');
-  addField('Прибыль, руб.', a.goalProfit || '');
+  addField(a.labels.goalDefect, a.goalDefect || '');
+  addField(a.labels.goalClaims, a.goalClaims || '');
+  addField(a.labels.goalLoss, a.goalLoss || '');
+  addField(a.labels.goalProfit, a.goalProfit || '');
   rowIdx++;
   addSection(a.titles.t4); addTextBlock(a.analysisMethods, 50);
   addField('Корневая причина', a.rootCause || (r.why1.chain.filter(x=>x.trim()).slice(-1)[0] || ''));
@@ -1226,7 +1245,6 @@ function parseTeamSheet(ws){ const {headers, data} = parseSheetRows(ws); const c
 function parsePanelSheet(ws){ const {headers, data} = parseSheetRows(ws); const colName = findCol(headers, ['показатель']); const colValue = findCol(headers, ['значение']); const out = {}; data.forEach(r=>{ const k = String(r[colName]||'').trim(); const v = String(r[colValue]||'').trim(); if(k) out[k.toLowerCase()] = v; }); return out; }
 function parseConclusionSheet(ws){ const rows = XLSX.utils.sheet_to_json(ws, {header:1, defval:''}); const parts = []; rows.forEach(r=>{ const cells = r.map(c=>String(c).trim()).filter(Boolean); if(!cells.length) return; const joined = cells.join(' '); if(/:\s*$/.test(joined)) return; parts.push(joined); }); return parts.join('\n\n'); }
 
-/* ============ ПАРСЕРЫ СТАНДАРТНОЙ ФОРМЫ А3 ============ */
 function _cleanCell(v) { return String(v || '').replace(/<br\s*\/?>/gi, '\n').replace(/&nbsp;/g, ' ').replace(/\u00a0/g, ' ').replace(/\r\n/g, '\n').trim(); }
 function _findRow(rows, needle, colIdx = 1) { const n = String(needle).toLowerCase(); for (let i = 0; i < rows.length; i++) { if (String(rows[i]?.[colIdx] ?? '').toLowerCase().includes(n)) return i; } return -1; }
 function _extractField(rows, label, opts = {}) { const col = opts.col ?? 1; const idx = _findRow(rows, label, col); if (idx === -1) return ''; const same = _cleanCell(rows[idx]?.[col + 1]); if (same) return same; const parts = []; const max = opts.maxLines ?? 1; for (let i = idx + 1; i < Math.min(idx + 1 + max * 2, rows.length); i++) { const v = _cleanCell(rows[i]?.[col]); if (!v) { if (parts.length) break; continue; } if (parts.length && /^\d+\.\s/.test(v) && v.length < 150) break; parts.push(v); if (parts.length >= max) break; } return parts.join('\n'); }
@@ -1353,32 +1371,172 @@ function buildPrintView(){
   const a = r.a3;
   const box = $('#printView'); if(!box) return;
   const T = a.titles;
-  const ranked = r.ideas.slice().sort((x,y)=>{ if((y.score||0) !== (x.score||0)) return (y.score||0) - (x.score||0); if(x.priority !== y.priority) return (y.priority?1:0) - (x.priority?1:0); return x.text.localeCompare(y.text); });
-  let lastScore = null, lastRank = 0;
-  const ratingRows = ranked.map((i, idx)=>{ if(i.score !== lastScore){ lastRank = idx+1; lastScore = i.score; } const cat = CATS.find(c=>c.id===i.cat); return `<tr><td style="border:1px solid #000;padding:4px;text-align:center;width:40px">${lastRank}</td><td style="border:1px solid #000;padding:4px">${esc(cat?cat.name:'')}</td><td style="border:1px solid #000;padding:4px">${esc(i.text)}</td><td style="border:1px solid #000;padding:4px;text-align:center;width:50px">${i.score||'—'}</td><td style="border:1px solid #000;padding:4px;text-align:center;width:40px">${i.priority?'★':''}</td></tr>`; }).join('');
-  const measRows = (a.measures||[]).map((m,i)=>`<tr><td style="border:1px solid #000;padding:4px;text-align:center;width:30px">${i+1}</td><td style="border:1px solid #000;padding:4px">${esc(m.what||'')}</td><td style="border:1px solid #000;padding:4px;width:80px">${esc(m.due||'')}</td><td style="border:1px solid #000;padding:4px;width:120px">${esc(m.owner||'')}</td><td style="border:1px solid #000;padding:4px;width:90px">${esc(m.status||'')}</td></tr>`).join('');
-  const effRows = (a.effRows||[]).map((e,i)=>`<tr><td style="border:1px solid #000;padding:4px">${esc(e.name||'')}</td><td style="border:1px solid #000;padding:4px;text-align:center;width:80px">${esc(e.plan||'')}</td><td style="border:1px solid #000;padding:4px;text-align:center;width:80px">${esc(e.fact||'')}</td></tr>`).join('');
-  const nextRows = (a.nextSteps||[]).map((m,i)=>`<tr><td style="border:1px solid #000;padding:4px;text-align:center;width:30px">${i+1}</td><td style="border:1px solid #000;padding:4px">${esc(m.what||'')}</td><td style="border:1px solid #000;padding:4px;width:80px">${esc(m.due||'')}</td><td style="border:1px solid #000;padding:4px;width:120px">${esc(m.owner||'')}</td><td style="border:1px solid #000;padding:4px;width:90px">${esc(m.status||'')}</td></tr>`).join('');
+  const esc2 = esc;
+
+  const secTitle = (text) => `<div style="background:#d9d9d9;border:1px solid #000;padding:4px 6px;font-weight:bold;font-size:11px;text-transform:uppercase;margin-top:6px">${esc2(text)}</div>`;
+  const secBlock = (html) => `<div style="border:1px solid #000;border-top:none;padding:6px;font-size:11px">${html}</div>`;
+
+  const leftCol = `
+    <table style="width:100%;border-collapse:collapse;margin-bottom:6px;font-size:10px">
+      <tr>
+        <td style="border:1px solid #000;padding:3px;background:#f0f0f0;width:18%"><b>ПП, отдел</b></td>
+        <td style="border:1px solid #000;padding:3px">${esc2(a.department||'')}</td>
+        <td style="border:1px solid #000;padding:3px;background:#f0f0f0;width:18%"><b>Руководитель</b></td>
+        <td style="border:1px solid #000;padding:3px">${esc2(a.manager||'')}</td>
+      </tr>
+      <tr>
+        <td style="border:1px solid #000;padding:3px;background:#f0f0f0"><b>Открыт</b></td>
+        <td style="border:1px solid #000;padding:3px">${esc2(a.openDate||'')}</td>
+        <td style="border:1px solid #000;padding:3px;background:#f0f0f0"><b>Закрыт</b></td>
+        <td style="border:1px solid #000;padding:3px">${esc2(a.closeDate||'')}</td>
+      </tr>
+      <tr>
+        <td style="border:1px solid #000;padding:3px;background:#f0f0f0"><b>Команда</b></td>
+        <td colspan="3" style="border:1px solid #000;padding:3px">${esc2(a.team||'')}</td>
+      </tr>
+    </table>
+    ${secTitle(T.t1)}${secBlock(`<div style="min-height:40px;white-space:pre-wrap">${esc2(a.problem||'')}</div>`)}
+    ${secTitle(T.t2)}${secBlock(`<div style="min-height:70px;white-space:pre-wrap;margin-bottom:6px">${esc2(a.currentState||'')}</div>
+      <table style="width:100%;border-collapse:collapse;font-size:10px">
+        <tr><td style="border:1px solid #000;padding:3px;width:55%">${esc2(a.labels.defectRate)}</td><td style="border:1px solid #000;padding:3px">${esc2(a.defectRate||'')}</td></tr>
+        <tr><td style="border:1px solid #000;padding:3px">${esc2(a.labels.claimsCount)}</td><td style="border:1px solid #000;padding:3px">${esc2(a.claimsCount||'')}</td></tr>
+        <tr><td style="border:1px solid #000;padding:3px">${esc2(a.labels.timeLoss)}</td><td style="border:1px solid #000;padding:3px">${esc2(a.timeLoss||'')}</td></tr>
+        <tr><td style="border:1px solid #000;padding:3px">${esc2(a.labels.lostProfit)}</td><td style="border:1px solid #000;padding:3px">${esc2(a.lostProfit||'')}</td></tr>
+      </table>`)}
+    ${secTitle(T.t3)}${secBlock(`<table style="width:100%;border-collapse:collapse;font-size:10px">
+        <tr><td style="border:1px solid #000;padding:3px;width:55%">${esc2(a.labels.goalDefect)}</td><td style="border:1px solid #000;padding:3px">${esc2(a.goalDefect||'')}</td></tr>
+        <tr><td style="border:1px solid #000;padding:3px">${esc2(a.labels.goalClaims)}</td><td style="border:1px solid #000;padding:3px">${esc2(a.goalClaims||'')}</td></tr>
+        <tr><td style="border:1px solid #000;padding:3px">${esc2(a.labels.goalLoss)}</td><td style="border:1px solid #000;padding:3px">${esc2(a.goalLoss||'')}</td></tr>
+        <tr><td style="border:1px solid #000;padding:3px">${esc2(a.labels.goalProfit)}</td><td style="border:1px solid #000;padding:3px">${esc2(a.goalProfit||'')}</td></tr>
+      </table>`)}
+    ${secTitle(T.t4)}${secBlock(`<div style="white-space:pre-wrap;min-height:60px">${esc2(a.analysisMethods||'')}</div>
+      <div style="margin-top:6px;padding:4px 6px;background:#fffbeb;border:1px solid #b45309;font-size:10px">
+        <b>Корневая причина:</b> ${esc2(a.rootCause||'')}
+      </div>`)}
+  `;
+
+  const measRows = (a.measures||[]).map((m,i)=>`<tr>
+    <td style="border:1px solid #000;padding:3px;text-align:center;width:22px">${i+1}</td>
+    <td style="border:1px solid #000;padding:3px">${esc2(m.what||'')}</td>
+    <td style="border:1px solid #000;padding:3px;width:65px">${esc2(m.due||'')}</td>
+    <td style="border:1px solid #000;padding:3px;width:95px">${esc2(m.owner||'')}</td>
+    <td style="border:1px solid #000;padding:3px;width:70px">${esc2(m.status||'')}</td>
+  </tr>`).join('');
+  const effRows = (a.effRows||[]).map(e=>`<tr>
+    <td style="border:1px solid #000;padding:3px">${esc2(e.name||'')}</td>
+    <td style="border:1px solid #000;padding:3px;text-align:center;width:70px">${esc2(e.plan||'')}</td>
+    <td style="border:1px solid #000;padding:3px;text-align:center;width:70px">${esc2(e.fact||'')}</td>
+  </tr>`).join('');
+  const nextRows = (a.nextSteps||[]).map((m,i)=>`<tr>
+    <td style="border:1px solid #000;padding:3px;text-align:center;width:22px">${i+1}</td>
+    <td style="border:1px solid #000;padding:3px">${esc2(m.what||'')}</td>
+    <td style="border:1px solid #000;padding:3px;width:65px">${esc2(m.due||'')}</td>
+    <td style="border:1px solid #000;padding:3px;width:95px">${esc2(m.owner||'')}</td>
+    <td style="border:1px solid #000;padding:3px;width:70px">${esc2(m.status||'')}</td>
+  </tr>`).join('');
+
+  const rightCol = `
+    ${secTitle(T.t5)}${secBlock(`<table style="width:100%;border-collapse:collapse;font-size:10px">
+      <thead><tr>
+        <th style="border:1px solid #000;padding:3px;background:#f0f0f0">№</th>
+        <th style="border:1px solid #000;padding:3px;background:#f0f0f0">Мероприятие</th>
+        <th style="border:1px solid #000;padding:3px;background:#f0f0f0">Срок</th>
+        <th style="border:1px solid #000;padding:3px;background:#f0f0f0">Ответственный</th>
+        <th style="border:1px solid #000;padding:3px;background:#f0f0f0">Статус</th>
+      </tr></thead><tbody>${measRows || '<tr><td colspan="5" style="padding:4px;text-align:center">—</td></tr>'}</tbody></table>`)}
+    ${secTitle(T.t6)}${secBlock(`<table style="width:100%;border-collapse:collapse;font-size:10px">
+      <thead><tr>
+        <th style="border:1px solid #000;padding:3px;background:#f0f0f0">Показатель</th>
+        <th style="border:1px solid #000;padding:3px;background:#f0f0f0">План</th>
+        <th style="border:1px solid #000;padding:3px;background:#f0f0f0">Факт</th>
+      </tr></thead><tbody>${effRows || '<tr><td colspan="3" style="padding:4px;text-align:center">—</td></tr>'}</tbody></table>`)}
+    ${secTitle(T.t7)}${secBlock(`<div style="min-height:50px;white-space:pre-wrap">${esc2(a.results||'')}</div>`)}
+    ${secTitle(T.t8)}${secBlock(`<table style="width:100%;border-collapse:collapse;font-size:10px">
+      <thead><tr>
+        <th style="border:1px solid #000;padding:3px;background:#f0f0f0">№</th>
+        <th style="border:1px solid #000;padding:3px;background:#f0f0f0">Мероприятие</th>
+        <th style="border:1px solid #000;padding:3px;background:#f0f0f0">Срок</th>
+        <th style="border:1px solid #000;padding:3px;background:#f0f0f0">Ответственный</th>
+        <th style="border:1px solid #000;padding:3px;background:#f0f0f0">Статус</th>
+      </tr></thead><tbody>${nextRows || '<tr><td colspan="5" style="padding:4px;text-align:center">—</td></tr>'}</tbody></table>`)}
+    <div style="margin-top:8px;font-size:10px;text-align:right"><b>Дата закрытия:</b> ${esc2(a.closeDate||'')}</div>
+  `;
+
+  const ishRows = CATS.map(c=>{
+    const items = r.ideas.filter(i=>i.cat===c.id);
+    if(!items.length) return '';
+    return `<tr>
+      <td style="border:1px solid #000;padding:4px;background:${c.color}22;font-weight:bold;width:120px;vertical-align:top">${esc2(c.name)}</td>
+      <td style="border:1px solid #000;padding:4px;vertical-align:top">${items.map(i=>`${i.root?'<b>★ </b>':''}${i.score?`<span style="color:#666">[${i.score}]</span> `:''}${esc2(i.text)}`).join('<br>')}</td>
+    </tr>`;
+  }).join('');
+  const ishPage = `<div class="a3-page">
+    <div style="text-align:center;font-size:14px;font-weight:bold;margin-bottom:8px">ПРИЛОЖЕНИЕ 1. ДИАГРАММА ИСИКАВЫ (6М)</div>
+    <div style="font-size:11px;margin-bottom:6px"><b>Проблема:</b> ${esc2(r.problem||'')}</div>
+    <table style="width:100%;border-collapse:collapse;font-size:11px"><tbody>${ishRows || '<tr><td style="padding:8px;text-align:center">—</td></tr>'}</tbody></table>
+  </div>`;
+
+  const treeHtml = (r.why2.branches||[]).map(b=>`
+    <div style="margin-bottom:8px;page-break-inside:avoid">
+      <div style="font-weight:bold;font-size:11px;background:#f0f0f0;padding:3px 6px;border:1px solid #000">${esc2(b.name)}</div>
+      ${b.sub.map(s=>`
+        <div style="margin-left:14px;font-size:11px;padding:2px 0;border-left:2px solid #cbd5e1;padding-left:8px;margin-top:3px">• ${esc2(s.name)}</div>
+        ${s.sub.map(ss=>`<div style="margin-left:32px;font-size:10px;color:#333;padding:1px 0">– ${esc2(ss.name)}</div>`).join('')}
+      `).join('')}
+    </div>`).join('');
+  const treePage = `<div class="a3-page">
+    <div style="text-align:center;font-size:14px;font-weight:bold;margin-bottom:8px">ПРИЛОЖЕНИЕ 2. ДЕРЕВО «5 ПОЧЕМУ»</div>
+    ${treeHtml || '<div style="text-align:center;padding:8px;color:#666">—</div>'}
+  </div>`;
+
   let prev = r.problem || '';
-  const whyRows = r.why1.chain.map((val,i)=>{ const q = i===0 ? 'Почему это происходит?' : `Почему «${prev}»?`; if(val) prev = val; return `<tr><td style="border:1px solid #000;padding:4px;text-align:center;width:30px">${i+1}</td><td style="border:1px solid #000;padding:4px;width:45%">${esc(q)}</td><td style="border:1px solid #000;padding:4px">${esc(val||'')}</td></tr>`; }).join('');
-  const secTitle = (text) => `<table style="width:100%;border-collapse:collapse;margin-top:10px"><tr><td style="border:2px solid #000;background:#d9d9d9;padding:5px 8px;font-weight:bold;font-size:12px;text-transform:uppercase">${esc(text)}</td></tr></table>`;
-  const secBlock = (html) => `<table style="width:100%;border-collapse:collapse;border:2px solid #000"><tr><td style="padding:6px;vertical-align:top">${html}</td></tr></table>`;
+  const whyRows = r.why1.chain.map((val,i)=>{
+    const q = i===0 ? 'Почему это происходит?' : `Почему «${prev}»?`;
+    if(val) prev = val;
+    return `<tr>
+      <td style="border:1px solid #000;padding:4px;text-align:center;width:30px">${i+1}</td>
+      <td style="border:1px solid #000;padding:4px;width:45%">${esc2(q)}</td>
+      <td style="border:1px solid #000;padding:4px">${esc2(val||'')}</td>
+    </tr>`;
+  }).join('');
+  const whyPage = `<div class="a3-page">
+    <div style="text-align:center;font-size:14px;font-weight:bold;margin-bottom:8px">ПРИЛОЖЕНИЕ 3. ЛИНЕЙНЫЙ АНАЛИЗ «5 ПОЧЕМУ»</div>
+    <table style="width:100%;border-collapse:collapse;font-size:11px"><tbody>${whyRows || '<tr><td style="padding:8px;text-align:center">—</td></tr>'}</tbody></table>
+  </div>`;
+
+  const wasPage = `<div class="a3-page">
+    <div style="text-align:center;font-size:14px;font-weight:bold;margin-bottom:8px">ПРИЛОЖЕНИЕ 4. БЫЛО — СТАЛО</div>
+    <table style="width:100%;border-collapse:collapse;font-size:11px">
+      <tr>
+        <td style="border:1px solid #000;padding:4px;background:#fee2e2;width:50%"><b>БЫЛО</b> ${esc2(r.wasBefore.date||'')}</td>
+        <td style="border:1px solid #000;padding:4px;background:#dcfce7"><b>СТАЛО</b> ${esc2(r.wasAfter.date||'')}</td>
+      </tr>
+      <tr>
+        <td style="border:1px solid #000;padding:6px;white-space:pre-wrap;vertical-align:top;min-height:200px">${esc2(r.wasBefore.text||'')}</td>
+        <td style="border:1px solid #000;padding:6px;white-space:pre-wrap;vertical-align:top">${esc2(r.wasAfter.text||'')}</td>
+      </tr>
+    </table>
+  </div>`;
+
   box.innerHTML = `
-    <div style="font-family:Arial,sans-serif;color:#000;font-size:11px;border:3px solid #000;padding:10px">
-      <div style="text-align:center;margin-bottom:10px"><div style="font-size:14px;font-weight:bold;letter-spacing:1px">ОТЧЁТ А3</div><div style="font-size:13px;margin-top:2px"><b>${esc(a.projectName||reportName(r))}</b></div></div>
-      <table style="width:100%;border-collapse:collapse;margin-bottom:10px"><tr><td style="border:1px solid #000;padding:4px;width:18%;background:#f0f0f0"><b>ПП, отдел</b></td><td style="border:1px solid #000;padding:4px">${esc(a.department||'')}</td><td style="border:1px solid #000;padding:4px;width:18%;background:#f0f0f0"><b>Руководитель</b></td><td style="border:1px solid #000;padding:4px">${esc(a.manager||'')}</td></tr><tr><td style="border:1px solid #000;padding:4px;background:#f0f0f0"><b>Дата открытия</b></td><td style="border:1px solid #000;padding:4px">${esc(a.openDate||'')}</td><td style="border:1px solid #000;padding:4px;background:#f0f0f0"><b>Дата закрытия</b></td><td style="border:1px solid #000;padding:4px">${esc(a.closeDate||'')}</td></tr><tr><td style="border:1px solid #000;padding:4px;background:#f0f0f0"><b>Команда</b></td><td colspan="3" style="border:1px solid #000;padding:4px">${esc(a.team||'')}</td></tr></table>
-      ${secTitle(T.t1)}${secBlock(`<div style="min-height:36px;white-space:pre-wrap">${esc(a.problem||'')}</div>`)}
-      ${secTitle(T.t2)}${secBlock(`<div style="min-height:60px;white-space:pre-wrap;margin-bottom:6px">${esc(a.currentState||'')}</div>`)}
-      ${secTitle(T.t3)}${secBlock(`<div style="white-space:pre-wrap">${esc(a.goalDefect||'')}\n${esc(a.goalClaims||'')}\n${esc(a.goalLoss||'')}\n${esc(a.goalProfit||'')}</div>`)}
-      ${secTitle(T.t4)}${secBlock(`<div style="white-space:pre-wrap">${esc(a.analysisMethods||'')}</div>`)}
-      ${secTitle(T.t5)}${secBlock(`<table style="width:100%;border-collapse:collapse"><thead><tr><th style="border:1px solid #000;padding:4px;background:#f0f0f0">№</th><th style="border:1px solid #000;padding:4px;background:#f0f0f0">Мероприятие</th><th style="border:1px solid #000;padding:4px;background:#f0f0f0">Срок</th><th style="border:1px solid #000;padding:4px;background:#f0f0f0">Ответственный</th><th style="border:1px solid #000;padding:4px;background:#f0f0f0">Статус</th></tr></thead><tbody>${measRows || '<tr><td colspan="5" style="padding:6px;text-align:center">—</td></tr>'}</tbody></table>`)}
-      ${secTitle(T.t6)}${secBlock(`<table style="width:100%;border-collapse:collapse"><thead><tr><th style="border:1px solid #000;padding:4px;background:#f0f0f0">Показатель</th><th style="border:1px solid #000;padding:4px;background:#f0f0f0">План</th><th style="border:1px solid #000;padding:4px;background:#f0f0f0">Факт</th></tr></thead><tbody>${effRows || '<tr><td colspan="3" style="padding:6px;text-align:center">—</td></tr>'}</tbody></table>`)}
-      ${secTitle(T.t7)}${secBlock(`<div style="min-height:50px;white-space:pre-wrap">${esc(a.results||'')}</div>`)}
-      ${secTitle(T.t8)}${secBlock(`<table style="width:100%;border-collapse:collapse"><thead><tr><th style="border:1px solid #000;padding:4px;background:#f0f0f0">№</th><th style="border:1px solid #000;padding:4px;background:#f0f0f0">Мероприятие</th><th style="border:1px solid #000;padding:4px;background:#f0f0f0">Срок</th><th style="border:1px solid #000;padding:4px;background:#f0f0f0">Ответственный</th><th style="border:1px solid #000;padding:4px;background:#f0f0f0">Статус</th></tr></thead><tbody>${nextRows || '<tr><td colspan="5" style="padding:6px;text-align:center">—</td></tr>'}</tbody></table>`)}
-      ${secTitle('Рейтинг гипотез (6М)')}${secBlock(`<table style="width:100%;border-collapse:collapse"><thead><tr><th style="border:1px solid #000;padding:4px;background:#f0f0f0">Ранг</th><th style="border:1px solid #000;padding:4px;background:#f0f0f0">Категория</th><th style="border:1px solid #000;padding:4px;background:#f0f0f0">Гипотеза</th><th style="border:1px solid #000;padding:4px;background:#f0f0f0">Балл</th><th style="border:1px solid #000;padding:4px;background:#f0f0f0">★</th></tr></thead><tbody>${ratingRows || '<tr><td colspan="5" style="padding:6px;text-align:center">—</td></tr>'}</tbody></table>`)}
-      ${secTitle('5 почему (линейный)')}${secBlock(`<table style="width:100%;border-collapse:collapse"><tbody>${whyRows || '<tr><td style="padding:6px;text-align:center">—</td></tr>'}</tbody></table>`)}
-      ${secTitle('Было — Стало')}${secBlock(`<table style="width:100%;border-collapse:collapse"><tr><td style="border:1px solid #000;padding:4px;background:#fee2e2"><b>БЫЛО</b> ${esc(r.wasBefore.date||'')}</td><td style="border:1px solid #000;padding:4px;background:#dcfce7"><b>СТАЛО</b> ${esc(r.wasAfter.date||'')}</td></tr><tr><td style="border:1px solid #000;padding:6px;white-space:pre-wrap">${esc(r.wasBefore.text||'')}</td><td style="border:1px solid #000;padding:6px;white-space:pre-wrap">${esc(r.wasAfter.text||'')}</td></tr></table>`)}
-      <div style="margin-top:14px;text-align:center;font-size:10px;color:#666">Сформировано: ${new Date().toLocaleString('ru-RU')}</div>
+    <div style="font-family:Arial,sans-serif;color:#000;font-size:11px;border:3px solid #000;padding:8px">
+      <div class="a3-page">
+        <div style="text-align:center;margin-bottom:8px">
+          <div style="font-size:15px;font-weight:bold;letter-spacing:1px">ОТЧЁТ А3</div>
+          <div style="font-size:13px;margin-top:2px"><b>${esc2(a.projectName||reportName(r))}</b></div>
+        </div>
+        <table style="width:100%;border-collapse:collapse">
+          <tr>
+            <td style="width:55%;vertical-align:top;padding:0 6px 0 0;border-right:2px solid #000">${leftCol}</td>
+            <td style="width:45%;vertical-align:top;padding:0 0 0 6px">${rightCol}</td>
+          </tr>
+        </table>
+      </div>
+      ${ishPage}
+      ${treePage}
+      ${whyPage}
+      ${wasPage}
+      <div style="text-align:center;font-size:9px;color:#666;margin-top:6px">Сформировано: ${new Date().toLocaleString('ru-RU')}</div>
     </div>`;
 }
 window.addEventListener('beforeprint', buildPrintView);
@@ -1388,7 +1546,6 @@ $$('[data-close]').forEach(b=>b.addEventListener('click', ()=>$('#'+b.dataset.cl
 $$('.modal-overlay').forEach(m=>m.addEventListener('click', e=>{ if(e.target===m) m.classList.remove('active'); }));
 document.addEventListener('keydown', e=>{ if(e.key === 'Escape') $$('.modal-overlay.active').forEach(m=>m.classList.remove('active')); });
 
-/* ⬇⬇⬇ НОВЫЙ ПРИМЕР ИЗ «Практического задания №24 Отчет А3» ⬇⬇⬇ */
 $('#demoBtn')?.addEventListener('click', ()=>{
   if(!confirm('Заполнить примером из «Практического задания №24 Отчет А3»?')) return;
   try {
@@ -1408,14 +1565,25 @@ $('#demoBtn')?.addEventListener('click', ()=>{
                       '2. Отсутствие систематизированных каналов сбыта внешним потребителям (строительные смеси, мастики, абразивы, утеплители) и внутренним заводам (каменная вата).\n' +
                       '3. Промышленные результаты и экономический эффект маршрутов не подтверждены.\n' +
                       '4. Отсутствие стандартизированной подготовки сырья (дробление, фракционирование 100–300 мкм, отжиг связующего).';
-    a3.defectRate   = '1. Объём образования отходов: 120 т/мес. (1 440 т/год)';
-    a3.claimsCount  = '2. Затраты на обращение и утилизацию: 20 млн руб./год';
-    a3.timeLoss     = '3. Доля повторного вовлечения отходов в оборот: 0%';
-    a3.lostProfit   = '';
-    a3.goalDefect   = '1. Достичь уровня повторного вовлечения отходов стеклохолста во вторичную переработку не менее 35% (42 т/мес.) за 180 дней.';
-    a3.goalClaims   = '2. Подтвердить и квалифицировать не менее 3 различных направлений вторичного использования (мастики/сухие смеси, каменная вата, мягкая кровля/Шинглас и т.д.).';
-    a3.goalLoss     = '3. Снизить годовые затраты на обращение с отходами на 35% (~7,0 млн руб./год) за счёт сбыта вторичного сырья и снижения объёма вывоза на полигон.';
-    a3.goalProfit   = '4. Реализовать стратегию «Минимальных CAPEX»: проверка спроса внешних потребителей до закупки крупного оборудования.';
+    // Подписи для отходного проекта
+    a3.labels.defectRate   = '1. Объём образования отходов';
+    a3.labels.claimsCount  = '2. Затраты на обращение и утилизацию';
+    a3.labels.timeLoss     = '3. Доля повторного вовлечения';
+    a3.labels.lostProfit   = '4. Риски';
+    a3.defectRate   = '120 т/мес. (1 440 т/год)';
+    a3.claimsCount  = '20 млн руб./год';
+    a3.timeLoss     = '0%';
+    a3.lostProfit   = 'Ограничение приёма полигонами, санкции';
+
+    a3.labels.goalDefect   = 'Цель 1. Вовлечение в переработку';
+    a3.labels.goalClaims   = 'Цель 2. Квалифицировать направлений';
+    a3.labels.goalLoss     = 'Цель 3. Снизить затраты на';
+    a3.labels.goalProfit   = 'Цель 4. Стратегия';
+    a3.goalDefect   = 'не менее 35% (42 т/мес.) за 180 дней';
+    a3.goalClaims   = 'не менее 3 направлений (мастики/сухие смеси, каменная вата, мягкая кровля/Шинглас)';
+    a3.goalLoss     = '35% (~7,0 млн руб./год) за счёт сбыта вторсырья и снижения вывоза на полигон';
+    a3.goalProfit   = '«Минимальных CAPEX»: проверка спроса до закупки крупного оборудования';
+
     a3.analysisMethods =
       '• Сырьё и переработка: разные требования потребителей к фракции (рубка 100–300 мкм) и наличию связующего (требуется отжиг для ряда производств).\n' +
       '• Сбыт / потребители: отсутствие официальных соглашений и ТУ с заводами каменной ваты, производителями мастик, сухих смесей и абразивов.\n' +
@@ -1428,7 +1596,7 @@ $('#demoBtn')?.addEventListener('click', ()=>{
       { id: uid(), name: '1. Затраты на реализацию проекта, тыс. рублей',           plan: '500',     fact: '' },
       { id: uid(), name: '2. Выгода от реализации проекта за 12 месяцев, тыс. руб.', plan: '5992',    fact: '' },
       { id: uid(), name: '3. Выгода от реализации проекта за 36 месяцев, тыс. руб.', plan: '17976',   fact: '' },
-      { id: uid(), name: '4. Эффективность проекта, %',                              plan: '35.95',   fact: '' },
+      { id: uid(), name: '4. Эффективность проекта, %',                              plan: '3595',    fact: '' },
       { id: uid(), name: '5. Окупаемость',                                           plan: '31 день', fact: '' }
     ];
 
