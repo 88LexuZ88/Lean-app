@@ -53,7 +53,7 @@
   button.ai-btn:hover{background:#7c3aed}
   button.ai-btn:disabled{background:#cbd5e1;cursor:not-allowed}
   
-  /* Исправленные стили для таблиц: убрана жесткая фиксация, разрешен горизонтальный скролл */
+  /* Таблицы с горизонтальным скроллом и минимальной шириной */
   table.form-tbl{width:100%;border-collapse:collapse;font-size:13px;background:#fff;min-width:700px}
   table.form-tbl th,table.form-tbl td{border:1px solid #cbd5e1;padding:4px 6px;vertical-align:top;white-space:normal;word-wrap:break-word}
   table.form-tbl th{background:#f1f5f9;font-size:12px;text-align:center;font-weight:600;white-space:nowrap}
@@ -87,12 +87,13 @@
   .report-list-cb label{display:flex;gap:8px;padding:6px 10px;cursor:pointer;font-size:13px;border-bottom:1px solid #f1f5f9}
   .report-list-cb input{margin:2px 0 0 0;width:14px;height:14px;accent-color:#4f46e5}
   .report-list-cb .cb-sel-all{font-weight:600;background:#eef2f7}
+  
   /* 6M */
   .m6-controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px;padding:10px;background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0}
   .m6-controls label{font-size:13px;display:flex;align-items:center;gap:4px;cursor:pointer}
-  .m6-tbl{width:100%;border-collapse:collapse;font-size:13px;background:#fff}
+  .m6-tbl{width:100%;border-collapse:collapse;font-size:13px;background:#fff;min-width:600px} /* Добавлена минимальная ширина */
   .m6-tbl th,.m6-tbl td{border:1px solid #cbd5e1;padding:6px 8px;vertical-align:middle}
-  .m6-tbl th{background:#f1f5f9;font-size:12px;text-align:left;font-weight:600}
+  .m6-tbl th{background:#f1f5f9;font-size:12px;text-align:left;font-weight:600;white-space:nowrap}
   .m6-tbl tr.m6-row-prio{background:#fffbeb}
   .m6-tbl tr.m6-row-prio td:first-child{border-left:3px solid #f59e0b}
   .m6-tbl input[type=text]{width:100%;border:none;padding:4px 6px;font-size:13px;background:transparent;border-radius:4px}
@@ -208,7 +209,9 @@
       <button class="ghost" id="m6AddRowBtn" type="button">+ Добавить гипотезу</button>
       <span style="margin-left:auto;font-size:12px;color:#64748b" id="m6TotalInfo"></span>
     </div>
-    <div style="overflow-x:auto">
+    
+    <!-- Оборачиваем таблицу в контейнер со скроллом -->
+    <div style="overflow-x:auto; width:100%; border:1px solid #cbd5e1; border-radius:6px;">
       <table class="m6-tbl">
         <thead>
           <tr>
@@ -222,6 +225,7 @@
         <tbody id="m6Body"></tbody>
       </table>
     </div>
+
     <div style="margin-top:20px">
       <h3 style="font-size:15px;color:#475569;margin:0 0 4px">Рейтинг гипотез по баллам</h3>
       <p style="margin:0 0 8px;color:#94a3b8;font-size:12px">
@@ -252,7 +256,6 @@
 
   <section class="tabpane" id="tab-plan">
     <h2>План мероприятий</h2>
-    <!-- Обертка для горизонтального скролла -->
     <div style="overflow-x:auto; width:100%; border:1px solid #cbd5e1; border-radius:6px;">
       <table class="form-tbl">
         <thead><tr>
@@ -526,7 +529,8 @@ function initFloatingEditor() {
     if (target.closest('#floating-editor')) return;
     
     const isTableInput = (target.tagName === 'INPUT' && target.type === 'text') || target.tagName === 'TEXTAREA';
-    const inTable = target.closest('.form-tbl') || target.closest('.a3-form');
+    // Добавлен .m6-tbl, чтобы окно работало и на вкладке 6М
+    const inTable = target.closest('.form-tbl') || target.closest('.a3-form') || target.closest('.m6-tbl');
     
     if (isTableInput && inTable) {
       activeInput = target;
