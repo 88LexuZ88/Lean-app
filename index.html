@@ -187,12 +187,10 @@
     </div>
     <div id="ideaList"></div>
   </section>
-
   <section class="tabpane" id="tab-fish" role="tabpanel">
     <h2>Диаграмма Исикавы</h2>
     <div class="fish-wrap"><div class="fish" id="fish"></div></div>
   </section>
-
   <section class="tabpane" id="tab-6m" role="tabpanel">
     <h2>Исикава 6М</h2>
     <p class="hint">Все гипотезы, отсортированные по убыванию балла. Оценка 1–3, ★ — приоритетная.</p>
@@ -203,30 +201,16 @@
     </div>
     <div style="overflow-x:auto; width:100%; border:1px solid #cbd5e1; border-radius:6px;">
       <table class="m6-tbl">
-        <thead>
-          <tr>
-            <th style="width:40px">★</th>
-            <th style="width:70px">Балл</th>
-            <th style="width:180px">Категория</th>
-            <th>Гипотеза</th>
-            <th style="width:40px"></th>
-          </tr>
-        </thead>
+        <thead><tr><th style="width:40px">★</th><th style="width:70px">Балл</th><th style="width:180px">Категория</th><th>Гипотеза</th><th style="width:40px"></th></tr></thead>
         <tbody id="m6Body"></tbody>
       </table>
     </div>
     <div style="margin-top:20px">
       <h3 style="font-size:15px;color:#475569;margin:0 0 4px">Рейтинг гипотез по баллам</h3>
-      <p style="margin:0 0 8px;color:#94a3b8;font-size:12px">
-        Все гипотезы отсортированы по убыванию балла. Гипотезы с одинаковым баллом имеют одинаковый ранг.
-        🥇🥈🥉 — топ-3. ★ в правой колонке — приоритетная гипотеза.
-      </p>
-      <div style="overflow-x:auto">
-        <table class="summary-tbl" id="m6SummaryTable"></table>
-      </div>
+      <p style="margin:0 0 8px;color:#94a3b8;font-size:12px">Все гипотезы отсортированы по убыванию балла. Гипотезы с одинаковым баллом имеют одинаковый ранг. 🥇🥈🥉 — топ-3.</p>
+      <div style="overflow-x:auto"><table class="summary-tbl" id="m6SummaryTable"></table></div>
     </div>
   </section>
-
   <section class="tabpane" id="tab-why1" role="tabpanel">
     <h2>5 почему (линейный)</h2>
     <div id="whyBox1"></div>
@@ -236,33 +220,21 @@
       <button class="ai-btn" id="aiWhy1Btn" style="margin-left:auto">✨ Построить с ИИ</button>
     </div>
   </section>
-
   <section class="tabpane" id="tab-why2" role="tabpanel">
     <h2>5 почему (дерево)</h2>
     <div id="why2Container"></div>
     <button class="ghost" id="addBranchBtn" style="margin-top:10px">+ ветвь</button>
   </section>
-
   <section class="tabpane" id="tab-plan" role="tabpanel">
     <h2>План мероприятий</h2>
     <div style="overflow-x:auto; width:100%; border:1px solid #cbd5e1; border-radius:6px;">
       <table class="form-tbl">
-        <thead><tr>
-          <th style="width:40px">№</th>
-          <th style="min-width:150px">Мероприятие</th>
-          <th style="min-width:120px">Исполнитель</th>
-          <th style="width:120px">Начало</th>
-          <th style="width:120px">Завершение</th>
-          <th style="width:80px">Готово, %</th>
-          <th style="min-width:150px">Примечания</th>
-          <th style="width:30px"></th>
-        </tr></thead>
+        <thead><tr><th style="width:40px">№</th><th style="min-width:150px">Мероприятие</th><th style="min-width:120px">Исполнитель</th><th style="width:120px">Начало</th><th style="width:120px">Завершение</th><th style="width:80px">Готово, %</th><th style="min-width:150px">Примечания</th><th style="width:30px"></th></tr></thead>
         <tbody id="planBody"></tbody>
       </table>
     </div>
     <button class="ghost" id="addPlanRow" style="margin-top:10px">+ мероприятие</button>
   </section>
-
   <section class="tabpane" id="tab-was" role="tabpanel">
     <h2>Было — Стало</h2>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
@@ -278,11 +250,8 @@
       </div>
     </div>
   </section>
-
   <section class="tabpane" id="tab-a3" role="tabpanel">
-    <div class="a3-form">
-      <div class="a3-form-inner" id="a3FormContainer"></div>
-    </div>
+    <div class="a3-form"><div class="a3-form-inner" id="a3FormContainer"></div></div>
     <div id="printView" class="print-only"></div>
     <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
       <button class="primary" id="printBtn">🖨 Печать / PDF</button>
@@ -290,7 +259,6 @@
       <button class="ghost" id="resetBtn">Очистить текущий</button>
     </div>
   </section>
-
   <section class="tabpane" id="tab-log" role="tabpanel">
     <h2>Журнал изменений</h2>
     <div style="margin-bottom:10px"><input type="search" id="logSearch" placeholder="Поиск…"></div>
@@ -299,7 +267,7 @@
 </main>
 
 <div class="modal-overlay" id="renameModal" role="dialog" aria-modal="true"><div class="modal"><div class="modal-header"><h3>✏️ Переименовать отчёт</h3><button class="modal-close" data-close="renameModal">×</button></div><div class="modal-body"><input type="text" id="renameInput" placeholder="Новое название" maxlength="120"></div><div class="modal-footer"><button class="ghost" data-close="renameModal">Отмена</button><button class="primary" id="renameSaveBtn">Сохранить</button></div></div></div>
-<div class="modal-overlay" id="mergeModal" role="dialog" aria-modal="true"><div class="modal"><div class="modal-header"><h3>🔀 Объединение отчётов</h3><button class="modal-close" data-close="mergeModal">×</button></div><div class="modal-body"><p style="margin-top:0;color:#64748b;font-size:13px">Выберите 2+ отчёта. Балл гипотезы при слиянии берётся максимальный.</p><div class="report-list-cb" id="mergeCheckboxes"></div></div><div class="modal-footer"><button class="ghost" data-close="mergeModal">Отмена</button><button class="primary" id="mergeDoBtn">Объединить</button></div></div></div>
+<div class="modal-overlay" id="mergeModal" role="dialog" aria-modal="true"><div class="modal"><div class="modal-header"><h3>🔀 Объединение отчётов</h3><button class="modal-close" data-close="mergeModal">×</button></div><div class="modal-body"><p style="margin-top:0;color:#64748b;font-size:13px">Выберите 2+ отчёта.</p><div class="report-list-cb" id="mergeCheckboxes"></div></div><div class="modal-footer"><button class="ghost" data-close="mergeModal">Отмена</button><button class="primary" id="mergeDoBtn">Объединить</button></div></div></div>
 <div class="modal-overlay" id="settingsModal" role="dialog" aria-modal="true"><div class="modal"><div class="modal-header"><h3>⚙️ Разделы отчёта</h3><button class="modal-close" data-close="settingsModal">×</button></div><div class="modal-body"><p style="margin-top:0;color:#64748b;font-size:13px">Какие вкладки показывать.</p><div id="tabCheckboxes"></div></div><div class="modal-footer"><button class="primary" id="settingsSaveBtn">Сохранить</button></div></div></div>
 <div class="modal-overlay" id="exportModal" role="dialog" aria-modal="true"><div class="modal"><div class="modal-header"><h3>📤 Экспорт JSON</h3><button class="modal-close" data-close="exportModal">×</button></div><div class="modal-body"><label style="display:flex;gap:8px;padding:6px 0"><input type="radio" name="exportScope" value="current" checked><span><b>Текущий отчёт</b></span></label><label style="display:flex;gap:8px;padding:6px 0"><input type="radio" name="exportScope" value="selected"><span><b>Выбранные отчёты</b></span></label><div class="report-list-cb" id="exportCheckboxes" style="display:none"></div><label style="display:flex;gap:8px;padding:6px 0"><input type="radio" name="exportScope" value="all"><span><b>Все отчёты</b></span></label></div><div class="modal-footer"><button class="ghost" data-close="exportModal">Отмена</button><button class="primary" id="downloadBtn">💾 Скачать</button></div></div></div>
 <div class="modal-overlay" id="shareModal" role="dialog" aria-modal="true"><div class="modal"><div class="modal-header"><h3>📲 Установить / Поделиться</h3><button class="modal-close" data-close="shareModal">×</button></div><div class="modal-body" style="text-align:center"><p style="margin-top:0">Наведите камеру телефона:</p><img id="qrCodeImg" src="" alt="QR-код" style="width:200px;height:200px;margin:10px auto;display:block;border:1px solid #cbd5e1;border-radius:8px;"><div style="display:flex;gap:8px;margin-top:15px;flex-wrap:wrap;justify-content:center"><button class="primary" id="doInstallBtn">Установить на это устройство</button><button class="ghost" id="copyLinkBtn">Скопировать ссылку</button></div><div id="installHint" style="margin-top:15px;font-size:13px;color:#64748b;text-align:left;background:#f8fafc;padding:10px;border-radius:8px;display:none"></div></div></div></div>
@@ -309,9 +277,7 @@
     <div class="modal-header"><h3>🤖 Настройки ИИ</h3><button class="modal-close" data-close="aiModal">×</button></div>
     <div class="modal-body">
       <p style="margin-top:0;color:#64748b;font-size:13px">Вставьте API-ключ. Настройки сохраняются только в вашем браузере.</p>
-      <div style="margin-bottom:10px;padding:8px 10px;background:#fef3c7;border:1px solid #fcd34d;border-radius:6px;font-size:12px;color:#78350f">
-        ⚠️ Ключ хранится <b>в открытом виде</b> в localStorage браузера. Не используйте на чужом устройстве.
-      </div>
+      <div style="margin-bottom:10px;padding:8px 10px;background:#fef3c7;border:1px solid #fcd34d;border-radius:6px;font-size:12px;color:#78350f">⚠️ Ключ хранится в открытом виде в localStorage браузера.</div>
       <label style="font-size:12px;font-weight:bold">API URL</label>
       <input type="text" id="aiUrl" value="https://openrouter.ai/api/v1/chat/completions" style="margin-bottom:10px">
       <label style="font-size:12px;font-weight:bold">Модель (Model)</label>
@@ -334,7 +300,6 @@ const CATS = [
   {id:'measure',name:'Измерения',color:'#ec4899'},
   {id:'env',name:'Окружающая среда',color:'#8b5cf6'}
 ];
-
 const TABS_LIST = [
   {id:'brain', name:'1. Штурм', defaultOn:true},
   {id:'fish',  name:'2. Исикава', defaultOn:true},
@@ -346,7 +311,6 @@ const TABS_LIST = [
   {id:'a3',    name:'8. А3', defaultOn:true},
   {id:'log',   name:'9. Журнал', defaultOn:true}
 ];
-
 const $ = (s,r=document)=>r.querySelector(s);
 const $$ = (s,r=document)=>Array.from(r.querySelectorAll(s));
 const esc = s => String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -390,8 +354,7 @@ function emptyReport(){
         {id:uid(),name:'4. Эффективность, %',plan:'',fact:''},
         {id:uid(),name:'5. Окупаемость, дней',plan:'',fact:''}
       ],
-      measures:[],
-      nextSteps:[]
+      measures:[], nextSteps:[]
     },
     enabledTabs: TABS_LIST.filter(t=>t.defaultOn).map(t=>t.id),
     log:[],
@@ -403,16 +366,12 @@ function normalizeReport(r){
   const base = emptyReport();
   const out = Object.assign({}, base, r||{});
   out.ideas = (Array.isArray(r?.ideas) ? r.ideas : []).map(i => ({
-    id: safeId(i?.id),
-    text: String(i?.text||''),
+    id: safeId(i?.id), text: String(i?.text||''),
     cat: CATS.some(c => c.id === i?.cat) ? i.cat : 'method',
-    root: !!i?.root,
-    score: Math.min(3, Math.max(0, Number(i?.score) || 0)),
-    priority: !!i?.priority
+    root: !!i?.root, score: Math.min(3, Math.max(0, Number(i?.score) || 0)), priority: !!i?.priority
   }));
   const fixBranch = b => ({
-    id: safeId(b?.id),
-    name: String(b?.name||''),
+    id: safeId(b?.id), name: String(b?.name||''),
     sub: (Array.isArray(b?.sub) ? b.sub : []).map(s => ({
       id: safeId(s?.id), name: String(s?.name||''),
       sub: (Array.isArray(s?.sub) ? s.sub : []).map(ss => ({ id: safeId(ss?.id), name: String(ss?.name||'') }))
@@ -430,8 +389,7 @@ function normalizeReport(r){
   out.a3.measures = (Array.isArray(r?.a3?.measures) ? r.a3.measures : []).map(m => ({ ...(m||{}), id: safeId(m?.id) }));
   out.a3.nextSteps = (Array.isArray(r?.a3?.nextSteps) ? r.a3.nextSteps : []).map(m => ({ ...(m||{}), id: safeId(m?.id) }));
   out.enabledTabs = Array.isArray(r?.enabledTabs) && r.enabledTabs.length
-    ? r.enabledTabs.filter(t => TABS_LIST.some(x => x.id === t))
-    : base.enabledTabs;
+    ? r.enabledTabs.filter(t => TABS_LIST.some(x => x.id === t)) : base.enabledTabs;
   out.log = Array.isArray(r?.log) ? r.log.slice(0, 300) : [];
   out.m6Settings = Object.assign({}, base.m6Settings, r?.m6Settings||{});
   return out;
@@ -450,20 +408,15 @@ function loadState(){
         const want = safeId(parsed.activeReportId);
         app.activeId = app.reports[want] ? want : Object.keys(app.reports)[0];
       } else if(parsed){
-        const id = uid();
-        app.reports[id] = normalizeReport(parsed);
-        app.activeId = id;
+        const id = uid(); app.reports[id] = normalizeReport(parsed); app.activeId = id;
       }
     } catch(e){ console.error('parse error', e); }
   }
   if(!app.activeId || !app.reports[app.activeId]){
-    const id = uid();
-    app.reports[id] = emptyReport();
-    app.activeId = id;
+    const id = uid(); app.reports[id] = emptyReport(); app.activeId = id;
   }
 }
 loadState();
-
 function getR(){ return app.reports[app.activeId]; }
 
 let _saveTimer = null;
@@ -474,19 +427,12 @@ function _doSave(){
     if(b){ b.textContent = 'Сохранено ' + new Date().toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'}); b.style.background=''; b.title=''; }
   } catch(e){
     console.error('save failed', e);
-    if(b){
-      b.textContent = '⚠ Не сохранено';
-      b.style.background = '#7f1d1d';
-      b.title = e && e.name === 'QuotaExceededError'
-        ? 'Переполнено хранилище. Экспортируйте отчёт в JSON и удалите старые.'
-        : String(e.message || e);
-    }
+    if(b){ b.textContent = '⚠ Не сохранено'; b.style.background = '#7f1d1d'; b.title = e && e.name === 'QuotaExceededError' ? 'Переполнено хранилище.' : String(e.message || e); }
   }
 }
 function save(immediate=false){
   if(immediate){ clearTimeout(_saveTimer); _doSave(); return; }
-  clearTimeout(_saveTimer);
-  _saveTimer = setTimeout(_doSave, 300);
+  clearTimeout(_saveTimer); _saveTimer = setTimeout(_doSave, 300);
 }
 window.addEventListener('beforeunload', ()=>{ if(_saveTimer){ clearTimeout(_saveTimer); _doSave(); } });
 
@@ -543,7 +489,6 @@ function initFloatingEditor() {
 initFloatingEditor();
 
 function getAISettings(){ return { url: localStorage.getItem('ai_url') || 'https://openrouter.ai/api/v1/chat/completions', model: localStorage.getItem('ai_model') || 'openai/gpt-4o-mini', key: localStorage.getItem('ai_key') || '' }; }
-
 async function callAI(prompt, btn) {
   const settings = getAISettings();
   if (!settings.key) { alert('Сначала настройте ИИ.'); $('#aiModal').classList.add('active'); return; }
@@ -557,7 +502,6 @@ async function callAI(prompt, btn) {
   } catch (err) { console.error(err); alert('Ошибка ИИ: ' + err.message); return null; }
   finally { btn.disabled = false; btn.innerHTML = originalText; }
 }
-
 $('#aiSettingsBtn')?.addEventListener('click', () => {
   const s = getAISettings();
   $('#aiUrl').value = s.url; $('#aiModel').value = s.model; $('#aiKey').value = s.key;
@@ -652,7 +596,7 @@ $('#ideaList')?.addEventListener('click', e=>{
 $('#aiGenerateIdeasBtn')?.addEventListener('click', async () => {
   const r = getR();
   if (!r.problem) { alert('Сначала введите проблему'); return; }
-  const prompt = `Ты — эксперт по бережливому производству. У нас есть проблема: "${r.problem}". Предложи ровно 7 гипотез по 6М. Формат: категория | текст. Категория: Люди, Метод, Оборудование, Материалы, Измерения, Окружающая среда. Только 7 строк.`;
+  const prompt = `Ты — эксперт по БП. Проблема: "${r.problem}". Предложи ровно 7 гипотез по 6М. Формат: категория | текст. Категории: Люди, Метод, Оборудование, Материалы, Измерения, Окружающая среда. Только 7 строк.`;
   const result = await callAI(prompt, $('#aiGenerateIdeasBtn'));
   if (!result) return;
   const lines = result.split('\n').filter(l => l.includes('|'));
@@ -931,12 +875,9 @@ function renderA3(){
     return `<input type="text" value="${esc(val)}" data-a3="${field}" ${extra}>`;
   };
   const title = key => `<input type="text" value="${esc(a.titles[key])}" data-a3-title="${key}" style="font-weight:bold;text-align:center;font-size:12px">`;
-  const measRows = a.measures.map((m,i)=>`
-    <tr><td style="text-align:center">${i+1}</td><td><input type="text" value="${esc(m.what||'')}" data-a3-m="${i}" data-f="what"></td><td><input type="date" value="${esc(m.due||'')}" data-a3-m="${i}" data-f="due"></td><td><input type="text" value="${esc(m.owner||'')}" data-a3-m="${i}" data-f="owner"></td><td><select data-a3-m="${i}" data-f="status">${['План','В работе','Сделано','Проверено'].map(s=>`<option ${m.status===s?'selected':''}>${s}</option>`).join('')}</select></td><td class="no-print"><button class="del" data-a3-m-del="${i}">✕</button></td></tr>`).join('');
-  const effRows = a.effRows.map((e,i)=>`
-    <tr><td><input type="text" value="${esc(e.name||'')}" data-a3-eff="${i}" data-f="name"></td><td><input type="text" value="${esc(e.plan||'')}" data-a3-eff="${i}" data-f="plan" style="text-align:center"></td><td><input type="text" value="${esc(e.fact||'')}" data-a3-eff="${i}" data-f="fact" style="text-align:center"></td><td class="no-print"><button class="del" data-a3-eff-del="${i}">✕</button></td></tr>`).join('');
-  const nextRows = a.nextSteps.map((m,i)=>`
-    <tr><td style="text-align:center">${i+1}</td><td><input type="text" value="${esc(m.what||'')}" data-a3-n="${i}" data-f="what"></td><td><input type="date" value="${esc(m.due||'')}" data-a3-n="${i}" data-f="due"></td><td><input type="text" value="${esc(m.owner||'')}" data-a3-n="${i}" data-f="owner"></td><td><select data-a3-n="${i}" data-f="status">${['План','В работе','Сделано'].map(s=>`<option ${m.status===s?'selected':''}>${s}</option>`).join('')}</select></td><td class="no-print"><button class="del" data-a3-n-del="${i}">✕</button></td></tr>`).join('');
+  const measRows = a.measures.map((m,i)=>`<tr><td style="text-align:center">${i+1}</td><td><input type="text" value="${esc(m.what||'')}" data-a3-m="${i}" data-f="what"></td><td><input type="date" value="${esc(m.due||'')}" data-a3-m="${i}" data-f="due"></td><td><input type="text" value="${esc(m.owner||'')}" data-a3-m="${i}" data-f="owner"></td><td><select data-a3-m="${i}" data-f="status">${['План','В работе','Сделано','Проверено'].map(s=>`<option ${m.status===s?'selected':''}>${s}</option>`).join('')}</select></td><td class="no-print"><button class="del" data-a3-m-del="${i}">✕</button></td></tr>`).join('');
+  const effRows = a.effRows.map((e,i)=>`<tr><td><input type="text" value="${esc(e.name||'')}" data-a3-eff="${i}" data-f="name"></td><td><input type="text" value="${esc(e.plan||'')}" data-a3-eff="${i}" data-f="plan" style="text-align:center"></td><td><input type="text" value="${esc(e.fact||'')}" data-a3-eff="${i}" data-f="fact" style="text-align:center"></td><td class="no-print"><button class="del" data-a3-eff-del="${i}">✕</button></td></tr>`).join('');
+  const nextRows = a.nextSteps.map((m,i)=>`<tr><td style="text-align:center">${i+1}</td><td><input type="text" value="${esc(m.what||'')}" data-a3-n="${i}" data-f="what"></td><td><input type="date" value="${esc(m.due||'')}" data-a3-n="${i}" data-f="due"></td><td><input type="text" value="${esc(m.owner||'')}" data-a3-n="${i}" data-f="owner"></td><td><select data-a3-n="${i}" data-f="status">${['План','В работе','Сделано'].map(s=>`<option ${m.status===s?'selected':''}>${s}</option>`).join('')}</select></td><td class="no-print"><button class="del" data-a3-n-del="${i}">✕</button></td></tr>`).join('');
   const topPrio = r.ideas.filter(i=>i.priority).sort((a,b)=>(b.score||0)-(a.score||0)).slice(0,3);
   const topHint = topPrio.length ? `<div style="margin-top:4px;font-size:10px;color:#92400e">Топ (6М): ${topPrio.map(i=>`«${esc(i.text)}»${i.score?` [${i.score}]`:''}`).join('; ')}</div>` : '';
   container.innerHTML = `
@@ -1424,7 +1365,6 @@ function _cleanCell(v) {
     .replace(/\r\n/g, '\n')
     .trim();
 }
-
 function _findRow(rows, needle, colIdx = 1) {
   const n = String(needle).toLowerCase();
   for (let i = 0; i < rows.length; i++) {
@@ -1432,7 +1372,6 @@ function _findRow(rows, needle, colIdx = 1) {
   }
   return -1;
 }
-
 function _extractField(rows, label, opts = {}) {
   const col = opts.col ?? 1;
   const idx = _findRow(rows, label, col);
@@ -1459,85 +1398,138 @@ function parseStandardA3Sheet(ws) {
     analysisMethods: '', results: '', goalsText: '', numbersText: '',
     planRows: [], effRows: [], nextRows: []
   };
-  data.projectName  = _extractField(rows, 'Название проекта');
-  data.department   = _extractField(rows, 'ПП, отдел, служба');
-  data.openDate     = _extractField(rows, 'Дата открытия');
-  data.manager      = _extractField(rows, 'Руководитель проекта');
-  data.team         = _extractField(rows, 'Команда проекта');
-  data.problem      = _extractField(rows, '1. Проблема, задача',     { maxLines: 8 });
-  data.currentState = _extractField(rows, '2. Текущая состояние',    { maxLines: 8 });
-  data.analysisMethods = _extractField(rows, '4. Анализ проблемы',   { maxLines: 10 });
-  data.results      = _extractField(rows, '7. Результаты проекта',   { maxLines: 10 });
 
-  for (let i = 0; i < rows.length && !data.closeDate; i++) {
-    for (let c = 0; c < (rows[i]?.length || 0); c++) {
-      const m = _cleanCell(rows[i]?.[c]).match(/Дата закрытия[^:]*:\s*(.+)/i);
-      if (m) { data.closeDate = m[1].trim(); break; }
+  try { data.projectName = _extractField(rows, 'Название проекта'); } catch(e){ console.warn(e); }
+  try { data.department  = _extractField(rows, 'ПП, отдел, служба'); } catch(e){ console.warn(e); }
+  try { data.openDate    = _extractField(rows, 'Дата открытия'); } catch(e){ console.warn(e); }
+  try { data.manager     = _extractField(rows, 'Руководитель проекта'); } catch(e){ console.warn(e); }
+  try { data.team        = _extractField(rows, 'Команда проекта'); } catch(e){ console.warn(e); }
+  try { data.problem     = _extractField(rows, '1. Проблема, задача',  { maxLines: 8 }); } catch(e){ console.warn(e); }
+  try { data.currentState = _extractField(rows, '2. Текущая состояние', { maxLines: 8 }); } catch(e){ console.warn(e); }
+  try { data.analysisMethods = _extractField(rows, '4. Анализ проблемы', { maxLines: 10 }); } catch(e){ console.warn(e); }
+
+  /* Результаты: заголовок в D, содержимое в E следующей строки */
+  try {
+    const resultsIdx = _findRow(rows, '7. Результаты проекта', 3);
+    if (resultsIdx >= 0) {
+      const parts = [];
+      for (let i = resultsIdx + 1; i < Math.min(resultsIdx + 20, rows.length); i++) {
+        const dVal = _cleanCell(rows[i]?.[3]);
+        const eVal = _cleanCell(rows[i]?.[4]);
+        if (/^8\.\s/.test(dVal) || /Дальнейшие действия/i.test(dVal)) break;
+        const val = eVal || (/^7\.\s/.test(dVal) ? '' : dVal);
+        if (!val) { if (parts.length) break; continue; }
+        parts.push(val);
+      }
+      data.results = parts.join('\n');
     }
-  }
-  const goalsIdx = _findRow(rows, 'ЦЕЛИ ПРОЕКТА', 1);
-  if (goalsIdx >= 0) {
-    const lines = [];
-    for (let i = goalsIdx + 1; i < Math.min(goalsIdx + 20, rows.length); i++) {
-      const v = _cleanCell(rows[i]?.[1]);
-      if (v) lines.push(v); else if (lines.length) break;
-    }
-    data.goalsText = lines.join('\n');
-  }
-  const numbersIdx = _findRow(rows, 'Приведите цифры', 1);
-  if (numbersIdx >= 0) {
-    const lines = [];
-    for (let i = numbersIdx + 1; i < Math.min(numbersIdx + 10, rows.length); i++) {
-      const v = _cleanCell(rows[i]?.[1]);
-      if (v) lines.push(v); else if (lines.length) break;
-    }
-    data.numbersText = lines.join('\n');
-  }
-  const planIdx = _findRow(rows, '5. План мероприятий', 3);
-  if (planIdx >= 0) {
-    let headerIdx = -1;
-    for (let i = planIdx; i < Math.min(planIdx + 6, rows.length); i++) {
-      if (String(rows[i]?.[4] || '').toLowerCase().includes('мероприятие')) { headerIdx = i; break; }
-    }
-    if (headerIdx >= 0) {
-      for (let i = headerIdx + 1; i < rows.length; i++) {
-        const num = _cleanCell(rows[i]?.[3]);
-        const what = _cleanCell(rows[i]?.[4]);
-        if (!what) continue;
-        if (!/^\d+$/.test(num)) break;
-        data.planRows.push({ what, due: _cleanCell(rows[i]?.[5]), owner: _cleanCell(rows[i]?.[6]), status: _cleanCell(rows[i]?.[7]) || 'План' });
-        if (data.planRows.length > 50) break;
+  } catch(e){ console.warn('results', e); }
+
+  /* Дата закрытия — по всем ячейкам */
+  try {
+    outer:
+    for (let i = 0; i < rows.length; i++) {
+      for (let c = 0; c < (rows[i]?.length || 0); c++) {
+        const m = _cleanCell(rows[i]?.[c]).match(/Дата закрытия[^:]*:\s*(.+)/i);
+        if (m) { data.closeDate = m[1].trim(); break outer; }
       }
     }
-  }
-  const effIdx = _findRow(rows, '6. Оценка эффективности', 3);
-  if (effIdx >= 0) {
-    for (let i = effIdx + 1; i < Math.min(effIdx + 20, rows.length); i++) {
-      const num  = _cleanCell(rows[i]?.[3]).replace(/\.$/, '');
-      const name = _cleanCell(rows[i]?.[4]);
-      if (!name) continue;
-      if (!/^\d+$/.test(num)) { if (data.effRows.length) break; continue; }
-      const val = _cleanCell(rows[i]?.[6]) || _cleanCell(rows[i]?.[5]);
-      data.effRows.push({ name, plan: val, fact: '' });
-    }
-  }
-  const nextIdx = _findRow(rows, '8. Дальнейшие действия', 3);
-  if (nextIdx >= 0) {
-    let headerIdx = -1;
-    for (let i = nextIdx; i < Math.min(nextIdx + 6, rows.length); i++) {
-      if (String(rows[i]?.[4] || '').toLowerCase().includes('мероприятие')) { headerIdx = i; break; }
-    }
-    if (headerIdx >= 0) {
-      for (let i = headerIdx + 1; i < rows.length; i++) {
-        const num = _cleanCell(rows[i]?.[3]);
-        const what = _cleanCell(rows[i]?.[4]);
-        if (!what) continue;
-        if (!/^\d+$/.test(num)) break;
-        data.nextRows.push({ what, due: _cleanCell(rows[i]?.[5]), owner: _cleanCell(rows[i]?.[6]), status: _cleanCell(rows[i]?.[7]) || 'План' });
-        if (data.nextRows.length > 30) break;
+  } catch(e){ console.warn(e); }
+
+  /* Цели — в той же ячейке B, после «SMART):» */
+  try {
+    const goalsIdx = _findRow(rows, 'ЦЕЛИ ПРОЕКТА', 1);
+    if (goalsIdx >= 0) {
+      const cell = _cleanCell(rows[goalsIdx]?.[1]);
+      const m = cell.match(/SMART\)?\s*:\s*([\s\S]+)/i);
+      if (m && m[1].trim().length > 10) data.goalsText = m[1].trim();
+      else {
+        const lines = [];
+        for (let i = goalsIdx + 1; i < Math.min(goalsIdx + 20, rows.length); i++) {
+          const v = _cleanCell(rows[i]?.[1]);
+          if (v) lines.push(v); else if (lines.length) break;
+        }
+        data.goalsText = lines.join('\n');
       }
     }
-  }
+  } catch(e){ console.warn('goals', e); }
+
+  /* Цифры */
+  try {
+    const numbersIdx = _findRow(rows, 'Приведите цифры', 1);
+    if (numbersIdx >= 0) {
+      const lines = [];
+      for (let i = numbersIdx + 1; i < Math.min(numbersIdx + 10, rows.length); i++) {
+        const v = _cleanCell(rows[i]?.[1]);
+        if (v) lines.push(v); else if (lines.length) break;
+      }
+      data.numbersText = lines.join('\n');
+    }
+  } catch(e){ console.warn('numbers', e); }
+
+  /* Секция 5: План (D-H) */
+  try {
+    const planIdx = _findRow(rows, '5. План мероприятий', 3);
+    if (planIdx >= 0) {
+      let headerIdx = -1;
+      for (let i = planIdx; i < Math.min(planIdx + 6, rows.length); i++) {
+        if (String(rows[i]?.[4] || '').toLowerCase().includes('мероприятие')) { headerIdx = i; break; }
+      }
+      if (headerIdx >= 0) {
+        for (let i = headerIdx + 1; i < rows.length; i++) {
+          const num  = _cleanCell(rows[i]?.[3]);
+          const what = _cleanCell(rows[i]?.[4]);
+          if (!num && data.planRows.length > 0) break;
+          if (!num) continue;
+          if (!/^\d+$/.test(num)) break;
+          if (!what) continue;
+          data.planRows.push({ what, due: _cleanCell(rows[i]?.[5]), owner: _cleanCell(rows[i]?.[6]), status: _cleanCell(rows[i]?.[7]) || 'План' });
+          if (data.planRows.length > 50) break;
+        }
+      }
+    }
+  } catch(e){ console.warn('planRows', e); }
+
+  /* Секция 6: Эффективность */
+  try {
+    const effIdx = _findRow(rows, '6. Оценка эффективности', 3);
+    if (effIdx >= 0) {
+      for (let i = effIdx + 1; i < Math.min(effIdx + 15, rows.length); i++) {
+        const num  = _cleanCell(rows[i]?.[3]).replace(/\.$/, '');
+        const name = _cleanCell(rows[i]?.[4]);
+        if (!name) continue;
+        if (!/^\d+$/.test(num)) { if (data.effRows.length) break; continue; }
+        const val = _cleanCell(rows[i]?.[6]) || _cleanCell(rows[i]?.[5]);
+        data.effRows.push({ name, plan: val, fact: '' });
+        if (data.effRows.length > 20) break;
+      }
+    }
+  } catch(e){ console.warn('effRows', e); }
+
+  /* Секция 8: Дальнейшие действия */
+  try {
+    const nextIdx = _findRow(rows, '8. Дальнейшие действия', 3);
+    if (nextIdx >= 0) {
+      let headerIdx = -1;
+      for (let i = nextIdx; i < Math.min(nextIdx + 6, rows.length); i++) {
+        if (String(rows[i]?.[4] || '').toLowerCase().includes('мероприятие')) { headerIdx = i; break; }
+      }
+      if (headerIdx >= 0) {
+        for (let i = headerIdx + 1; i < rows.length; i++) {
+          const num  = _cleanCell(rows[i]?.[3]);
+          const what = _cleanCell(rows[i]?.[4]);
+          if (!num && data.nextRows.length > 0) break;
+          if (!num) continue;
+          if (!/^\d+$/.test(num)) break;
+          if (!what) continue;
+          data.nextRows.push({ what, due: _cleanCell(rows[i]?.[5]), owner: _cleanCell(rows[i]?.[6]), status: _cleanCell(rows[i]?.[7]) || 'План' });
+          if (data.nextRows.length > 30) break;
+        }
+      }
+    }
+  } catch(e){ console.warn('nextRows', e); }
+
+  console.log('[parseStandardA3Sheet] результат:', data);
   return data;
 }
 
@@ -1561,6 +1553,67 @@ function parseWhySheet(ws) {
     };
   }
   return empty;
+}
+
+/** Парсит лист «5Почему - в.2» (дерево) — ветви / причины / подпричины. */
+function parseWhy2Sheet(ws) {
+  const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+  const branches = [];
+  let curBranch = null, curSub = null;
+  for (let i = 0; i < rows.length; i++) {
+    const d = _cleanCell(rows[i]?.[3]);
+    const f = _cleanCell(rows[i]?.[5]);
+    const h = _cleanCell(rows[i]?.[7]);
+    if (d && /^[А-ЯA-Z]\.\s/.test(d)) {
+      curBranch = { id: uid(), name: d, sub: [] };
+      branches.push(curBranch); curSub = null;
+    }
+    if (f && /^[А-ЯA-Z]\d+\.\s/.test(f)) {
+      if (!curBranch) { curBranch = { id: uid(), name: 'Ветвь', sub: [] }; branches.push(curBranch); }
+      curSub = { id: uid(), name: f, sub: [] };
+      curBranch.sub.push(curSub);
+    }
+    if (h && /^[А-ЯA-Z]\d+\.\d+\.\s/.test(h)) {
+      if (!curBranch) { curBranch = { id: uid(), name: 'Ветвь', sub: [] }; branches.push(curBranch); }
+      if (!curSub) { curSub = { id: uid(), name: 'Причина', sub: [] }; curBranch.sub.push(curSub); }
+      curSub.sub.push({ id: uid(), name: h });
+    }
+  }
+  return branches.length ? { branches } : null;
+}
+
+/** Эвристика категории 6М по тексту. */
+function guessCatFromText(t) {
+  const s = String(t).toLowerCase();
+  if (/персонал|обучен|ответствен|команд|мозгов/i.test(s))         return 'people';
+  if (/оборудован|пресс|дробилк|измельч|кипован/i.test(s))         return 'machine';
+  if (/материал|сырь[её]|фракци|влажност|стекл|связующ/i.test(s))   return 'material';
+  if (/измер|замер|контрол|учёт|учет/i.test(s))                     return 'measure';
+  if (/логистик|перевоз|транспорт|контейнер/i.test(s))              return 'env';
+  return 'method';
+}
+
+/** Парсит лист «ISHIKAWA» — извлекает всё после «►». */
+function parseIshikawaSheet(ws) {
+  const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+  const ideas = [];
+  const seen = new Set();
+  for (let i = 0; i < rows.length; i++) {
+    for (let c = 0; c < (rows[i]?.length || 0); c++) {
+      const raw = String(rows[i]?.[c] || '').trim();
+      if (!raw) continue;
+      const m = raw.match(/►\s*([\s\S]+?)(?:\n|$)/);
+      if (!m) continue;
+      let text = m[1].trim();
+      if (!text || text.length < 5) continue;
+      if (seen.has(text.toLowerCase())) continue;
+      seen.add(text.toLowerCase());
+      const isRoot = /корневая причина/i.test(text);
+      text = text.replace(/^корневая причина:\s*/i, '').trim();
+      ideas.push({ text, root: isRoot, cat: guessCatFromText(text) });
+    }
+  }
+  return ideas;
 }
 
 function parseWasBecameSheet(ws) {
@@ -1615,23 +1668,35 @@ function normalizeDate(val) {
 }
 
 function importFromXLSX(file){
-  if(typeof XLSX === 'undefined'){ alert('Библиотека XLSX не загружена. Проверьте интернет.'); return; }
+  if(typeof XLSX === 'undefined'){ alert('Библиотека XLSX не загружена.'); return; }
   const reader = new FileReader();
   reader.onload = (e) => {
     try {
-      const data = new Uint8Array(e.target.result);
-      const wb = XLSX.read(data, { type: 'array' });
+      const wb = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
+      console.log('[import] Листы в файле:', wb.SheetNames);
+
       const findSheet = (names) => {
-        for (const name of names) { const n = name.toLowerCase(); const found = wb.SheetNames.find(sn => sn.toLowerCase().includes(n)); if (found) return wb.Sheets[found]; }
+        for (const name of names) {
+          const n = name.toLowerCase();
+          const found = wb.SheetNames.find(sn => sn.toLowerCase().includes(n));
+          if (found) return wb.Sheets[found];
+        }
         return null;
       };
-      const findSheetExact = (name) => { const n = name.toLowerCase(); const found = wb.SheetNames.find(sn => sn.toLowerCase() === n); return found ? wb.Sheets[found] : null; };
+      const findSheetExact = (name) => {
+        const n = name.toLowerCase();
+        const found = wb.SheetNames.find(sn => sn.toLowerCase() === n);
+        return found ? wb.Sheets[found] : null;
+      };
 
-      const wsStdA3   = findSheetExact('Отчёт А3') || findSheetExact('Отчет А3') || findSheet(['форма а3 для регистрации']);
-      const wsWhy1    = findSheet(['5почему - в.1', '5 почему в.1']);
-      const wsWas     = findSheet(['было-стало', 'было стало']);
-      const wsCalc    = findSheet(['расчёты', 'расчеты']);
+      const wsStdA3 = findSheetExact('Отчёт А3') || findSheetExact('Отчет А3') || findSheet(['отчёт а3']) || findSheet(['отчет а3']);
+      const wsWhy1 = findSheet(['5почему - в.1', '5 почему в.1', '5почему в.1']);
+      const wsWhy2 = findSheet(['5почему - в.2', '5 почему в.2', '5почему в.2']);
+      const wsIsh  = findSheet(['ishikawa', 'исикава']);
+      const wsWas  = findSheet(['было-стало', 'было стало']);
+      const wsCalc = findSheet(['расчёты', 'расчеты']);
       const wsPlanDed = findSheetExact('План мероприятий');
+
       const wsProtocol = findSheet(['протокол идей', 'протокол']);
       const wsPPU      = findSheet(['ппу']);
       const wsTeam     = findSheet(['команда']);
@@ -1642,12 +1707,14 @@ function importFromXLSX(file){
       const hasOld   = !!(wsProtocol || wsPPU || wsPanel || wsConclusion);
 
       if (!hasStdA3 && !hasOld && !wsPlanDed) {
-        alert('Не найден ни один ожидаемый лист.\n\nПоддерживаются:\n• Стандартная форма «Отчёт А3»\n• Внутренний шаблон «Протокол идей» / «ППУ» / «План 180»\n\nЛисты в файле:\n' + wb.SheetNames.join(', '));
+        alert('Не найден ни один ожидаемый лист.\n\nПоддерживаются:\n• «Отчёт А3» (стандартная форма)\n• «Протокол идей» / «ППУ» / «План 180»\n\nЛисты в файле:\n' + wb.SheetNames.join(', '));
         return;
       }
 
       const stdData    = hasStdA3 ? parseStandardA3Sheet(wsStdA3) : null;
       const why1Data   = wsWhy1 ? parseWhySheet(wsWhy1) : null;
+      const why2Data   = wsWhy2 ? parseWhy2Sheet(wsWhy2) : null;
+      const ishData    = wsIsh  ? parseIshikawaSheet(wsIsh) : null;
       const wasData    = wsWas  ? parseWasBecameSheet(wsWas) : null;
       const calcData   = wsCalc ? parseRaschetySheet(wsCalc) : null;
       const ideas      = wsProtocol ? parseProtocolSheet(wsProtocol) : [];
@@ -1656,39 +1723,61 @@ function importFromXLSX(file){
       const panel      = wsPanel ? parsePanelSheet(wsPanel) : {};
       const conclusion = wsConclusion ? parseConclusionSheet(wsConclusion) : '';
 
-      let planRows = []; let planSource = '';
+      let planRows = [], planSource = '';
       if (wsPlanDed) {
         planRows = parsePlanSheet(wsPlanDed);
         planSource = 'лист «План мероприятий»';
       } else if (stdData && stdData.planRows.length) {
-        planRows = stdData.planRows.map(p => ({ what: p.what, owner: p.owner, due: p.due, status: p.status, done: /выполнено/i.test(p.status) ? 100 : 0, notes: '' }));
+        planRows = stdData.planRows.map(p => ({
+          what: p.what, owner: p.owner, due: p.due, status: p.status,
+          done: /выполнено/i.test(p.status) ? 100 : /в работе/i.test(p.status) ? 50 : 0,
+          notes: ''
+        }));
         planSource = 'секция 5 «Отчёт А3»';
       }
 
       const preview = [];
       if (stdData) {
-        preview.push('📋 Форма А3:');
-        if (stdData.projectName) preview.push('   • Проект: ' + stdData.projectName.slice(0, 70));
-        if (stdData.problem)     preview.push('   • Проблема: ' + stdData.problem.split('\n')[0].slice(0, 70) + '…');
-        if (stdData.team)        preview.push('   • Команда: ' + stdData.team.slice(0, 60) + '…');
+        const lines = ['📋 Форма А3:'];
+        if (stdData.projectName)  lines.push('   • Проект: '     + stdData.projectName.slice(0, 60) + '…');
+        if (stdData.department)   lines.push('   • Отдел: '      + stdData.department.slice(0, 40));
+        if (stdData.manager)      lines.push('   • Рук.: '       + stdData.manager.slice(0, 40));
+        if (stdData.team)         lines.push('   • Команда: '    + stdData.team.slice(0, 40) + '…');
+        if (stdData.problem)      lines.push('   • Проблема: '   + stdData.problem.split('\n')[0].slice(0, 60) + '…');
+        if (stdData.currentState) lines.push('   • Текущее: '    + stdData.currentState.split('\n')[0].slice(0, 40) + '…');
+        if (stdData.analysisMethods) lines.push('   • Анализ: '  + stdData.analysisMethods.split('\n')[0].slice(0, 40) + '…');
+        if (stdData.results)      lines.push('   • Результаты: ' + stdData.results.split('\n')[0].slice(0, 40) + '…');
+        if (stdData.goalsText)    lines.push('   • Цели: '       + stdData.goalsText.split('\n')[0].slice(0, 50) + '…');
+        if (stdData.numbersText)  lines.push('   • Цифры: '      + stdData.numbersText.split('\n')[0].slice(0, 50) + '…');
+        preview.push(lines.join('\n'));
       }
-      if (planRows.length)          preview.push(`📌 План: ${planRows.length} мероприятий (${planSource})`);
-      if (stdData?.effRows.length)  preview.push(`📊 Эффективность: ${stdData.effRows.length} показателей`);
-      if (stdData?.nextRows.length) preview.push(`➡️ Дальнейшие действия: ${stdData.nextRows.length}`);
-      if (why1Data?.chain.some(x => x)) preview.push('❓ 5 почему: заполнено');
+      if (planRows.length)              preview.push(`📌 План: ${planRows.length} мероприятий (${planSource})`);
+      if (stdData?.effRows.length)      preview.push(`📊 Эффективность: ${stdData.effRows.length} показателей`);
+      if (stdData?.nextRows.length)     preview.push(`➡️ Дальнейшие действия: ${stdData.nextRows.length}`);
+      if (why1Data?.chain.some(x => x)) preview.push(`❓ 5 почему (линейный): ${why1Data.chain.filter(x => x).length} шагов`);
+      if (why2Data?.branches?.length)   preview.push(`🌳 5 почему (дерево): ${why2Data.branches.length} ветвей`);
+      if (ishData?.length)              preview.push(`🐟 Исикава: ${ishData.length} причин`);
       if (wasData?.wasText || wasData?.becameText) preview.push('🔄 Было-Стало: заполнено');
       if (calcData && Object.keys(calcData).length) preview.push(`💰 Расчёты: ${Object.keys(calcData).length} показателей`);
-      if (ideas.length) preview.push(`💡 Гипотезы: ${ideas.length}`);
+      if (ideas.length)                 preview.push(`💡 Гипотезы: ${ideas.length}`);
 
-      if (!preview.length) { alert('Файл прочитан, но данные не найдены.\nЛисты: ' + wb.SheetNames.join(', ')); return; }
+      if (!preview.length) {
+        alert('Файл прочитан, но данные не найдены.\nЛисты: ' + wb.SheetNames.join(', '));
+        return;
+      }
 
-      const replace = confirm('Найдено:\n' + preview.join('\n') + '\n\nОК — ЗАМЕНИТЬ данные текущего отчёта.\nОтмена — ДОБАВИТЬ к существующим.');
+      const replace = confirm('Найдено:\n\n' + preview.join('\n\n') + '\n\n━━━━━━━━━━━━━━━━━━━━\nОК — ЗАМЕНИТЬ.\nОтмена — ДОБАВИТЬ к существующим.');
 
       const r = getR();
       const a = r.a3;
 
       if (stdData) {
-        const setIf = (key, val) => { if (!val) return; if (replace || !a[key]) a[key] = String(val); };
+        const setIf = (key, val) => {
+          if (!val) return;
+          const v = String(val).trim();
+          if (!v) return;
+          if (replace || !a[key]) a[key] = v;
+        };
         setIf('projectName', stdData.projectName);
         setIf('department',  stdData.department);
         setIf('openDate',    normalizeDate(stdData.openDate));
@@ -1700,37 +1789,62 @@ function importFromXLSX(file){
         setIf('analysisMethods', stdData.analysisMethods);
         setIf('results',     stdData.results);
         if (stdData.problem && (replace || !r.problem)) r.problem = stdData.problem.split('\n')[0].slice(0, 200);
+
+        if (stdData.numbersText) {
+          const nums = stdData.numbersText.split('\n').map(l => l.replace(/^\d+\.\s*/, '').trim()).filter(Boolean);
+          nums.forEach(line => {
+            if (/объ[её]м образования|образование отходов/i.test(line))                a.defectRate = line;
+            else if (/затрат.*обращени|затраты на/i.test(line))                       a.lostProfit = line;
+            else if (/доля.*вовлечен|повторного вовлечения/i.test(line))              a.timeLoss   = line;
+            else if (/претенз/i.test(line))                                           a.claimsCount = line;
+          });
+          if (!a.defectRate && nums[0]) a.defectRate = nums[0];
+          if (!a.lostProfit && nums[1]) a.lostProfit = nums[1];
+          if (!a.timeLoss   && nums[2]) a.timeLoss   = nums[2];
+        }
+
+        if (stdData.goalsText) {
+          const goals = stdData.goalsText.split('\n').map(l => l.replace(/^\d+\.\s*/, '').trim()).filter(Boolean);
+          if (goals[0] && (replace || !a.goalDefect)) a.goalDefect = goals[0];
+          if (goals[1] && (replace || !a.goalClaims)) a.goalClaims = goals[1];
+          if (goals[2] && (replace || !a.goalLoss))   a.goalLoss   = goals[2];
+          if (goals[3] && (replace || !a.goalProfit)) a.goalProfit = goals[3];
+        }
+
         if (stdData.effRows.length) {
           if (replace) a.effRows = stdData.effRows.map(e => ({ id: uid(), name: e.name, plan: e.plan, fact: e.fact }));
           else stdData.effRows.forEach(e => a.effRows.push({ id: uid(), name: e.name, plan: e.plan, fact: e.fact }));
         }
+
         if (stdData.nextRows.length) {
-          if (replace) {
-            a.nextSteps = stdData.nextRows.map(p => ({
-              id: uid(), what: p.what, due: normalizeDate(p.due), owner: p.owner,
-              status: /выполнено/i.test(p.status) ? 'Сделано' : /в работе/i.test(p.status) ? 'В работе' : 'План'
-            }));
-          } else {
-            stdData.nextRows.forEach(p => a.nextSteps.push({
-              id: uid(), what: p.what, due: normalizeDate(p.due), owner: p.owner, status: 'План'
-            }));
-          }
+          const toRow = p => ({
+            id: uid(), what: p.what, due: normalizeDate(p.due), owner: p.owner,
+            status: /выполнено/i.test(p.status) ? 'Сделано' : /в работе/i.test(p.status) ? 'В работе' : 'План'
+          });
+          if (replace) a.nextSteps = stdData.nextRows.map(toRow);
+          else stdData.nextRows.forEach(p => a.nextSteps.push(toRow(p)));
         }
       }
 
       if (planRows.length) {
+        const toPlan = p => ({
+          id: uid(), what: p.what, owner: p.owner, start: '',
+          end: normalizeDate(p.due), done: p.done, notes: p.notes || p.status
+        });
+        const toMeasure = p => ({
+          id: uid(), what: p.what, due: normalizeDate(p.due), owner: p.owner,
+          status: /сделано|выполнено|готово/i.test(p.status) ? 'Сделано'
+                : /в работе/i.test(p.status) ? 'В работе' : 'План'
+        });
         if (replace) {
-          r.plan = planRows.map(p => ({ id: uid(), what: p.what, owner: p.owner, start: '', end: normalizeDate(p.due), done: p.done, notes: p.notes || p.status }));
-          a.measures = planRows.map(p => ({
-            id: uid(), what: p.what, due: normalizeDate(p.due), owner: p.owner,
-            status: /сделано|выполнено|готово/i.test(p.status) ? 'Сделано' : /в работе/i.test(p.status) ? 'В работе' : 'План'
-          }));
+          r.plan = planRows.map(toPlan);
+          a.measures = planRows.map(toMeasure);
         } else {
           const seen = new Set(r.plan.map(x => x.what.toLowerCase()));
           planRows.forEach(p => {
             if (seen.has(p.what.toLowerCase())) return;
-            r.plan.push({ id: uid(), what: p.what, owner: p.owner, start: '', end: normalizeDate(p.due), done: p.done, notes: p.notes || p.status });
-            a.measures.push({ id: uid(), what: p.what, due: normalizeDate(p.due), owner: p.owner, status: 'План' });
+            r.plan.push(toPlan(p));
+            a.measures.push(toMeasure(p));
             seen.add(p.what.toLowerCase());
           });
         }
@@ -1741,6 +1855,23 @@ function importFromXLSX(file){
         else why1Data.chain.forEach((v, i) => { if (v && !r.why1.chain[i]) r.why1.chain[i] = v; });
       }
 
+      if (why2Data && why2Data.branches?.length) {
+        if (replace) r.why2.branches = why2Data.branches;
+        else r.why2.branches = r.why2.branches.concat(why2Data.branches);
+      }
+
+      if (ishData && ishData.length) {
+        const existing = new Set(r.ideas.map(x => x.text.toLowerCase()));
+        ishData.forEach(item => {
+          if (existing.has(item.text.toLowerCase())) return;
+          r.ideas.push({
+            id: uid(), text: item.text, cat: item.cat || 'method',
+            root: !!item.root, score: 0, priority: !!item.root
+          });
+          existing.add(item.text.toLowerCase());
+        });
+      }
+
       if (wasData) {
         if (replace || !r.wasBefore.text) r.wasBefore.text = wasData.wasText;
         if (replace || !r.wasAfter.text)  r.wasAfter.text  = wasData.becameText;
@@ -1749,30 +1880,34 @@ function importFromXLSX(file){
       }
 
       if (calcData) {
-        if (calcData['базовое образование отходов'] && (replace || !a.defectRate)) a.defectRate = calcData['базовое образование отходов'];
-        if (calcData['годовой показатель из карточки'] && (replace || !a.lostProfit)) a.lostProfit = calcData['годовой показатель из карточки'];
-        if (calcData['разовые затраты i'] && (replace || !a.goalDefect)) a.goalDefect = calcData['разовые затраты i'];
-        if (calcData['повторное вовлечение после пилота']) {
-          const v = calcData['повторное вовлечение после пилота'];
-          if (v && (replace || !a.goalLoss)) a.goalLoss = `Вовлечение: ${v} т/мес.`;
-        }
+        if (calcData['базовое образование отходов'] && (replace || !a.defectRate))
+          a.defectRate = calcData['базовое образование отходов'];
+        if (calcData['годовой показатель из карточки'] && (replace || !a.lostProfit))
+          a.lostProfit = calcData['годовой показатель из карточки'];
+        if (calcData['разовые затраты i'] && (replace || !a.goalDefect))
+          a.goalDefect = calcData['разовые затраты i'];
+        if (calcData['повторное вовлечение после пилота'] && (replace || !a.goalLoss))
+          a.goalLoss = `Вовлечение: ${calcData['повторное вовлечение после пилота']} т/мес.`;
       }
 
       if (ideas.length) {
-        if (replace) {
-          r.ideas = ideas.map(i => ({ id: uid(), text: i.text, cat: mapCategory(i.group), root: false, score: i.score, priority: false }));
-        } else {
+        const toIdea = i => ({
+          id: uid(), text: i.text, cat: mapCategory(i.group),
+          root: false, score: i.score, priority: false
+        });
+        if (replace) r.ideas = ideas.map(toIdea);
+        else {
           const seen = new Set(r.ideas.map(x => x.text.toLowerCase()));
           ideas.forEach(i => {
             if (seen.has(i.text.toLowerCase())) return;
-            r.ideas.push({ id: uid(), text: i.text, cat: mapCategory(i.group), root: false, score: i.score, priority: false });
+            r.ideas.push(toIdea(i));
             seen.add(i.text.toLowerCase());
           });
         }
       }
 
       if (ppu) {
-        const setIf = (key, val) => { if (val && (replace || !a[key])) a[key] = val; };
+        const setIf = (k, v) => { if (v && (replace || !a[k])) a[k] = v; };
         setIf('projectName', ppu['наименование']);
         setIf('problem',     ppu['проблема']);
         setIf('currentState', ppu['baseline']);
@@ -1782,21 +1917,29 @@ function importFromXLSX(file){
         if (team.length && (replace || !a.team)) a.team = team.join('; ');
         if (ppu['проблема'] && (replace || !r.problem)) r.problem = ppu['проблема'];
       }
-
       if (panel) {
-        if (panel['baseline, т/мес.'] && (replace || !a.defectRate)) a.defectRate = panel['baseline, т/мес.'];
+        if (panel['baseline, т/мес.'] && (replace || !a.defectRate))
+          a.defectRate = panel['baseline, т/мес.'];
       }
       if (conclusion) a.results = (a.results ? a.results + '\n\n' : '') + conclusion;
 
-      addLog('import.xlsx', `Импорт XLSX: A3=${!!stdData}, план=${planRows.length} (${planSource || '—'}), эффект=${stdData?.effRows.length || 0}, гипотез=${ideas.length}`);
+      addLog('import.xlsx',
+        `Импорт XLSX: A3=${!!stdData}, план=${planRows.length} (${planSource || '—'}), ` +
+        `эффект=${stdData?.effRows.length || 0}, следующ.=${stdData?.nextRows.length || 0}, ` +
+        `5why=${why1Data?.chain.filter(x=>x).length || 0}, 5why2=${why2Data?.branches?.length || 0}, ` +
+        `исикава=${ishData?.length || 0}, гипотез=${ideas.length}`);
+
       save(true);
       renderAll();
-      alert('✅ Готово!\n\n' + preview.join('\n') + '\n\nОткрываю вкладку «8. А3».');
+
+      alert('✅ Готово!\n\n' + preview.join('\n\n') + '\n\nОткрываю вкладку «8. А3».');
+
       const tabA3 = document.querySelector('.tab[data-tab="a3"]');
       if (tabA3) tabA3.click();
+
     } catch (err) {
-      console.error(err);
-      alert('Ошибка при чтении XLSX: ' + err.message);
+      console.error('[import] Ошибка:', err);
+      alert('Ошибка при чтении XLSX: ' + (err.message || err));
     }
   };
   reader.readAsArrayBuffer(file);
