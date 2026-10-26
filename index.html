@@ -52,13 +52,12 @@
   button.ai-btn{background:#8b5cf6;color:#fff;border:none;padding:8px 14px;border-radius:6px;cursor:pointer;font-weight:600;display:flex;align-items:center;gap:6px}
   button.ai-btn:hover{background:#7c3aed}
   button.ai-btn:disabled{background:#cbd5e1;cursor:not-allowed}
-  
-  /* Таблицы с горизонтальным скроллом и минимальной шириной */
+
   table.form-tbl{width:100%;border-collapse:collapse;font-size:13px;background:#fff;min-width:700px}
   table.form-tbl th,table.form-tbl td{border:1px solid #cbd5e1;padding:4px 6px;vertical-align:top;white-space:normal;word-wrap:break-word}
   table.form-tbl th{background:#f1f5f9;font-size:12px;text-align:center;font-weight:600;white-space:nowrap}
   table.form-tbl td input,table.form-tbl td textarea,table.form-tbl td select{border:none;padding:3px;font-size:13px;background:transparent;width:100%}
-  
+
   .del{background:none;border:none;color:#ef4444;cursor:pointer;font-size:14px}
   .grp-h{font-weight:600;font-size:13px;color:var(--c);margin-bottom:6px}
   .cnt{background:#f1f5f9;color:#475569;border-radius:20px;padding:1px 8px;font-size:11px;margin-left:4px}
@@ -87,11 +86,10 @@
   .report-list-cb label{display:flex;gap:8px;padding:6px 10px;cursor:pointer;font-size:13px;border-bottom:1px solid #f1f5f9}
   .report-list-cb input{margin:2px 0 0 0;width:14px;height:14px;accent-color:#4f46e5}
   .report-list-cb .cb-sel-all{font-weight:600;background:#eef2f7}
-  
-  /* 6M */
+
   .m6-controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px;padding:10px;background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0}
   .m6-controls label{font-size:13px;display:flex;align-items:center;gap:4px;cursor:pointer}
-  .m6-tbl{width:100%;border-collapse:collapse;font-size:13px;background:#fff;min-width:600px} /* Добавлена минимальная ширина */
+  .m6-tbl{width:100%;border-collapse:collapse;font-size:13px;background:#fff;min-width:600px}
   .m6-tbl th,.m6-tbl td{border:1px solid #cbd5e1;padding:6px 8px;vertical-align:middle}
   .m6-tbl th{background:#f1f5f9;font-size:12px;text-align:left;font-weight:600;white-space:nowrap}
   .m6-tbl tr.m6-row-prio{background:#fffbeb}
@@ -111,7 +109,6 @@
   .summary-tbl tbody tr:hover{background:#f8fafc}
   .summary-tbl tr.m6-row-prio{background:#fffbeb}
   .summary-tbl tfoot td{background:#f8fafc;font-weight:600;border-top:2px solid #94a3b8;font-size:12px}
-  /* A3 */
   .a3-form{background:#fff;color:#000;font-family:Arial,sans-serif;width:100%;overflow-x:auto}
   .a3-form-inner{min-width:900px;border:1px solid #000;padding:8px}
   .a3-form table{width:100%;border-collapse:collapse;font-size:11px}
@@ -159,14 +156,14 @@
 <header>
   <div class="brand">🏭 Разбор проблем</div>
   <div class="report-manager">
-    <select id="reportSelect"></select>
-    <button class="rm-btn" id="newReportBtn" title="Новый отчёт">+</button>
-    <button class="rm-btn" id="renameBtn" title="Переименовать">✏️</button>
-    <button class="rm-btn" id="mergeBtn" title="Объединить">🔀</button>
-    <button class="rm-btn" id="settingsBtn" title="Разделы">⚙️</button>
-    <button class="rm-btn danger" id="delReportBtn" title="Удалить">🗑</button>
+    <select id="reportSelect" aria-label="Выбор отчёта"></select>
+    <button class="rm-btn" id="newReportBtn" title="Новый отчёт" aria-label="Новый отчёт">+</button>
+    <button class="rm-btn" id="renameBtn" title="Переименовать" aria-label="Переименовать">✏️</button>
+    <button class="rm-btn" id="mergeBtn" title="Объединить" aria-label="Объединить">🔀</button>
+    <button class="rm-btn" id="settingsBtn" title="Разделы" aria-label="Разделы">⚙️</button>
+    <button class="rm-btn danger" id="delReportBtn" title="Удалить" aria-label="Удалить">🗑</button>
   </div>
-  <button class="hbtn" id="shareBtn" style="background:#0ea5e9;border-color:#0ea5e9">📲 Поделиться</button>
+  <button class="hbtn" id="shareBtn" style="background:#0ea5e9;border-color:#0ea5e9">📲 Установить / QR</button>
   <button class="hbtn" id="aiSettingsBtn" style="background:#8b5cf6;border-color:#8b5cf6">🤖 ИИ</button>
   <input id="problemInput" placeholder="Проблема (эффект)">
   <span class="badge" id="syncBadge">Сохранено</span>
@@ -179,29 +176,29 @@
   <input type="file" id="xlsxFileInput" accept=".xlsx,.xls,.csv" hidden>
 </header>
 
-<nav class="tabs" id="tabsNav">
+<nav class="tabs" id="tabsNav" role="tablist">
   <div class="tn-brand">ТЕХНОНИКОЛЬ</div>
 </nav>
 
 <main>
-  <section class="tabpane active" id="tab-brain">
+  <section class="tabpane active" id="tab-brain" role="tabpanel">
     <h2>Мозговой штурм</h2>
     <p class="hint">★ — корневая. Балл 1–3 ставится на вкладке «3. 6М».</p>
     <div class="row">
       <input type="text" id="ideaInput" placeholder="Гипотеза..." style="flex:1;min-width:200px">
-      <select id="ideaCat" style="width:auto"></select>
+      <select id="ideaCat" style="width:auto" aria-label="Категория"></select>
       <button class="primary" id="addIdeaBtn">Добавить</button>
       <button class="ai-btn" id="aiGenerateIdeasBtn" title="Сгенерировать идеи с помощью ИИ">✨ Сгенерировать</button>
     </div>
     <div id="ideaList"></div>
   </section>
 
-  <section class="tabpane" id="tab-fish">
+  <section class="tabpane" id="tab-fish" role="tabpanel">
     <h2>Диаграмма Исикавы</h2>
     <div class="fish-wrap"><div class="fish" id="fish"></div></div>
   </section>
 
-  <section class="tabpane" id="tab-6m">
+  <section class="tabpane" id="tab-6m" role="tabpanel">
     <h2>Исикава 6М</h2>
     <p class="hint">Все гипотезы, отсортированные по убыванию балла. Оценка 1–3, ★ — приоритетная.</p>
     <div class="m6-controls">
@@ -209,8 +206,7 @@
       <button class="ghost" id="m6AddRowBtn" type="button">+ Добавить гипотезу</button>
       <span style="margin-left:auto;font-size:12px;color:#64748b" id="m6TotalInfo"></span>
     </div>
-    
-    <!-- Оборачиваем таблицу в контейнер со скроллом -->
+
     <div style="overflow-x:auto; width:100%; border:1px solid #cbd5e1; border-radius:6px;">
       <table class="m6-tbl">
         <thead>
@@ -238,7 +234,7 @@
     </div>
   </section>
 
-  <section class="tabpane" id="tab-why1">
+  <section class="tabpane" id="tab-why1" role="tabpanel">
     <h2>5 почему (линейный)</h2>
     <div id="whyBox1"></div>
     <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
@@ -248,13 +244,13 @@
     </div>
   </section>
 
-  <section class="tabpane" id="tab-why2">
+  <section class="tabpane" id="tab-why2" role="tabpanel">
     <h2>5 почему (дерево)</h2>
     <div id="why2Container"></div>
     <button class="ghost" id="addBranchBtn" style="margin-top:10px">+ ветвь</button>
   </section>
 
-  <section class="tabpane" id="tab-plan">
+  <section class="tabpane" id="tab-plan" role="tabpanel">
     <h2>План мероприятий</h2>
     <div style="overflow-x:auto; width:100%; border:1px solid #cbd5e1; border-radius:6px;">
       <table class="form-tbl">
@@ -274,7 +270,7 @@
     <button class="ghost" id="addPlanRow" style="margin-top:10px">+ мероприятие</button>
   </section>
 
-  <section class="tabpane" id="tab-was">
+  <section class="tabpane" id="tab-was" role="tabpanel">
     <h2>Было — Стало</h2>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
       <div>
@@ -290,7 +286,7 @@
     </div>
   </section>
 
-  <section class="tabpane" id="tab-a3">
+  <section class="tabpane" id="tab-a3" role="tabpanel">
     <div class="a3-form">
       <div class="a3-form-inner" id="a3FormContainer"></div>
     </div>
@@ -302,7 +298,7 @@
     </div>
   </section>
 
-  <section class="tabpane" id="tab-log">
+  <section class="tabpane" id="tab-log" role="tabpanel">
     <h2>Журнал изменений</h2>
     <div style="margin-bottom:10px"><input type="search" id="logSearch" placeholder="Поиск…"></div>
     <div id="logList"></div>
@@ -310,18 +306,21 @@
 </main>
 
 <!-- Модалки -->
-<div class="modal-overlay" id="renameModal"><div class="modal"><div class="modal-header"><h3>✏️ Переименовать отчёт</h3><button class="modal-close" data-close="renameModal">×</button></div><div class="modal-body"><input type="text" id="renameInput" placeholder="Новое название" maxlength="120"></div><div class="modal-footer"><button class="ghost" data-close="renameModal">Отмена</button><button class="primary" id="renameSaveBtn">Сохранить</button></div></div></div>
-<div class="modal-overlay" id="mergeModal"><div class="modal"><div class="modal-header"><h3>🔀 Объединение отчётов</h3><button class="modal-close" data-close="mergeModal">×</button></div><div class="modal-body"><p style="margin-top:0;color:#64748b;font-size:13px">Выберите 2+ отчёта. Балл гипотезы при слиянии берётся максимальный.</p><div class="report-list-cb" id="mergeCheckboxes"></div></div><div class="modal-footer"><button class="ghost" data-close="mergeModal">Отмена</button><button class="primary" id="mergeDoBtn">Объединить</button></div></div></div>
-<div class="modal-overlay" id="settingsModal"><div class="modal"><div class="modal-header"><h3>⚙️ Разделы отчёта</h3><button class="modal-close" data-close="settingsModal">×</button></div><div class="modal-body"><p style="margin-top:0;color:#64748b;font-size:13px">Какие вкладки показывать. Отключённые скроются, данные сохранятся.</p><div id="tabCheckboxes"></div></div><div class="modal-footer"><button class="primary" id="settingsSaveBtn">Сохранить</button></div></div></div>
-<div class="modal-overlay" id="exportModal"><div class="modal"><div class="modal-header"><h3>📤 Экспорт JSON</h3><button class="modal-close" data-close="exportModal">×</button></div><div class="modal-body"><label style="display:flex;gap:8px;padding:6px 0"><input type="radio" name="exportScope" value="current" checked><span><b>Текущий отчёт</b></span></label><label style="display:flex;gap:8px;padding:6px 0"><input type="radio" name="exportScope" value="selected"><span><b>Выбранные отчёты</b></span></label><div class="report-list-cb" id="exportCheckboxes" style="display:none"></div><label style="display:flex;gap:8px;padding:6px 0"><input type="radio" name="exportScope" value="all"><span><b>Все отчёты</b></span></label></div><div class="modal-footer"><button class="ghost" data-close="exportModal">Отмена</button><button class="primary" id="downloadBtn">💾 Скачать</button></div></div></div>
-<div class="modal-overlay" id="shareModal"><div class="modal"><div class="modal-header"><h3>📲 Установить / Поделиться</h3><button class="modal-close" data-close="shareModal">×</button></div><div class="modal-body" style="text-align:center"><p style="margin-top:0">Наведите камеру телефона, чтобы открыть приложение:</p><img id="qrCodeImg" src="" alt="QR-код" style="width:200px;height:200px;margin:10px auto;display:block;border:1px solid #cbd5e1;border-radius:8px;"><div style="display:flex;gap:8px;margin-top:15px;flex-wrap:wrap;justify-content:center"><button class="primary" id="doInstallBtn">Установить на это устройство</button><button class="ghost" id="copyLinkBtn">Скопировать ссылку</button></div><div id="installHint" style="margin-top:15px;font-size:13px;color:#64748b;text-align:left;background:#f8fafc;padding:10px;border-radius:8px;display:none"></div></div></div></div>
+<div class="modal-overlay" id="renameModal" role="dialog" aria-modal="true" aria-labelledby="renameTitle"><div class="modal"><div class="modal-header"><h3 id="renameTitle">✏️ Переименовать отчёт</h3><button class="modal-close" data-close="renameModal" aria-label="Закрыть">×</button></div><div class="modal-body"><input type="text" id="renameInput" placeholder="Новое название" maxlength="120"></div><div class="modal-footer"><button class="ghost" data-close="renameModal">Отмена</button><button class="primary" id="renameSaveBtn">Сохранить</button></div></div></div>
+<div class="modal-overlay" id="mergeModal" role="dialog" aria-modal="true"><div class="modal"><div class="modal-header"><h3>🔀 Объединение отчётов</h3><button class="modal-close" data-close="mergeModal" aria-label="Закрыть">×</button></div><div class="modal-body"><p style="margin-top:0;color:#64748b;font-size:13px">Выберите 2+ отчёта. Балл гипотезы при слиянии берётся максимальный.</p><div class="report-list-cb" id="mergeCheckboxes"></div></div><div class="modal-footer"><button class="ghost" data-close="mergeModal">Отмена</button><button class="primary" id="mergeDoBtn">Объединить</button></div></div></div>
+<div class="modal-overlay" id="settingsModal" role="dialog" aria-modal="true"><div class="modal"><div class="modal-header"><h3>⚙️ Разделы отчёта</h3><button class="modal-close" data-close="settingsModal" aria-label="Закрыть">×</button></div><div class="modal-body"><p style="margin-top:0;color:#64748b;font-size:13px">Какие вкладки показывать. Отключённые скроются, данные сохранятся.</p><div id="tabCheckboxes"></div></div><div class="modal-footer"><button class="primary" id="settingsSaveBtn">Сохранить</button></div></div></div>
+<div class="modal-overlay" id="exportModal" role="dialog" aria-modal="true"><div class="modal"><div class="modal-header"><h3>📤 Экспорт JSON</h3><button class="modal-close" data-close="exportModal" aria-label="Закрыть">×</button></div><div class="modal-body"><label style="display:flex;gap:8px;padding:6px 0"><input type="radio" name="exportScope" value="current" checked><span><b>Текущий отчёт</b></span></label><label style="display:flex;gap:8px;padding:6px 0"><input type="radio" name="exportScope" value="selected"><span><b>Выбранные отчёты</b></span></label><div class="report-list-cb" id="exportCheckboxes" style="display:none"></div><label style="display:flex;gap:8px;padding:6px 0"><input type="radio" name="exportScope" value="all"><span><b>Все отчёты</b></span></label></div><div class="modal-footer"><button class="ghost" data-close="exportModal">Отмена</button><button class="primary" id="downloadBtn">💾 Скачать</button></div></div></div>
+<div class="modal-overlay" id="shareModal" role="dialog" aria-modal="true"><div class="modal"><div class="modal-header"><h3>📲 Установить / Поделиться</h3><button class="modal-close" data-close="shareModal" aria-label="Закрыть">×</button></div><div class="modal-body" style="text-align:center"><p style="margin-top:0">Наведите камеру телефона, чтобы открыть приложение:</p><img id="qrCodeImg" src="" alt="QR-код" style="width:200px;height:200px;margin:10px auto;display:block;border:1px solid #cbd5e1;border-radius:8px;"><div style="display:flex;gap:8px;margin-top:15px;flex-wrap:wrap;justify-content:center"><button class="primary" id="doInstallBtn">Установить на это устройство</button><button class="ghost" id="copyLinkBtn">Скопировать ссылку</button></div><div id="installHint" style="margin-top:15px;font-size:13px;color:#64748b;text-align:left;background:#f8fafc;padding:10px;border-radius:8px;display:none"></div></div></div></div>
 
 <!-- Модалка ИИ -->
-<div class="modal-overlay" id="aiModal">
+<div class="modal-overlay" id="aiModal" role="dialog" aria-modal="true">
   <div class="modal">
-    <div class="modal-header"><h3>🤖 Настройки ИИ</h3><button class="modal-close" data-close="aiModal">×</button></div>
+    <div class="modal-header"><h3>🤖 Настройки ИИ</h3><button class="modal-close" data-close="aiModal" aria-label="Закрыть">×</button></div>
     <div class="modal-body">
       <p style="margin-top:0;color:#64748b;font-size:13px">Вставьте API-ключ. Настройки сохраняются только в вашем браузере.</p>
+      <div style="margin-bottom:10px;padding:8px 10px;background:#fef3c7;border:1px solid #fcd34d;border-radius:6px;font-size:12px;color:#78350f">
+        ⚠️ Ключ хранится <b>в открытом виде</b> в localStorage браузера. Не используйте на чужом устройстве.
+      </div>
       <label style="font-size:12px;font-weight:bold">API URL</label>
       <input type="text" id="aiUrl" value="https://openrouter.ai/api/v1/chat/completions" style="margin-bottom:10px">
       <label style="font-size:12px;font-weight:bold">Модель (Model)</label>
@@ -361,16 +360,29 @@ const TABS_LIST = [
 const $ = (s,r=document)=>r.querySelector(s);
 const $$ = (s,r=document)=>Array.from(r.querySelectorAll(s));
 const esc = s => String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const today = ()=>new Date().toISOString().slice(0,10);
-const uid = ()=>Math.random().toString(36).slice(2,9);
+
+/* ===== Утилиты ===== */
+const today = () => {
+  const d = new Date();
+  const p = n => String(n).padStart(2,'0');
+  return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`;
+};
+const uid = () => (crypto.randomUUID ? crypto.randomUUID().slice(0,8) : Math.random().toString(36).slice(2,10));
+const safeId = v => String(v ?? '').replace(/[^\w-]/g, '').slice(0,64) || uid();
+const debounce = (fn, ms = 250) => {
+  let t;
+  return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); };
+};
 const fmtTime = ts => new Date(ts).toLocaleString('ru-RU',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'});
 
 /* ============ Состояние ============ */
-const LS = 'lean_v18';
-const LEGACY_KEYS = ['lean_v17','lean_v16','lean_v15','lean_v14','lean_v13','lean_v12','lean_v11','lean_v10','lean_v9','lean_v8','lean_v7','lean_v6','lean_v5','lean_multi_v2'];
+const LS = 'lean_v19';
+const SCHEMA_VERSION = 1;
+const LEGACY_KEYS = ['lean_v18','lean_v17','lean_v16','lean_v15','lean_v14','lean_v13','lean_v12','lean_v11','lean_v10','lean_v9','lean_v8','lean_v7','lean_v6','lean_v5','lean_multi_v2'];
 
 function emptyReport(){
   return {
+    schemaVersion: SCHEMA_VERSION,
     meta:{title:'', date:today(), author:''},
     problem:'',
     ideas:[],
@@ -410,28 +422,49 @@ function emptyReport(){
 function normalizeReport(r){
   const base = emptyReport();
   const out = Object.assign({}, base, r||{});
-  out.ideas = (Array.isArray(r?.ideas) ? r.ideas : []).map(i=>({
-    id: i.id || uid(),
-    text: String(i.text||''),
-    cat: i.cat || 'method',
-    root: !!i.root,
-    score: typeof i.score === 'number' ? i.score : (i.score ? Number(i.score) || 0 : 0),
-    priority: !!i.priority
+
+  out.ideas = (Array.isArray(r?.ideas) ? r.ideas : []).map(i => ({
+    id:       safeId(i?.id),
+    text:     String(i?.text||''),
+    cat:      CATS.some(c => c.id === i?.cat) ? i.cat : 'method',
+    root:     !!i?.root,
+    score:    Math.min(3, Math.max(0, Number(i?.score) || 0)),
+    priority: !!i?.priority
   }));
+
+  const fixBranch = b => ({
+    id:   safeId(b?.id),
+    name: String(b?.name||''),
+    sub: (Array.isArray(b?.sub) ? b.sub : []).map(s => ({
+      id:   safeId(s?.id),
+      name: String(s?.name||''),
+      sub: (Array.isArray(s?.sub) ? s.sub : []).map(ss => ({
+        id:   safeId(ss?.id),
+        name: String(ss?.name||'')
+      }))
+    }))
+  });
+  out.why2 = { branches: (Array.isArray(r?.why2?.branches) ? r.why2.branches : base.why2.branches).map(fixBranch) };
+
   out.why1 = Object.assign({}, base.why1, r?.why1||{});
-  out.why1.chain = Array.isArray(out.why1.chain) ? out.why1.chain : ['','','','',''];
-  out.why2 = Object.assign({}, base.why2, r?.why2||{});
-  out.why2.branches = Array.isArray(out.why2.branches) ? out.why2.branches : base.why2.branches;
-  out.plan = Array.isArray(r?.plan) ? r.plan : [];
+  out.why1.chain = Array.isArray(out.why1.chain) ? out.why1.chain.map(String) : ['','','','',''];
+
+  out.plan = (Array.isArray(r?.plan) ? r.plan : []).map(p => ({ ...(p||{}), id: safeId(p?.id) }));
+
   out.wasBefore = Object.assign({}, base.wasBefore, r?.wasBefore||{});
-  out.wasAfter = Object.assign({}, base.wasAfter, r?.wasAfter||{});
+  out.wasAfter  = Object.assign({}, base.wasAfter,  r?.wasAfter ||{});
+
   out.a3 = Object.assign({}, base.a3, r?.a3||{});
-  out.a3.titles = Object.assign({}, base.a3.titles, r?.a3?.titles||{});
-  out.a3.effRows = Array.isArray(r?.a3?.effRows) ? r.a3.effRows : base.a3.effRows;
-  out.a3.measures = Array.isArray(r?.a3?.measures) ? r.a3.measures : [];
-  out.a3.nextSteps = Array.isArray(r?.a3?.nextSteps) ? r.a3.nextSteps : [];
-  out.enabledTabs = Array.isArray(r?.enabledTabs) && r.enabledTabs.length ? r.enabledTabs : base.enabledTabs;
-  out.log = Array.isArray(r?.log) ? r.log : [];
+  out.a3.titles   = Object.assign({}, base.a3.titles, r?.a3?.titles||{});
+  out.a3.effRows   = (Array.isArray(r?.a3?.effRows)   ? r.a3.effRows   : base.a3.effRows  ).map(e => ({ ...(e||{}), id: safeId(e?.id) }));
+  out.a3.measures  = (Array.isArray(r?.a3?.measures)  ? r.a3.measures  : []).map(m => ({ ...(m||{}), id: safeId(m?.id) }));
+  out.a3.nextSteps = (Array.isArray(r?.a3?.nextSteps) ? r.a3.nextSteps : []).map(m => ({ ...(m||{}), id: safeId(m?.id) }));
+
+  out.enabledTabs = Array.isArray(r?.enabledTabs) && r.enabledTabs.length
+    ? r.enabledTabs.filter(t => TABS_LIST.some(x => x.id === t))
+    : base.enabledTabs;
+
+  out.log = Array.isArray(r?.log) ? r.log.slice(0, 300) : [];
   out.m6Settings = Object.assign({}, base.m6Settings, r?.m6Settings||{});
   return out;
 }
@@ -448,10 +481,11 @@ function loadState(){
     try {
       const parsed = JSON.parse(data);
       if(parsed && parsed.reports){
-        app.activeId = parsed.activeReportId;
         Object.keys(parsed.reports).forEach(id=>{
-          app.reports[id] = normalizeReport(parsed.reports[id]);
+          app.reports[safeId(id)] = normalizeReport(parsed.reports[id]);
         });
+        const want = safeId(parsed.activeReportId);
+        app.activeId = app.reports[want] ? want : Object.keys(app.reports)[0];
       } else if(parsed){
         const id = uid();
         app.reports[id] = normalizeReport(parsed);
@@ -468,13 +502,36 @@ function loadState(){
 loadState();
 
 function getR(){ return app.reports[app.activeId]; }
-function save(){
-  try {
-    localStorage.setItem(LS, JSON.stringify({activeReportId:app.activeId, reports:app.reports}));
-  } catch(e){ console.error(e); }
+
+/* ===== Сохранение с debounce и честным статусом ===== */
+let _saveTimer = null;
+function _doSave(){
   const b = $('#syncBadge');
-  if(b) b.textContent = 'Сохранено '+new Date().toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'});
+  try {
+    localStorage.setItem(LS, JSON.stringify({ activeReportId:app.activeId, reports:app.reports }));
+    if(b){
+      b.textContent = 'Сохранено ' + new Date().toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'});
+      b.style.background = '';
+      b.title = '';
+    }
+  } catch(e){
+    console.error('save failed', e);
+    if(b){
+      b.textContent = '⚠ Не сохранено';
+      b.style.background = '#7f1d1d';
+      b.title = e && e.name === 'QuotaExceededError'
+        ? 'Переполнено хранилище. Экспортируйте отчёт в JSON и удалите старые.'
+        : String(e.message || e);
+    }
+  }
 }
+function save(immediate=false){
+  if(immediate){ clearTimeout(_saveTimer); _doSave(); return; }
+  clearTimeout(_saveTimer);
+  _saveTimer = setTimeout(_doSave, 300);
+}
+window.addEventListener('beforeunload', ()=>{ if(_saveTimer){ clearTimeout(_saveTimer); _doSave(); } });
+
 function addLog(action, detail=''){
   const r = getR(); if(!r) return;
   r.log.unshift({id:uid(),action,detail,ts:Date.now()});
@@ -487,14 +544,14 @@ function reportName(r){
 /* ============ Всплывающее окно редактирования ============ */
 function initFloatingEditor() {
   if (document.getElementById('floating-editor')) return;
-  
+
   const div = document.createElement('div');
   div.id = 'floating-editor';
   div.style.cssText = 'display:none; position:fixed; top:10px; left:10px; right:10px; z-index:9999; background:#fff; padding:12px; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,0.3); border: 1px solid #cbd5e1;';
   div.innerHTML = `
     <div style="font-size:12px; font-weight:600; color:#475569; margin-bottom:6px; display:flex; justify-content:space-between; align-items:center;">
       <span id="fe-label" style="text-transform:uppercase; letter-spacing:0.5px;">Редактирование</span>
-      <button id="fe-close" style="background:none; border:none; font-size:18px; cursor:pointer; color:#ef4444; padding:0 5px;">✕</button>
+      <button id="fe-close" aria-label="Закрыть" style="background:none; border:none; font-size:18px; cursor:pointer; color:#ef4444; padding:0 5px;">✕</button>
     </div>
     <textarea id="fe-input" style="width:100%; min-height:100px; font-size:16px; padding:8px; border:1px solid #cbd5e1; border-radius:6px; box-sizing:border-box; font-family:inherit; line-height:1.5;"></textarea>
     <div style="display:flex; justify-content:flex-end; margin-top:8px;">
@@ -513,29 +570,21 @@ function initFloatingEditor() {
     }
     closeEditor();
   });
-
   document.getElementById('fe-close').addEventListener('click', closeEditor);
 
   function closeEditor() {
     div.style.display = 'none';
-    if (activeInput) {
-      activeInput.blur();
-      activeInput = null;
-    }
+    if (activeInput) { activeInput.blur(); activeInput = null; }
   }
 
   document.addEventListener('focusin', (e) => {
     const target = e.target;
     if (target.closest('#floating-editor')) return;
-    
     const isTableInput = (target.tagName === 'INPUT' && target.type === 'text') || target.tagName === 'TEXTAREA';
-    // Добавлен .m6-tbl, чтобы окно работало и на вкладке 6М
     const inTable = target.closest('.form-tbl') || target.closest('.a3-form') || target.closest('.m6-tbl');
-    
     if (isTableInput && inTable) {
       activeInput = target;
       document.getElementById('fe-input').value = target.value;
-      
       const td = target.closest('td');
       const tr = target.closest('tr');
       let label = 'Редактирование';
@@ -545,9 +594,7 @@ function initFloatingEditor() {
         if (th) label = th.textContent.trim();
       }
       document.getElementById('fe-label').textContent = label;
-      
       div.style.display = 'block';
-      
       setTimeout(() => document.getElementById('fe-input').focus(), 100);
     }
   });
@@ -613,7 +660,11 @@ if(aiSettingsBtn) aiSettingsBtn.addEventListener('click', () => {
 
 const aiSaveBtn = $('#aiSaveBtn');
 if(aiSaveBtn) aiSaveBtn.addEventListener('click', () => {
-  localStorage.setItem('ai_url', $('#aiUrl').value.trim());
+  const url = $('#aiUrl').value.trim();
+  if (url && !/^https:\/\//i.test(url)) {
+    if (!confirm('URL не HTTPS — ключ пойдёт по сети в открытом виде. Продолжить?')) return;
+  }
+  localStorage.setItem('ai_url', url);
   localStorage.setItem('ai_model', $('#aiModel').value.trim());
   localStorage.setItem('ai_key', $('#aiKey').value.trim());
   $('#aiModal').classList.remove('active');
@@ -625,6 +676,8 @@ function renderTabs(){
   const r = getR(); if(!r) return;
   const nav = $('#tabsNav'); if(!nav) return;
   const brand = nav.querySelector('.tn-brand');
+
+  const activeId = document.querySelector('.tab.active')?.dataset.tab;
   Array.from(nav.querySelectorAll('.tab')).forEach(b=>b.remove());
 
   TABS_LIST.forEach(t=>{
@@ -632,10 +685,14 @@ function renderTabs(){
     btn.type = 'button';
     btn.className = 'tab';
     btn.dataset.tab = t.id;
+    btn.setAttribute('role', 'tab');
     btn.textContent = t.name;
     btn.style.display = r.enabledTabs.includes(t.id) ? '' : 'none';
     btn.addEventListener('click', ()=>{
-      $$('.tab').forEach(x=>x.classList.toggle('active', x===btn));
+      $$('.tab').forEach(x=>{
+        x.classList.toggle('active', x===btn);
+        x.setAttribute('aria-selected', x===btn ? 'true' : 'false');
+      });
       $$('.tabpane').forEach(s=>s.classList.toggle('active', s.id === 'tab-'+t.id));
       if(t.id === 'a3') renderA3();
       if(t.id === '6m') render6M();
@@ -644,13 +701,13 @@ function renderTabs(){
     nav.insertBefore(btn, brand);
   });
 
-  const firstVisible = Array.from(nav.querySelectorAll('.tab')).find(b=>b.style.display!=='none');
-  const active = document.querySelector('.tab.active');
-  if(active && active.style.display !== 'none'){
-    const id = active.dataset.tab;
-    $$('.tabpane').forEach(s=>s.classList.toggle('active', s.id === 'tab-'+id));
-  } else if(firstVisible){
-    firstVisible.click();
+  const tabs = Array.from(nav.querySelectorAll('.tab'));
+  const target = tabs.find(b => b.dataset.tab === activeId && b.style.display !== 'none')
+              || tabs.find(b => b.style.display !== 'none');
+  if(target){
+    target.classList.add('active');
+    target.setAttribute('aria-selected', 'true');
+    $$('.tabpane').forEach(s=>s.classList.toggle('active', s.id === 'tab-'+target.dataset.tab));
   }
 }
 
@@ -661,14 +718,14 @@ function renderReportList(){
     const r = app.reports[id];
     let name = reportName(r);
     if(name.length>25) name = name.slice(0,25)+'…';
-    return `<option value="${id}">${esc(name)}</option>`;
+    return `<option value="${esc(id)}">${esc(name)}</option>`;
   }).join('');
   sel.value = app.activeId;
 }
 
 /* ============ Мозговой штурм ============ */
 const ideaCatSel = $('#ideaCat');
-if(ideaCatSel) ideaCatSel.innerHTML = CATS.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+if(ideaCatSel) ideaCatSel.innerHTML = CATS.map(c=>`<option value="${esc(c.id)}">${esc(c.name)}</option>`).join('');
 
 function renderIdeas(){
   const box = $('#ideaList'); if(!box) return;
@@ -678,14 +735,14 @@ function renderIdeas(){
     const items = r.ideas.filter(i=>i.cat===c.id);
     if(!items.length) return '';
     return `<div style="margin-bottom:12px">
-      <div class="grp-h" style="--c:${c.color}">${c.name}<span class="cnt">${items.length}</span></div>
+      <div class="grp-h" style="--c:${c.color}">${esc(c.name)}<span class="cnt">${items.length}</span></div>
       <div class="chips">${items.map(i=>`
         <div class="chip ${i.root?'is-root':''}">
           <span>${esc(i.text)}</span>
           ${i.score ? `<span class="chip-score" title="Балл">${i.score}</span>` : ''}
           ${i.priority ? '<span title="Приоритетная">🔥</span>' : ''}
-          <button class="ic" data-root="${i.id}" title="Корневая">★</button>
-          <button class="ic" data-del="${i.id}" title="Удалить">✕</button>
+          <button class="ic" data-root="${esc(i.id)}" title="Корневая" aria-label="Корневая">★</button>
+          <button class="ic" data-del="${esc(i.id)}" title="Удалить" aria-label="Удалить">✕</button>
         </div>`).join('')}</div>
     </div>`;
   }).join('');
@@ -698,7 +755,7 @@ if(addIdeaBtn) addIdeaBtn.addEventListener('click', ()=>{
   const r = getR();
   r.ideas.push({id:uid(), text:txt, cat:($('#ideaCat')?.value)||'method', root:false, score:0, priority:false});
   addLog('idea.add', txt);
-  inp.value = ''; save(); renderIdeas(); renderFish(); render6M();
+  inp.value = ''; save(); renderIdeas(); renderFishDebounced(); render6M();
 });
 const ideaInput = $('#ideaInput');
 if(ideaInput) ideaInput.addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); $('#addIdeaBtn')?.click(); } });
@@ -712,10 +769,10 @@ if(ideaList) ideaList.addEventListener('click', e=>{
   } else if(b.dataset.del){
     r.ideas = r.ideas.filter(x=>x.id!==b.dataset.del);
   }
-  save(); renderIdeas(); renderFish(); render6M();
+  save(); renderIdeas(); renderFishDebounced(); render6M();
 });
 
-// AI Generate Ideas
+/* AI Generate Ideas */
 const aiGenerateIdeasBtn = $('#aiGenerateIdeasBtn');
 if(aiGenerateIdeasBtn) aiGenerateIdeasBtn.addEventListener('click', async () => {
   const r = getR();
@@ -723,8 +780,8 @@ if(aiGenerateIdeasBtn) aiGenerateIdeasBtn.addEventListener('click', async () => 
     alert('Сначала введите проблему в верхнем поле "Проблема (эффект)"');
     return;
   }
-  const prompt = `Ты — эксперт по бережливому производству. У нас есть проблема: "${r.problem}". 
-Предложи ровно 7 гипотез (потенциальных корневых причин) по методологии 6М. 
+  const prompt = `Ты — эксперт по бережливому производству. У нас есть проблема: "${r.problem}".
+Предложи ровно 7 гипотез (потенциальных корневых причин) по методологии 6М.
 Ответ должен быть строго в формате:
 категория | текст гипотезы
 Где категория это одно из: Люди, Метод, Оборудование, Материалы, Измерения, Окружающая среда.
@@ -743,10 +800,10 @@ if(aiGenerateIdeasBtn) aiGenerateIdeasBtn.addEventListener('click', async () => 
       added++;
     }
   });
-  
+
   if (added > 0) {
     addLog('ai.ideas', `ИИ сгенерировал ${added} гипотез`);
-    save(); renderIdeas(); renderFish(); render6M();
+    save(); renderIdeas(); renderFishDebounced(); render6M();
   } else {
     alert('ИИ вернул неверный формат. Попробуйте еще раз.');
   }
@@ -766,7 +823,7 @@ function renderFish(){
   const makeCard = (c, tx, top)=>{
     const items = r.ideas.filter(x=>x.cat===c.id);
     return `<div class="bone" style="left:${tx-90}px;top:${top}px;width:180px;max-height:130px;border-top-color:${c.color}">
-      <div style="font-weight:bold;color:${c.color};font-size:11px">${c.name}</div>
+      <div style="font-weight:bold;color:${c.color};font-size:11px">${esc(c.name)}</div>
       ${items.length?items.map(x=>`<div style="font-size:10px">${x.root?'★ ':''}${x.score?`[${x.score}] `:''}${esc(x.text)}</div>`).join(''):'<div style="color:#94a3b8;font-size:10px">—</div>'}
     </div>`;
   };
@@ -783,12 +840,18 @@ function renderFish(){
   cards += `<div class="effect" style="left:990px;top:295px;width:190px;height:110px">${esc(r.problem || r.a3.problem || 'Проблема не задана')}</div>`;
   el.innerHTML = `<svg viewBox="0 0 1200 700" width="1200" height="700">${svg}</svg>${cards}`;
 }
+const renderFishDebounced = debounce(renderFish, 200);
 
 /* ============ 6М ============ */
 function render6M(){
   const body = $('#m6Body');
   if(!body) return;
   const r = getR(); if(!r) return;
+
+  // Синхронизация чекбокса фильтра
+  const filterCb = $('#m6FilterPrio');
+  if(filterCb) filterCb.checked = !!r.m6Settings.onlyPriority;
+
   const onlyPrio = r.m6Settings.onlyPriority;
 
   let items = r.ideas.slice();
@@ -811,12 +874,12 @@ function render6M(){
   } else {
     body.innerHTML = items.map(i=>{
       const scoreClass = 'm6-score-' + (i.score||0);
-      return `<tr class="${i.priority?'m6-row-prio':''}" data-row="${i.id}">
+      return `<tr class="${i.priority?'m6-row-prio':''}" data-row="${esc(i.id)}">
         <td style="text-align:center">
-          <input type="checkbox" class="m6-prio" ${i.priority?'checked':''} data-prio="${i.id}" title="Приоритетная">
+          <input type="checkbox" class="m6-prio" ${i.priority?'checked':''} data-prio="${esc(i.id)}" title="Приоритетная" aria-label="Приоритетная">
         </td>
         <td style="text-align:center">
-          <select data-score="${i.id}" class="m6-score ${scoreClass}">
+          <select data-score="${esc(i.id)}" class="m6-score ${scoreClass}" aria-label="Балл">
             <option value="0" ${!i.score?'selected':''}>—</option>
             <option value="1" ${i.score===1?'selected':''}>1</option>
             <option value="2" ${i.score===2?'selected':''}>2</option>
@@ -824,16 +887,16 @@ function render6M(){
           </select>
         </td>
         <td>
-          <select data-cat="${i.id}" style="width:100%">
-            ${CATS.map(c=>`<option value="${c.id}" ${i.cat===c.id?'selected':''}>${c.name}</option>`).join('')}
+          <select data-cat="${esc(i.id)}" style="width:100%" aria-label="Категория">
+            ${CATS.map(c=>`<option value="${esc(c.id)}" ${i.cat===c.id?'selected':''}>${esc(c.name)}</option>`).join('')}
           </select>
         </td>
         <td>
-          <input type="text" value="${esc(i.text)}" data-text="${i.id}" placeholder="Текст гипотезы">
+          <input type="text" value="${esc(i.text)}" data-text="${esc(i.id)}" placeholder="Текст гипотезы">
           ${i.root ? '<span style="font-size:11px;color:#b45309;margin-left:6px">★ корневая</span>' : ''}
         </td>
         <td style="text-align:center">
-          <button class="del" data-remove="${i.id}" title="Удалить">✕</button>
+          <button class="del" data-remove="${esc(i.id)}" title="Удалить" aria-label="Удалить">✕</button>
         </td>
       </tr>`;
     }).join('');
@@ -849,10 +912,7 @@ function render6M(){
 
     let lastScore = null, lastRank = 0;
     const rows = ranked.map((i, idx)=>{
-      if(i.score !== lastScore){
-        lastRank = idx + 1;
-        lastScore = i.score;
-      }
+      if(i.score !== lastScore){ lastRank = idx + 1; lastScore = i.score; }
       return { ...i, rank: lastRank, cat: CATS.find(c=>c.id===i.cat) || CATS[1] };
     });
 
@@ -875,12 +935,12 @@ function render6M(){
           ${rows.map(i=>{
             const rankColor = i.rank===1 ? '#dc2626' : i.rank===2 ? '#f59e0b' : i.rank===3 ? '#16a34a' : '#64748b';
             const medal = i.rank===1 ? '🥇' : i.rank===2 ? '🥈' : i.rank===3 ? '🥉' : '';
-            return `<tr class="${i.priority?'m6-row-prio':''}" data-row="${i.id}">
+            return `<tr class="${i.priority?'m6-row-prio':''}" data-row="${esc(i.id)}">
               <td style="text-align:center;font-weight:700;font-size:14px;color:${rankColor}">
                 ${medal ? medal + ' ' : ''}${i.rank}
               </td>
               <td style="border-left:4px solid ${i.cat.color}">
-                <span style="font-weight:600">${i.cat.name}</span>
+                <span style="font-weight:600">${esc(i.cat.name)}</span>
               </td>
               <td>
                 ${esc(i.text)}
@@ -892,7 +952,7 @@ function render6M(){
                 </span>
               </td>
               <td style="text-align:center">
-                <input type="checkbox" class="m6-prio" ${i.priority?'checked':''} data-prio="${i.id}" title="Приоритетная">
+                <input type="checkbox" class="m6-prio" ${i.priority?'checked':''} data-prio="${esc(i.id)}" title="Приоритетная" aria-label="Приоритетная">
               </td>
             </tr>`;
           }).join('')}
@@ -911,14 +971,14 @@ function render6M(){
     const t = e.target;
     if(t.dataset.text){
       const i = r.ideas.find(x=>x.id===t.dataset.text);
-      if(i){ i.text = t.value; save(); renderIdeas(); renderFish(); }
+      if(i){ i.text = t.value; save(); renderIdeas(); renderFishDebounced(); }
     }
   };
   body.onchange = (e)=>{
     const t = e.target;
     if(t.dataset.score){
       const i = r.ideas.find(x=>x.id===t.dataset.score);
-      if(i){ i.score = Number(t.value)||0; save(); renderIdeas(); renderFish(); render6M(); }
+      if(i){ i.score = Number(t.value)||0; save(); renderIdeas(); renderFishDebounced(); render6M(); }
     }
     if(t.dataset.prio){
       const i = r.ideas.find(x=>x.id===t.dataset.prio);
@@ -926,7 +986,7 @@ function render6M(){
     }
     if(t.dataset.cat){
       const i = r.ideas.find(x=>x.id===t.dataset.cat);
-      if(i){ i.cat = t.value; addLog('6m.cat', `${i.text}: ${t.value}`); save(); renderIdeas(); renderFish(); render6M(); }
+      if(i){ i.cat = t.value; addLog('6m.cat', `${i.text}: ${t.value}`); save(); renderIdeas(); renderFishDebounced(); render6M(); }
     }
   };
   body.onclick = (e)=>{
@@ -935,7 +995,7 @@ function render6M(){
       if(!confirm('Удалить гипотезу во всех вкладках?')) return;
       r.ideas = r.ideas.filter(x=>x.id!==t.dataset.remove);
       addLog('idea.del','удалена с 6М');
-      save(); renderIdeas(); renderFish(); render6M();
+      save(); renderIdeas(); renderFishDebounced(); render6M();
     }
   };
 
@@ -953,18 +1013,43 @@ function render6M(){
 const m6FilterPrio = $('#m6FilterPrio');
 if(m6FilterPrio) m6FilterPrio.addEventListener('change', e=>{ getR().m6Settings.onlyPriority = e.target.checked; save(); render6M(); });
 
+/* === Inline-добавление гипотезы на вкладке 6М === */
 const m6AddRowBtn = $('#m6AddRowBtn');
 if(m6AddRowBtn) m6AddRowBtn.addEventListener('click', ()=>{
   const r = getR();
-  const txt = prompt('Текст новой гипотезы:');
-  if(!txt || !txt.trim()) return;
-  const clean = txt.trim();
-  if(r.ideas.some(x=>x.text.toLowerCase()===clean.toLowerCase())){
-    alert('Такая гипотеза уже есть'); return;
-  }
-  r.ideas.push({id:uid(), text:clean, cat:'method', root:false, score:0, priority:false});
-  addLog('idea.add', clean);
-  save(); renderIdeas(); renderFish(); render6M();
+  const tbody = $('#m6Body');
+  if(!tbody) return;
+
+  const row = document.createElement('tr');
+  row.innerHTML = `
+    <td></td>
+    <td></td>
+    <td></td>
+    <td><input type="text" placeholder="Текст гипотезы…" autofocus></td>
+    <td style="text-align:center"><button class="del" aria-label="Отмена">✕</button></td>`;
+  tbody.prepend(row);
+  const inp = row.querySelector('input');
+  inp.focus();
+
+  const cleanup = () => row.remove();
+  const commit = () => {
+    const v = inp.value.trim();
+    if(!v){ cleanup(); return; }
+    if(r.ideas.some(x=>x.text.toLowerCase()===v.toLowerCase())){
+      alert('Такая гипотеза уже есть'); cleanup(); return;
+    }
+    r.ideas.push({id:uid(), text:v, cat:'method', root:false, score:0, priority:false});
+    addLog('idea.add', v);
+    cleanup();
+    save(); renderIdeas(); renderFishDebounced(); render6M();
+  };
+
+  inp.addEventListener('keydown', e=>{
+    if(e.key==='Enter'){ e.preventDefault(); commit(); }
+    if(e.key==='Escape'){ cleanup(); }
+  });
+  inp.addEventListener('blur', ()=> setTimeout(() => { if(row.isConnected) commit(); }, 150));
+  row.querySelector('button').addEventListener('mousedown', e=>{ e.preventDefault(); cleanup(); });
 });
 
 /* ============ 5 почему линейный ============ */
@@ -991,7 +1076,6 @@ if(addWhy1) addWhy1.addEventListener('click', ()=>{ getR().why1.chain.push(''); 
 const delWhy1 = $('#delWhy1');
 if(delWhy1) delWhy1.addEventListener('click', ()=>{ const c = getR().why1.chain; if(c.length>1){ c.pop(); save(); renderWhy1(); } });
 
-// AI Generate 5 Whys
 const aiWhy1Btn = $('#aiWhy1Btn');
 if(aiWhy1Btn) aiWhy1Btn.addEventListener('click', async () => {
   const r = getR();
@@ -999,7 +1083,7 @@ if(aiWhy1Btn) aiWhy1Btn.addEventListener('click', async () => {
     alert('Сначала введите проблему в верхнем поле "Проблема (эффект)"');
     return;
   }
-  const prompt = `Ты — эксперт по бережливому производству. У нас есть проблема: "${r.problem}". 
+  const prompt = `Ты — эксперт по бережливому производству. У нас есть проблема: "${r.problem}".
 Построй цепочку из 5 вопросов "Почему?" (5 Whys), чтобы найти корневую причину.
 Ответ должен быть строго в формате 5 строк, каждая строка — это причина (ответ на вопрос Почему?), без нумерации.
 Пример:
@@ -1015,9 +1099,7 @@ if(aiWhy1Btn) aiWhy1Btn.addEventListener('click', async () => {
   const lines = result.split('\n').map(l => l.replace(/^\d+\.\s*/, '').trim()).filter(Boolean);
   if (lines.length > 0) {
     r.why1.chain = lines.slice(0, 5);
-    if (r.why1.chain.length < 5) {
-      while (r.why1.chain.length < 5) r.why1.chain.push('');
-    }
+    while (r.why1.chain.length < 5) r.why1.chain.push('');
     addLog('ai.why1', 'ИИ построил цепочку 5 почему');
     save(); renderWhy1();
     alert('ИИ заполнил цепочку "5 почему". Проверьте ответы!');
@@ -1036,18 +1118,18 @@ function renderWhy2(){
     h += `<div style="border:1px solid #e2e8f0;border-radius:8px;padding:10px;margin-bottom:12px;background:#f8fafc">
       <div style="display:flex;gap:6px;align-items:center;margin-bottom:8px">
         <input type="text" value="${esc(b.name)}" data-branch="${bi}" style="font-weight:bold;flex:1" placeholder="Ветвь">
-        <button class="del" data-branch-del="${bi}">✕</button>
+        <button class="del" data-branch-del="${bi}" aria-label="Удалить ветвь">✕</button>
       </div>
       ${b.sub.map((s,si)=>`
         <div style="margin-left:16px;border-left:2px solid #cbd5e1;padding-left:10px;margin-bottom:8px">
           <div style="display:flex;gap:6px;align-items:center">
             <input type="text" value="${esc(s.name)}" data-sub="${bi}:${si}" style="flex:1">
-            <button class="del" data-sub-del="${bi}:${si}">✕</button>
+            <button class="del" data-sub-del="${bi}:${si}" aria-label="Удалить">✕</button>
           </div>
           ${s.sub.map((ss,ssi)=>`
             <div style="margin-left:16px;display:flex;gap:6px;margin-top:4px">
               <input type="text" value="${esc(ss.name)}" data-subsub="${bi}:${si}:${ssi}" style="flex:1">
-              <button class="del" data-subsub-del="${bi}:${si}:${ssi}">✕</button>
+              <button class="del" data-subsub-del="${bi}:${si}:${ssi}" aria-label="Удалить">✕</button>
             </div>
           `).join('')}
           <button class="ghost" data-subsub-add="${bi}:${si}" style="font-size:11px;margin-top:4px">+ подпричина</button>
@@ -1103,11 +1185,11 @@ function renderPlan(){
       <td style="text-align:center">${idx+1}</td>
       <td><input type="text" value="${esc(m.what||'')}" data-plan="${idx}" data-f="what"></td>
       <td><input type="text" value="${esc(m.owner||'')}" data-plan="${idx}" data-f="owner"></td>
-      <td><input type="date" value="${m.start||''}" data-plan="${idx}" data-f="start"></td>
-      <td><input type="date" value="${m.end||''}" data-plan="${idx}" data-f="end"></td>
-      <td><input type="number" value="${m.done||0}" min="0" max="100" step="5" data-plan="${idx}" data-f="done"></td>
+      <td><input type="date" value="${esc(m.start||'')}" data-plan="${idx}" data-f="start"></td>
+      <td><input type="date" value="${esc(m.end||'')}" data-plan="${idx}" data-f="end"></td>
+      <td><input type="number" value="${esc(m.done||0)}" min="0" max="100" step="5" data-plan="${idx}" data-f="done"></td>
       <td><input type="text" value="${esc(m.notes||'')}" data-plan="${idx}" data-f="notes"></td>
-      <td><button class="del" data-plan-del="${idx}">✕</button></td>
+      <td><button class="del" data-plan-del="${idx}" aria-label="Удалить">✕</button></td>
     </tr>
   `).join('') || '<tr><td colspan="8" style="text-align:center;color:#94a3b8">Нет мероприятий</td></tr>';
 
@@ -1159,7 +1241,7 @@ function renderA3(){
 
   const f = (field, type='text', extra='')=>{
     const val = a[field] || '';
-    if(type==='date') return `<input type="date" value="${val}" data-a3="${field}" ${extra}>`;
+    if(type==='date') return `<input type="date" value="${esc(val)}" data-a3="${field}" ${extra}>`;
     if(type==='textarea') return `<textarea data-a3="${field}" ${extra}>${esc(val)}</textarea>`;
     return `<input type="text" value="${esc(val)}" data-a3="${field}" ${extra}>`;
   };
@@ -1169,10 +1251,10 @@ function renderA3(){
     <tr>
       <td style="text-align:center">${i+1}</td>
       <td><input type="text" value="${esc(m.what||'')}" data-a3-m="${i}" data-f="what"></td>
-      <td><input type="date" value="${m.due||''}" data-a3-m="${i}" data-f="due"></td>
+      <td><input type="date" value="${esc(m.due||'')}" data-a3-m="${i}" data-f="due"></td>
       <td><input type="text" value="${esc(m.owner||'')}" data-a3-m="${i}" data-f="owner"></td>
       <td><select data-a3-m="${i}" data-f="status">${['План','В работе','Сделано','Проверено'].map(s=>`<option ${m.status===s?'selected':''}>${s}</option>`).join('')}</select></td>
-      <td class="no-print"><button class="del" data-a3-m-del="${i}">✕</button></td>
+      <td class="no-print"><button class="del" data-a3-m-del="${i}" aria-label="Удалить">✕</button></td>
     </tr>
   `).join('');
   const effRows = a.effRows.map((e,i)=>`
@@ -1180,17 +1262,17 @@ function renderA3(){
       <td><input type="text" value="${esc(e.name||'')}" data-a3-eff="${i}" data-f="name"></td>
       <td><input type="text" value="${esc(e.plan||'')}" data-a3-eff="${i}" data-f="plan" style="text-align:center"></td>
       <td><input type="text" value="${esc(e.fact||'')}" data-a3-eff="${i}" data-f="fact" style="text-align:center"></td>
-      <td class="no-print"><button class="del" data-a3-eff-del="${i}">✕</button></td>
+      <td class="no-print"><button class="del" data-a3-eff-del="${i}" aria-label="Удалить">✕</button></td>
     </tr>
   `).join('');
   const nextRows = a.nextSteps.map((m,i)=>`
     <tr>
       <td style="text-align:center">${i+1}</td>
       <td><input type="text" value="${esc(m.what||'')}" data-a3-n="${i}" data-f="what"></td>
-      <td><input type="date" value="${m.due||''}" data-a3-n="${i}" data-f="due"></td>
+      <td><input type="date" value="${esc(m.due||'')}" data-a3-n="${i}" data-f="due"></td>
       <td><input type="text" value="${esc(m.owner||'')}" data-a3-n="${i}" data-f="owner"></td>
       <td><select data-a3-n="${i}" data-f="status">${['План','В работе','Сделано'].map(s=>`<option ${m.status===s?'selected':''}>${s}</option>`).join('')}</select></td>
-      <td class="no-print"><button class="del" data-a3-n-del="${i}">✕</button></td>
+      <td class="no-print"><button class="del" data-a3-n-del="${i}" aria-label="Удалить">✕</button></td>
     </tr>
   `).join('');
 
@@ -1315,30 +1397,31 @@ function renderA3(){
 }
 
 /* ============ Журнал ============ */
-function renderLog(){
+function _renderLogTable(filter = ''){
   const box = $('#logList'); if(!box) return;
   const r = getR(); if(!r) return;
-  if(!r.log.length){ box.innerHTML = '<p style="color:#94a3b8;font-style:italic">Записей нет</p>'; return; }
+  const rows = filter
+    ? r.log.filter(x => (x.action + x.detail).toLowerCase().includes(filter))
+    : r.log;
+  if(!rows.length){ box.innerHTML = '<p style="color:#94a3b8;font-style:italic">Записей нет</p>'; return; }
   box.innerHTML = `<table class="form-tbl"><thead><tr><th style="width:140px">Время</th><th style="width:140px">Действие</th><th>Детали</th></tr></thead><tbody>
-    ${r.log.slice(0,100).map(x=>`<tr><td>${fmtTime(x.ts)}</td><td>${esc(x.action)}</td><td>${esc(x.detail)}</td></tr>`).join('')}
+    ${rows.slice(0,100).map(x=>`<tr><td>${esc(fmtTime(x.ts))}</td><td>${esc(x.action)}</td><td>${esc(x.detail)}</td></tr>`).join('')}
   </tbody></table>`;
 }
+function renderLog(){ _renderLogTable(); }
 const logSearch = $('#logSearch');
-if(logSearch) logSearch.addEventListener('input', ()=>{
-  const q = logSearch.value.toLowerCase();
-  const r = getR();
-  $('#logList').innerHTML = `<table class="form-tbl"><thead><tr><th style="width:140px">Время</th><th style="width:140px">Действие</th><th>Детали</th></tr></thead><tbody>
-    ${r.log.filter(x=>(x.action+x.detail).toLowerCase().includes(q)).slice(0,100).map(x=>`<tr><td>${fmtTime(x.ts)}</td><td>${esc(x.action)}</td><td>${esc(x.detail)}</td></tr>`).join('')}
-  </tbody></table>`;
-});
+if(logSearch){
+  const doSearch = debounce(() => _renderLogTable(logSearch.value.toLowerCase()), 200);
+  logSearch.addEventListener('input', doSearch);
+}
 
 /* ============ Переключение отчётов ============ */
 const reportSelect = $('#reportSelect');
-if(reportSelect) reportSelect.addEventListener('change', e=>{ app.activeId = e.target.value; save(); renderAll(); });
+if(reportSelect) reportSelect.addEventListener('change', e=>{ app.activeId = e.target.value; save(true); renderAll(); });
 const newReportBtn = $('#newReportBtn');
 if(newReportBtn) newReportBtn.addEventListener('click', ()=>{
   const id = uid(); app.reports[id] = emptyReport(); app.activeId = id;
-  save(); renderReportList(); renderAll();
+  save(true); renderReportList(); renderAll();
 });
 const delReportBtn = $('#delReportBtn');
 if(delReportBtn) delReportBtn.addEventListener('click', ()=>{
@@ -1347,7 +1430,7 @@ if(delReportBtn) delReportBtn.addEventListener('click', ()=>{
   const keys = Object.keys(app.reports);
   if(!keys.length){ const id = uid(); app.reports[id] = emptyReport(); app.activeId = id; }
   else app.activeId = keys[0];
-  save(); renderReportList(); renderAll();
+  save(true); renderReportList(); renderAll();
 });
 
 /* ============ Переименование ============ */
@@ -1362,7 +1445,7 @@ if(renameSaveBtn) renameSaveBtn.addEventListener('click', ()=>{
   const v = $('#renameInput').value.trim();
   getR().a3.projectName = v;
   getR().meta.title = v;
-  save(); renderReportList(); renderA3();
+  save(true); renderReportList(); renderA3();
   $('#renameModal').classList.remove('active');
 });
 
@@ -1372,7 +1455,7 @@ if(mergeBtn) mergeBtn.addEventListener('click', ()=>{
   const box = $('#mergeCheckboxes');
   const keys = Object.keys(app.reports);
   box.innerHTML = `<label class="cb-sel-all"><input type="checkbox" id="cbMergeAll"><span><b>Выбрать все</b></span></label>` +
-    keys.map(id=>`<label><input type="checkbox" value="${id}"><span>${esc(reportName(app.reports[id]))}</span></label>`).join('');
+    keys.map(id=>`<label><input type="checkbox" value="${esc(id)}"><span>${esc(reportName(app.reports[id]))}</span></label>`).join('');
   $('#mergeModal').classList.add('active');
 });
 const mergeDoBtn = $('#mergeDoBtn');
@@ -1398,7 +1481,7 @@ if(mergeDoBtn) mergeDoBtn.addEventListener('click', ()=>{
   }
   const newId = uid(); app.reports[newId] = base; app.activeId = newId;
   if(confirm('Удалить исходные?')) ids.forEach(id=>delete app.reports[id]);
-  save(); renderReportList(); renderAll();
+  save(true); renderReportList(); renderAll();
   $('#mergeModal').classList.remove('active');
 });
 
@@ -1408,8 +1491,8 @@ if(settingsBtn) settingsBtn.addEventListener('click', ()=>{
   const r = getR();
   $('#tabCheckboxes').innerHTML = TABS_LIST.map(t=>`
     <label class="cb-row">
-      <input type="checkbox" value="${t.id}" ${r.enabledTabs.includes(t.id)?'checked':''}>
-      <span><b>${t.name}</b></span>
+      <input type="checkbox" value="${esc(t.id)}" ${r.enabledTabs.includes(t.id)?'checked':''}>
+      <span><b>${esc(t.name)}</b></span>
     </label>
   `).join('');
   $('#settingsModal').classList.add('active');
@@ -1419,7 +1502,7 @@ if(settingsSaveBtn) settingsSaveBtn.addEventListener('click', ()=>{
   const checked = $$('#tabCheckboxes input:checked').map(c=>c.value);
   if(!checked.length){ alert('Оставьте хотя бы одну вкладку'); return; }
   getR().enabledTabs = checked;
-  save(); renderTabs();
+  save(true); renderTabs();
   $('#settingsModal').classList.remove('active');
 });
 
@@ -1428,7 +1511,7 @@ const exportBtn = $('#exportBtn');
 if(exportBtn) exportBtn.addEventListener('click', ()=>{
   $('#exportModal').classList.add('active');
   const box = $('#exportCheckboxes');
-  box.innerHTML = Object.keys(app.reports).map(id=>`<label><input type="checkbox" value="${id}" ${id===app.activeId?'checked':''}><span>${esc(reportName(app.reports[id]))}</span></label>`).join('');
+  box.innerHTML = Object.keys(app.reports).map(id=>`<label><input type="checkbox" value="${esc(id)}" ${id===app.activeId?'checked':''}><span>${esc(reportName(app.reports[id]))}</span></label>`).join('');
 });
 $$('input[name="exportScope"]').forEach(rd=>{
   rd.addEventListener('change', ()=>{
@@ -1438,15 +1521,19 @@ $$('input[name="exportScope"]').forEach(rd=>{
 const downloadBtn = $('#downloadBtn');
 if(downloadBtn) downloadBtn.addEventListener('click', ()=>{
   const scope = $('input[name="exportScope"]:checked').value;
+  const stamp = new Date().toISOString();
   let data, name;
-  if(scope==='current'){ data = getR(); name = 'report.json'; }
+  if(scope==='current'){
+    data = { schemaVersion: SCHEMA_VERSION, exportedAt: stamp, report: getR() };
+    name = 'report.json';
+  }
   else if(scope==='selected'){
     const ids = $$('#exportCheckboxes input:checked').map(c=>c.value);
     if(!ids.length){ alert('Выберите отчёты'); return; }
-    data = { reports: Object.fromEntries(ids.map(id=>[id, app.reports[id]])) };
+    data = { schemaVersion: SCHEMA_VERSION, exportedAt: stamp, reports: Object.fromEntries(ids.map(id=>[id, app.reports[id]])) };
     name = 'selected.json';
   } else {
-    data = { activeReportId: app.activeId, reports: app.reports };
+    data = { schemaVersion: SCHEMA_VERSION, exportedAt: stamp, activeReportId: app.activeId, reports: app.reports };
     name = 'all.json';
   }
   const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
@@ -1463,13 +1550,35 @@ if(fileInput) fileInput.addEventListener('change', e=>{
   reader.onload = ()=>{
     try {
       const data = JSON.parse(reader.result);
-      if(data.reports){
-        Object.entries(data.reports).forEach(([id,r])=>{ app.reports[id] = normalizeReport(r); });
-        if(data.activeReportId) app.activeId = data.activeReportId;
-      } else {
-        const id = uid(); app.reports[id] = normalizeReport(data); app.activeId = id;
+
+      if (data.schemaVersion && data.schemaVersion > SCHEMA_VERSION) {
+        if (!confirm(`Файл создан в более новой версии (schemaVersion=${data.schemaVersion}). Загрузить на свой риск?`)) {
+          e.target.value = ''; return;
+        }
       }
-      save(); renderReportList(); renderAll();
+
+      // Вариант 1: одиночный отчёт {report: {...}}
+      if(data.report){
+        const id = uid();
+        app.reports[id] = normalizeReport(data.report);
+        app.activeId = id;
+      }
+      // Вариант 2: мульти-отчёты {reports: {...}}
+      else if(data.reports){
+        Object.entries(data.reports).forEach(([id, r])=>{
+          app.reports[safeId(id)] = normalizeReport(r);
+        });
+        const want = safeId(data.activeReportId);
+        app.activeId = app.reports[want] ? want : Object.keys(app.reports)[0];
+      }
+      // Вариант 3: сырой отчёт (совместимость)
+      else {
+        const id = uid();
+        app.reports[id] = normalizeReport(data);
+        app.activeId = id;
+      }
+
+      save(true); renderReportList(); renderAll();
     } catch(err){ alert('Ошибка: '+err.message); }
   };
   reader.readAsText(f);
@@ -1540,7 +1649,7 @@ async function exportToXLSX(){
   const addSection = (title) => {
     wsA3.mergeCells(`B${rowIdx}:F${rowIdx}`);
     const cell = wsA3.getCell(`B${rowIdx}`);
-    cell.value = title.toUpperCase();
+    cell.value = String(title).toUpperCase();
     cell.font = sectionStyle.font;
     cell.fill = sectionStyle.fill;
     cell.alignment = sectionStyle.alignment;
@@ -1583,11 +1692,11 @@ async function exportToXLSX(){
   addField('Команда проекта', a.team || '');
   rowIdx++;
 
-  addSection('1. Проблема, задача');
+  addSection(a.titles.t1);
   addTextBlock(a.problem, 50);
   rowIdx++;
 
-  addSection('2. Текущее состояние');
+  addSection(a.titles.t2);
   addTextBlock(a.currentState, 60);
   addField('Дефектность, %', a.defectRate || '');
   addField('Претензии, шт.', a.claimsCount || '');
@@ -1595,19 +1704,19 @@ async function exportToXLSX(){
   addField('Недополученная прибыль, руб.', a.lostProfit || '');
   rowIdx++;
 
-  addSection('3. Постановка целей');
+  addSection(a.titles.t3);
   addField('Снижение брака, %', a.goalDefect || '');
   addField('Сокращение рекламаций', a.goalClaims || '');
   addField('Устранение потерь, %', a.goalLoss || '');
   addField('Прибыль, руб.', a.goalProfit || '');
   rowIdx++;
 
-  addSection('4. Анализ проблемы');
+  addSection(a.titles.t4);
   addTextBlock(a.analysisMethods, 50);
   addField('Корневая причина', a.rootCause || (r.why1.chain.filter(x=>x.trim()).slice(-1)[0] || ''));
   rowIdx++;
 
-  addSection('5. План мероприятий');
+  addSection(a.titles.t5);
   const mHeaders = ['№', 'Мероприятие', 'Срок', 'Ответственный', 'Статус'];
   const mCols = [2, 3, 4, 5, 6];
   mHeaders.forEach((h, i)=>{
@@ -1644,7 +1753,7 @@ async function exportToXLSX(){
   }
   rowIdx++;
 
-  addSection('6. Оценка эффективности');
+  addSection(a.titles.t6);
   ['Показатель','План','Факт'].forEach((h, i)=>{
     const cell = wsA3.getCell(rowIdx, i+2);
     cell.value = h;
@@ -1668,11 +1777,11 @@ async function exportToXLSX(){
   });
   rowIdx++;
 
-  addSection('7. Результаты проекта');
+  addSection(a.titles.t7);
   addTextBlock(a.results, 50);
   rowIdx++;
 
-  addSection('8. Дальнейшие действия');
+  addSection(a.titles.t8);
   const nHeaders = ['№', 'Мероприятие', 'Срок', 'Ответственный', 'Статус'];
   nHeaders.forEach((h, i)=>{
     const cell = wsA3.getCell(rowIdx, i+2);
@@ -1902,8 +2011,6 @@ async function exportToXLSX(){
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
   }, 2000);
-
-  alert('Файл ' + finalFileName + ' сформирован.\n\nЕсли скачивание не началось — найдите файл в «Загрузках» или разрешите скачивание в браузере.');
 }
 
 const xlsxBtn = $('#xlsxBtn');
@@ -2122,7 +2229,7 @@ function importFromXLSX(file){
 
       if(replace){
         r.ideas = ideas.map(i=>({ id: uid(), text: i.text, cat: mapCategory(i.group), root: false, score: i.score, priority: false }));
-        r.plan = planRows.map(p=>({ id: uid(), what: p.what, owner: p.owner, start: '', end: '', done: p.done, notes: p.notes }));
+        r.plan = planRows.map(p=>({ id: uid(), what: p.what, owner: p.owner, start: '', end: p.due || '', done: p.done, notes: p.notes }));
       } else {
         const existingTexts = new Set(r.ideas.map(i=>i.text.toLowerCase()));
         ideas.forEach(i=>{
@@ -2132,33 +2239,42 @@ function importFromXLSX(file){
           }
         });
         planRows.forEach(p=>{
-          r.plan.push({ id: uid(), what: p.what, owner: p.owner, start: '', end: '', done: p.done, notes: p.notes });
+          r.plan.push({ id: uid(), what: p.what, owner: p.owner, start: '', end: p.due || '', done: p.done, notes: p.notes });
         });
       }
 
+      // A3: заполняем только пустые поля в режиме "добавить"
       if(ppu){
-        if(ppu['наименование']) a.projectName = ppu['наименование'];
-        if(ppu['проблема']){ a.problem = ppu['проблема']; r.problem = ppu['проблема']; }
-        if(ppu['baseline']) a.currentState = ppu['baseline'];
-        if(ppu['предлагаемое улучшение']) a.analysisMethods = ppu['предлагаемое улучшение'];
-        if(ppu['ожидаемый эффект']) a.results = ppu['ожидаемый эффект'];
-        if(ppu['владелец процесса']) a.manager = ppu['владелец процесса'];
-        if(ppu['команда']) a.team = team.length ? team.join('; ') : ppu['команда'];
-        if(ppu['риски и меры']) a.analysisMethods = (a.analysisMethods ? a.analysisMethods + '\n\n' : '') + 'Риски и меры: ' + ppu['риски и меры'];
-        if(ppu['цель']) a.goalDefect = ppu['цель'];
+        const setIf = (key, val) => {
+          if(!val) return;
+          if(replace || !a[key]) a[key] = val;
+        };
+        setIf('projectName', ppu['наименование']);
+        setIf('problem', ppu['проблема']);
+        setIf('currentState', ppu['baseline']);
+        setIf('analysisMethods', ppu['предлагаемое улучшение']);
+        setIf('results', ppu['ожидаемый эффект']);
+        setIf('manager', ppu['владелец процесса']);
+        setIf('goalDefect', ppu['цель']);
+        if(team.length && (replace || !a.team)) a.team = team.join('; ');
+        else if(ppu['команда'] && (replace || !a.team)) a.team = ppu['команда'];
+        if(ppu['риски и меры']){
+          a.analysisMethods = (a.analysisMethods ? a.analysisMethods + '\n\n' : '') + 'Риски и меры: ' + ppu['риски и меры'];
+        }
+        if(ppu['проблема'] && (replace || !r.problem)) r.problem = ppu['проблема'];
       }
 
       if(panel){
-        if(panel['baseline, т/мес.']) a.defectRate = panel['baseline, т/мес.'];
+        if(panel['baseline, т/мес.'] && (replace || !a.defectRate)) a.defectRate = panel['baseline, т/мес.'];
         if(panel['затраты/показатель в год, руб.']){
           const cost = Number(panel['затраты/показатель в год, руб.']);
-          if(!isNaN(cost)) a.lostProfit = String(cost);
+          if(!isNaN(cost) && (replace || !a.lostProfit)) a.lostProfit = String(cost);
         }
         if(panel['размер команды'] && !a.team){ a.team = `Команда: ${panel['размер команды']} чел.`; }
       }
 
       if(panel['baseline, т/мес.']){ r.wasBefore.text = 'Baseline: ' + panel['baseline, т/мес.'] + ' т/мес.'; }
-      if(conclusion){ r.a3.results = (r.a3.results ? r.a3.results + '\n\n' : '') + conclusion; }
+      if(conclusion){ a.results = (a.results ? a.results + '\n\n' : '') + conclusion; }
 
       addLog('import.xlsx', `Импортировано из XLSX: гипотез — ${ideas.length}, плана — ${planRows.length}, режим: ${replace?'замена':'добавление'}`);
 
@@ -2167,7 +2283,7 @@ function importFromXLSX(file){
         sorted.slice(0, 7).forEach(i=>{ i.priority = true; });
       }
 
-      save();
+      save(true);
       renderAll();
       alert(`Готово!\n• Гипотез: ${ideas.length}\n• Мероприятий: ${planRows.length}\n• Поля А3 заполнены из ППУ, команда, панель, вывод.\n\nОткрываю вкладку «3. 6М» — проверьте баллы и категории.`);
 
@@ -2200,6 +2316,7 @@ function buildPrintView(){
   const a = r.a3;
   const box = $('#printView');
   if(!box) return;
+  const T = a.titles;
 
   const ranked = r.ideas.slice().sort((x,y)=>{
     if((y.score||0) !== (x.score||0)) return (y.score||0) - (x.score||0);
@@ -2259,7 +2376,7 @@ function buildPrintView(){
   }).join('');
 
   const secTitle = (text) => `<table style="width:100%;border-collapse:collapse;margin-top:10px">
-    <tr><td style="border:2px solid #000;background:#d9d9d9;padding:5px 8px;font-weight:bold;font-size:12px;text-transform:uppercase">${text}</td></tr>
+    <tr><td style="border:2px solid #000;background:#d9d9d9;padding:5px 8px;font-weight:bold;font-size:12px;text-transform:uppercase">${esc(text)}</td></tr>
   </table>`;
 
   const secBlock = (html) => `<table style="width:100%;border-collapse:collapse;border:2px solid #000">
@@ -2290,9 +2407,9 @@ function buildPrintView(){
           <td colspan="3" style="border:1px solid #000;padding:4px">${esc(a.team||'')}</td>
         </tr>
       </table>
-      ${secTitle('1. Проблема, задача')}
+      ${secTitle(T.t1)}
       ${secBlock(`<div style="min-height:36px;white-space:pre-wrap">${esc(a.problem||'')}</div>`)}
-      ${secTitle('2. Текущее состояние')}
+      ${secTitle(T.t2)}
       ${secBlock(`<div style="min-height:60px;white-space:pre-wrap;margin-bottom:6px">${esc(a.currentState||'')}</div>
         <table style="width:100%;border-collapse:collapse">
           <tr><td style="border:1px solid #000;padding:4px;width:40%">Дефектность, %</td><td style="border:1px solid #000;padding:4px">${esc(a.defectRate||'')}</td></tr>
@@ -2300,19 +2417,19 @@ function buildPrintView(){
           <tr><td style="border:1px solid #000;padding:4px">Потери, мин.</td><td style="border:1px solid #000;padding:4px">${esc(a.timeLoss||'')}</td></tr>
           <tr><td style="border:1px solid #000;padding:4px">Недополученная прибыль, руб.</td><td style="border:1px solid #000;padding:4px">${esc(a.lostProfit||'')}</td></tr>
         </table>`)}
-      ${secTitle('3. Постановка целей')}
+      ${secTitle(T.t3)}
       ${secBlock(`<table style="width:100%;border-collapse:collapse">
         <tr><td style="border:1px solid #000;padding:4px;width:40%">Снижение брака, %</td><td style="border:1px solid #000;padding:4px">${esc(a.goalDefect||'')}</td></tr>
         <tr><td style="border:1px solid #000;padding:4px">Сокращение рекламаций</td><td style="border:1px solid #000;padding:4px">${esc(a.goalClaims||'')}</td></tr>
         <tr><td style="border:1px solid #000;padding:4px">Устранение потерь, %</td><td style="border:1px solid #000;padding:4px">${esc(a.goalLoss||'')}</td></tr>
         <tr><td style="border:1px solid #000;padding:4px">Прибыль, руб.</td><td style="border:1px solid #000;padding:4px">${esc(a.goalProfit||'')}</td></tr>
       </table>`)}
-      ${secTitle('4. Анализ проблемы, поиск корневых причин')}
+      ${secTitle(T.t4)}
       ${secBlock(`<div style="white-space:pre-wrap">${esc(a.analysisMethods||'')}</div>
         <div style="margin-top:6px;border:1px solid #000;padding:6px;background:#fffbeb">
           <b>Корневая причина:</b> ${esc(a.rootCause || (r.why1.chain.filter(x=>x.trim()).slice(-1)[0] || ''))}
         </div>`)}
-      ${secTitle('5. План мероприятий по устранению корневых причин')}
+      ${secTitle(T.t5)}
       ${secBlock(`<table style="width:100%;border-collapse:collapse">
         <thead><tr>
           <th style="border:1px solid #000;padding:4px;background:#f0f0f0;width:30px">№</th>
@@ -2323,7 +2440,7 @@ function buildPrintView(){
         </tr></thead>
         <tbody>${measRows || '<tr><td colspan="5" style="border:1px solid #000;padding:6px;text-align:center;color:#666">—</td></tr>'}</tbody>
       </table>`)}
-      ${secTitle('6. Оценка эффективности проекта')}
+      ${secTitle(T.t6)}
       ${secBlock(`<table style="width:100%;border-collapse:collapse">
         <thead><tr>
           <th style="border:1px solid #000;padding:4px;background:#f0f0f0">Показатель</th>
@@ -2332,9 +2449,9 @@ function buildPrintView(){
         </tr></thead>
         <tbody>${effRows || '<tr><td colspan="3" style="border:1px solid #000;padding:6px;text-align:center;color:#666">—</td></tr>'}</tbody>
       </table>`)}
-      ${secTitle('7. Результаты проекта')}
+      ${secTitle(T.t7)}
       ${secBlock(`<div style="min-height:50px;white-space:pre-wrap">${esc(a.results||'')}</div>`)}
-      ${secTitle('8. Дальнейшие действия')}
+      ${secTitle(T.t8)}
       ${secBlock(`<table style="width:100%;border-collapse:collapse">
         <thead><tr>
           <th style="border:1px solid #000;padding:4px;background:#f0f0f0;width:30px">№</th>
@@ -2378,6 +2495,8 @@ function buildPrintView(){
   `;
 }
 
+window.addEventListener('beforeprint', buildPrintView);
+
 const printBtn = $('#printBtn');
 if(printBtn) printBtn.addEventListener('click', ()=>{
   buildPrintView();
@@ -2387,6 +2506,9 @@ if(printBtn) printBtn.addEventListener('click', ()=>{
 /* ============ Модалки ============ */
 $$('[data-close]').forEach(b=>b.addEventListener('click', ()=>$('#'+b.dataset.close).classList.remove('active')));
 $$('.modal-overlay').forEach(m=>m.addEventListener('click', e=>{ if(e.target===m) m.classList.remove('active'); }));
+document.addEventListener('keydown', e=>{
+  if(e.key === 'Escape') $$('.modal-overlay.active').forEach(m=>m.classList.remove('active'));
+});
 
 /* ============ Демо/Сброс ============ */
 const demoBtn = $('#demoBtn');
@@ -2414,14 +2536,14 @@ if(demoBtn) demoBtn.addEventListener('click', ()=>{
   r.wasBefore = {date:'', text:'Простой 40 мин'};
   r.wasAfter = {date:'', text:'Простой 10 мин'};
   addLog('demo','заполнено примером');
-  save(); renderAll();
+  save(true); renderAll();
 });
 
 const resetBtn = $('#resetBtn');
 if(resetBtn) resetBtn.addEventListener('click', ()=>{
   if(!confirm('Очистить текущий отчёт?')) return;
   app.reports[app.activeId] = emptyReport();
-  save(); renderAll();
+  save(true); renderAll();
 });
 
 /* ============ Режим ============ */
@@ -2452,7 +2574,7 @@ function renderAll(){
 }
 
 const probInput = $('#problemInput');
-if(probInput) probInput.addEventListener('input', ()=>{ getR().problem = probInput.value; save(); renderFish(); });
+if(probInput) probInput.addEventListener('input', ()=>{ getR().problem = probInput.value; save(); renderFishDebounced(); });
 
 renderAll();
 
@@ -2465,10 +2587,6 @@ const qrCodeImg = document.getElementById('qrCodeImg');
 const doInstallBtn = document.getElementById('doInstallBtn');
 const copyLinkBtn = document.getElementById('copyLinkBtn');
 const installHint = document.getElementById('installHint');
-
-function isStandalone(){
-  return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
-}
 
 window.addEventListener('beforeinstallprompt', e => {
   e.preventDefault();
