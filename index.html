@@ -305,7 +305,7 @@ const TABS_LIST = [
   {id:'fish',  name:'2. Исикава', defaultOn:true},
   {id:'6m',    name:'3. 6М', defaultOn:true},
   {id:'why1',  name:'4. 5 почему', defaultOn:true},
-  {id:'why2',  name:'5. Дерево', defaultOn:false},
+  {id:'why2',  name:'5. Дерево', defaultOn:true},
   {id:'plan',  name:'6. План', defaultOn:true},
   {id:'was',   name:'7. Было-Стало', defaultOn:false},
   {id:'a3',    name:'8. А3', defaultOn:true},
@@ -1398,7 +1398,6 @@ function parseStandardA3Sheet(ws) {
     analysisMethods: '', results: '', goalsText: '', numbersText: '',
     planRows: [], effRows: [], nextRows: []
   };
-
   try { data.projectName = _extractField(rows, 'Название проекта'); } catch(e){ console.warn(e); }
   try { data.department  = _extractField(rows, 'ПП, отдел, служба'); } catch(e){ console.warn(e); }
   try { data.openDate    = _extractField(rows, 'Дата открытия'); } catch(e){ console.warn(e); }
@@ -1408,7 +1407,6 @@ function parseStandardA3Sheet(ws) {
   try { data.currentState = _extractField(rows, '2. Текущая состояние', { maxLines: 8 }); } catch(e){ console.warn(e); }
   try { data.analysisMethods = _extractField(rows, '4. Анализ проблемы', { maxLines: 10 }); } catch(e){ console.warn(e); }
 
-  /* Результаты: заголовок в D, содержимое в E следующей строки */
   try {
     const resultsIdx = _findRow(rows, '7. Результаты проекта', 3);
     if (resultsIdx >= 0) {
@@ -1425,7 +1423,6 @@ function parseStandardA3Sheet(ws) {
     }
   } catch(e){ console.warn('results', e); }
 
-  /* Дата закрытия — по всем ячейкам */
   try {
     outer:
     for (let i = 0; i < rows.length; i++) {
@@ -1436,7 +1433,6 @@ function parseStandardA3Sheet(ws) {
     }
   } catch(e){ console.warn(e); }
 
-  /* Цели — в той же ячейке B, после «SMART):» */
   try {
     const goalsIdx = _findRow(rows, 'ЦЕЛИ ПРОЕКТА', 1);
     if (goalsIdx >= 0) {
@@ -1454,7 +1450,6 @@ function parseStandardA3Sheet(ws) {
     }
   } catch(e){ console.warn('goals', e); }
 
-  /* Цифры */
   try {
     const numbersIdx = _findRow(rows, 'Приведите цифры', 1);
     if (numbersIdx >= 0) {
@@ -1467,7 +1462,6 @@ function parseStandardA3Sheet(ws) {
     }
   } catch(e){ console.warn('numbers', e); }
 
-  /* Секция 5: План (D-H) */
   try {
     const planIdx = _findRow(rows, '5. План мероприятий', 3);
     if (planIdx >= 0) {
@@ -1490,7 +1484,6 @@ function parseStandardA3Sheet(ws) {
     }
   } catch(e){ console.warn('planRows', e); }
 
-  /* Секция 6: Эффективность */
   try {
     const effIdx = _findRow(rows, '6. Оценка эффективности', 3);
     if (effIdx >= 0) {
@@ -1506,7 +1499,6 @@ function parseStandardA3Sheet(ws) {
     }
   } catch(e){ console.warn('effRows', e); }
 
-  /* Секция 8: Дальнейшие действия */
   try {
     const nextIdx = _findRow(rows, '8. Дальнейшие действия', 3);
     if (nextIdx >= 0) {
@@ -1555,34 +1547,59 @@ function parseWhySheet(ws) {
   return empty;
 }
 
-/** Парсит лист «5Почему - в.2» (дерево) — ветви / причины / подпричины. */
+/* ⬇⬇⬇ ИСПРАВЛЕННЫЙ ПАРСЕР ДЕРЕВА ⬇⬇⬇ */
 function parseWhy2Sheet(ws) {
   const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
   const branches = [];
   let curBranch = null, curSub = null;
+
+  const isBranch = s => /^[А-ЯA-Z]\.\s/.test(s) && !/^\d/.test(s);
+  const isCause  = s => /^[А-ЯA-Z]\d+\.\s/.test(s);
+  const isSub    = s => /^[А-ЯA-Z]\d+\.\d+\.\s/.test(s);
+
   for (let i = 0; i < rows.length; i++) {
-    const d = _cleanCell(rows[i]?.[3]);
-    const f = _cleanCell(rows[i]?.[5]);
-    const h = _cleanCell(rows[i]?.[7]);
-    if (d && /^[А-ЯA-Z]\.\s/.test(d)) {
-      curBranch = { id: uid(), name: d, sub: [] };
-      branches.push(curBranch); curSub = null;
+    const D = _cleanCell(rows[i]?.[3]);
+    const F = _cleanCell(rows[i]?.[5]);
+    const G = _cleanCell(rows[i]?.[6]);
+    const H = _cleanCell(rows[i]?.[7]);
+
+    if (isBranch(D)) {
+      curBranch = { id: uid(), name: D, sub: [] };
+      branches.push(curBranch);
+      curSub = null;
+      continue;
     }
-    if (f && /^[А-ЯA-Z]\d+\.\s/.test(f)) {
+    if (isCause(F)) {
       if (!curBranch) { curBranch = { id: uid(), name: 'Ветвь', sub: [] }; branches.push(curBranch); }
-      curSub = { id: uid(), name: f, sub: [] };
+      curSub = { id: uid(), name: F, sub: [] };
       curBranch.sub.push(curSub);
+      for (const cell of [G, H]) {
+        if (isSub(cell)) curSub.sub.push({ id: uid(), name: cell });
+      }
+      continue;
     }
-    if (h && /^[А-ЯA-Z]\d+\.\d+\.\s/.test(h)) {
-      if (!curBranch) { curBranch = { id: uid(), name: 'Ветвь', sub: [] }; branches.push(curBranch); }
-      if (!curSub) { curSub = { id: uid(), name: 'Причина', sub: [] }; curBranch.sub.push(curSub); }
-      curSub.sub.push({ id: uid(), name: h });
+    for (const cell of [G, H]) {
+      if (isSub(cell)) {
+        if (!curBranch) { curBranch = { id: uid(), name: 'Ветвь', sub: [] }; branches.push(curBranch); }
+        if (!curSub)    { curSub    = { id: uid(), name: 'Причина', sub: [] }; curBranch.sub.push(curSub); }
+        curSub.sub.push({ id: uid(), name: cell });
+      }
     }
   }
+
+  if (!branches.length) {
+    for (let i = 0; i < rows.length; i++) {
+      for (let c = 0; c < (rows[i]?.length || 0); c++) {
+        const v = _cleanCell(rows[i]?.[c]);
+        if (isBranch(v)) branches.push({ id: uid(), name: v, sub: [] });
+      }
+    }
+  }
+
+  console.log('[parseWhy2Sheet] ветвей:', branches.length, branches);
   return branches.length ? { branches } : null;
 }
 
-/** Эвристика категории 6М по тексту. */
 function guessCatFromText(t) {
   const s = String(t).toLowerCase();
   if (/персонал|обучен|ответствен|команд|мозгов/i.test(s))         return 'people';
@@ -1593,7 +1610,6 @@ function guessCatFromText(t) {
   return 'method';
 }
 
-/** Парсит лист «ISHIKAWA» — извлекает всё после «►». */
 function parseIshikawaSheet(ws) {
   const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
   const ideas = [];
@@ -1855,9 +1871,13 @@ function importFromXLSX(file){
         else why1Data.chain.forEach((v, i) => { if (v && !r.why1.chain[i]) r.why1.chain[i] = v; });
       }
 
+      /* ⬇⬇⬇ АВТОВКЛЮЧЕНИЕ ВКЛАДКИ «5. ДЕРЕВО» ⬇⬇⬇ */
       if (why2Data && why2Data.branches?.length) {
         if (replace) r.why2.branches = why2Data.branches;
         else r.why2.branches = r.why2.branches.concat(why2Data.branches);
+        if (!r.enabledTabs.includes('why2')) {
+          r.enabledTabs.push('why2');
+        }
       }
 
       if (ishData && ishData.length) {
