@@ -973,20 +973,17 @@ $('#delReportBtn')?.addEventListener('click', ()=>{
 $('#renameBtn')?.addEventListener('click', ()=>{ $('#renameInput').value = getR().a3.projectName || ''; $('#renameModal').classList.add('active'); setTimeout(()=>$('#renameInput')?.focus(), 50); });
 $('#renameSaveBtn')?.addEventListener('click', ()=>{ const v = $('#renameInput').value.trim(); getR().a3.projectName = v; getR().meta.title = v; save(true); renderReportList(); renderA3(); $('#renameModal').classList.remove('active'); });
 
-/* ⬇⬇⬇ ОБЪЕДИНЕНИЕ БЕЗ ДУБЛЕЙ ⬇⬇⬇ */
 $('#mergeBtn')?.addEventListener('click', ()=>{
   const box = $('#mergeCheckboxes'); const keys = Object.keys(app.reports);
   box.innerHTML = `<label class="cb-sel-all"><input type="checkbox" id="cbMergeAll"><span><b>Выбрать все</b></span></label>` + keys.map(id=>`<label><input type="checkbox" value="${esc(id)}"><span>${esc(reportName(app.reports[id]))}</span></label>`).join('');
   $('#mergeModal').classList.add('active');
 });
-
 $('#mergeDoBtn')?.addEventListener('click', ()=>{
   const ids = $$('#mergeCheckboxes input:checked').map(c=>c.value).filter(id=>id!=='on');
   if(ids.length<2){ alert('Выберите 2+ отчёта'); return; }
   if(!confirm(`Объединить ${ids.length} отчётов?`)) return;
 
   const keyOf = s => String(s||'').trim().toLowerCase().replace(/\s+/g,' ');
-
   const dedupeList = (arr, keyFn) => {
     const seen = new Set();
     return (arr||[]).filter(x => {
@@ -1014,92 +1011,26 @@ $('#mergeDoBtn')?.addEventListener('click', ()=>{
   for (let i=1; i<ids.length; i++){
     const r = app.reports[ids[i]];
     if (!r) continue;
-
     (r.ideas || []).forEach(idea => {
-      const k = keyOf(idea.text);
-      if (!k) return;
-      if (!seenIdeas.has(k)) {
-        base.ideas.push(idea);
-        seenIdeas.set(k, idea);
-      } else {
-        const ex = seenIdeas.get(k);
-        ex.score    = Math.max(ex.score||0, idea.score||0);
-        ex.priority = ex.priority || idea.priority;
-        ex.root     = ex.root     || idea.root;
-      }
+      const k = keyOf(idea.text); if (!k) return;
+      if (!seenIdeas.has(k)) { base.ideas.push(idea); seenIdeas.set(k, idea); }
+      else { const ex = seenIdeas.get(k); ex.score = Math.max(ex.score||0, idea.score||0); ex.priority = ex.priority || idea.priority; ex.root = ex.root || idea.root; }
     });
-
-    (r.plan || []).forEach(p => {
-      const k = keyOf(p.what);
-      if (!k || seenPlan.has(k)) return;
-      seenPlan.add(k);
-      base.plan.push(p);
-    });
-
-    (r.a3?.measures || []).forEach(m => {
-      const k = keyOf(m.what);
-      if (!k || seenMeas.has(k)) return;
-      seenMeas.add(k);
-      base.a3.measures.push(m);
-    });
-
-    (r.a3?.nextSteps || []).forEach(m => {
-      const k = keyOf(m.what);
-      if (!k || seenNext.has(k)) return;
-      seenNext.add(k);
-      base.a3.nextSteps.push(m);
-    });
-
-    (r.a3?.effRows || []).forEach(e => {
-      const k = keyOf(e.name);
-      if (!k || seenEff.has(k)) return;
-      seenEff.add(k);
-      base.a3.effRows.push(e);
-    });
-
-    (r.why1?.chain || []).forEach((v, idx) => {
-      const k = keyOf(v);
-      if (!k) return;
-      if (base.why1.chain[idx]) return;
-      if (seenWhy1.has(k)) return;
-      base.why1.chain[idx] = v;
-      seenWhy1.add(k);
-    });
-
-    (r.why2?.branches || []).forEach(b => {
-      const k = keyOf(b.name);
-      if (!k || seenBranch.has(k)) return;
-      seenBranch.add(k);
-      base.why2.branches.push(b);
-    });
+    (r.plan || []).forEach(p => { const k = keyOf(p.what); if (!k || seenPlan.has(k)) return; seenPlan.add(k); base.plan.push(p); });
+    (r.a3?.measures || []).forEach(m => { const k = keyOf(m.what); if (!k || seenMeas.has(k)) return; seenMeas.add(k); base.a3.measures.push(m); });
+    (r.a3?.nextSteps || []).forEach(m => { const k = keyOf(m.what); if (!k || seenNext.has(k)) return; seenNext.add(k); base.a3.nextSteps.push(m); });
+    (r.a3?.effRows || []).forEach(e => { const k = keyOf(e.name); if (!k || seenEff.has(k)) return; seenEff.add(k); base.a3.effRows.push(e); });
+    (r.why1?.chain || []).forEach((v, idx) => { const k = keyOf(v); if (!k) return; if (base.why1.chain[idx]) return; if (seenWhy1.has(k)) return; base.why1.chain[idx] = v; seenWhy1.add(k); });
+    (r.why2?.branches || []).forEach(b => { const k = keyOf(b.name); if (!k || seenBranch.has(k)) return; seenBranch.add(k); base.why2.branches.push(b); });
   }
-
   while (base.why1.chain.length < 5) base.why1.chain.push('');
 
-  const newId = uid();
-  app.reports[newId] = base;
-  app.activeId = newId;
-
+  const newId = uid(); app.reports[newId] = base; app.activeId = newId;
   if (confirm('Удалить исходные?')) ids.forEach(id => delete app.reports[id]);
-
-  save(true);
-  renderReportList();
-  renderAll();
-
+  save(true); renderReportList(); renderAll();
   addLog('merge', `Объединено ${ids.length} отчётов · идей=${base.ideas.length}, план=${base.plan.length}, мер=${base.a3.measures.length}, след.=${base.a3.nextSteps.length}, эфф=${base.a3.effRows.length}, why1=${base.why1.chain.filter(x=>x.trim()).length}, ветвей=${base.why2.branches.length}`);
-
   $('#mergeModal').classList.remove('active');
-
-  alert(
-    '✅ Объединено без дублей:\n' +
-    `• Гипотез: ${base.ideas.length}\n` +
-    `• План мероприятий: ${base.plan.length}\n` +
-    `• Мероприятия A3: ${base.a3.measures.length}\n` +
-    `• Дальнейшие действия: ${base.a3.nextSteps.length}\n` +
-    `• Эффективность: ${base.a3.effRows.length}\n` +
-    `• 5 почему (линейный): ${base.why1.chain.filter(x=>x.trim()).length}\n` +
-    `• Ветви дерева: ${base.why2.branches.length}`
-  );
+  alert('✅ Объединено без дублей:\n' + `• Гипотез: ${base.ideas.length}\n` + `• План мероприятий: ${base.plan.length}\n` + `• Мероприятия A3: ${base.a3.measures.length}\n` + `• Дальнейшие действия: ${base.a3.nextSteps.length}\n` + `• Эффективность: ${base.a3.effRows.length}\n` + `• 5 почему (линейный): ${base.why1.chain.filter(x=>x.trim()).length}\n` + `• Ветви дерева: ${base.why2.branches.length}`);
 });
 
 $('#settingsBtn')?.addEventListener('click', ()=>{
@@ -1186,29 +1117,9 @@ async function exportToXLSX(){
   const subCell = wsA3.getCell(`B${rowIdx}`);
   subCell.value = a.projectName || reportName(r); subCell.font = {bold:true, size:13}; subCell.alignment = {horizontal:'center', vertical:'middle', wrapText:true};
   wsA3.getRow(rowIdx).height = 22; rowIdx += 2;
-  const addSection = (title) => {
-    wsA3.mergeCells(`B${rowIdx}:F${rowIdx}`);
-    const cell = wsA3.getCell(`B${rowIdx}`);
-    cell.value = String(title).toUpperCase(); cell.font = sectionStyle.font; cell.fill = sectionStyle.fill; cell.alignment = sectionStyle.alignment;
-    for(let c=2; c<=6; c++) wsA3.getCell(rowIdx, c).border = BORDER;
-    rowIdx++;
-  };
-  const addField = (label, value) => {
-    wsA3.getCell(rowIdx, 2).value = label;
-    Object.assign(wsA3.getCell(rowIdx, 2), { font: labelStyle.font, fill: labelStyle.fill, alignment: labelStyle.alignment, border: BORDER });
-    wsA3.mergeCells(`C${rowIdx}:F${rowIdx}`);
-    const val = wsA3.getCell(`C${rowIdx}`);
-    val.value = value || '—'; val.font = cellStyle.font; val.alignment = cellStyle.alignment;
-    for(let c=3; c<=6; c++) wsA3.getCell(rowIdx, c).border = BORDER;
-    rowIdx++;
-  };
-  const addTextBlock = (text, height=50) => {
-    wsA3.mergeCells(`B${rowIdx}:F${rowIdx}`);
-    const cell = wsA3.getCell(`B${rowIdx}`);
-    cell.value = text || ''; cell.font = cellStyle.font; cell.alignment = cellStyle.alignment;
-    for(let c=2; c<=6; c++) wsA3.getCell(rowIdx, c).border = BORDER;
-    wsA3.getRow(rowIdx).height = height; rowIdx++;
-  };
+  const addSection = (title) => { wsA3.mergeCells(`B${rowIdx}:F${rowIdx}`); const cell = wsA3.getCell(`B${rowIdx}`); cell.value = String(title).toUpperCase(); cell.font = sectionStyle.font; cell.fill = sectionStyle.fill; cell.alignment = sectionStyle.alignment; for(let c=2; c<=6; c++) wsA3.getCell(rowIdx, c).border = BORDER; rowIdx++; };
+  const addField = (label, value) => { wsA3.getCell(rowIdx, 2).value = label; Object.assign(wsA3.getCell(rowIdx, 2), { font: labelStyle.font, fill: labelStyle.fill, alignment: labelStyle.alignment, border: BORDER }); wsA3.mergeCells(`C${rowIdx}:F${rowIdx}`); const val = wsA3.getCell(`C${rowIdx}`); val.value = value || '—'; val.font = cellStyle.font; val.alignment = cellStyle.alignment; for(let c=3; c<=6; c++) wsA3.getCell(rowIdx, c).border = BORDER; rowIdx++; };
+  const addTextBlock = (text, height=50) => { wsA3.mergeCells(`B${rowIdx}:F${rowIdx}`); const cell = wsA3.getCell(`B${rowIdx}`); cell.value = text || ''; cell.font = cellStyle.font; cell.alignment = cellStyle.alignment; for(let c=2; c<=6; c++) wsA3.getCell(rowIdx, c).border = BORDER; wsA3.getRow(rowIdx).height = height; rowIdx++; };
   addField('Название проекта', a.projectName || '');
   addField('ПП, отдел, служба', a.department || '');
   addField('Дата открытия', a.openDate || '');
@@ -1233,121 +1144,39 @@ async function exportToXLSX(){
   addField('Корневая причина', a.rootCause || (r.why1.chain.filter(x=>x.trim()).slice(-1)[0] || ''));
   rowIdx++;
   addSection(a.titles.t5);
-  ['№','Мероприятие','Срок','Ответственный','Статус'].forEach((h,i)=>{
-    const cell = wsA3.getCell(rowIdx, i+2);
-    cell.value = h; cell.font = {bold:true, size:11}; cell.fill = {type:'pattern', pattern:'solid', fgColor:{argb:'FFF0F0F0'}};
-    cell.alignment = {horizontal:'center', vertical:'middle', wrapText:true}; cell.border = BORDER;
-  });
+  ['№','Мероприятие','Срок','Ответственный','Статус'].forEach((h,i)=>{ const cell = wsA3.getCell(rowIdx, i+2); cell.value = h; cell.font = {bold:true, size:11}; cell.fill = {type:'pattern', pattern:'solid', fgColor:{argb:'FFF0F0F0'}}; cell.alignment = {horizontal:'center', vertical:'middle', wrapText:true}; cell.border = BORDER; });
   rowIdx++;
-  (a.measures || []).forEach((m, idx)=>{
-    wsA3.getCell(rowIdx, 2).value = idx+1;
-    wsA3.getCell(rowIdx, 3).value = m.what || '';
-    wsA3.getCell(rowIdx, 4).value = m.due || '';
-    wsA3.getCell(rowIdx, 5).value = m.owner || '';
-    wsA3.getCell(rowIdx, 6).value = m.status || '';
-    for(let c=2; c<=6; c++){ const cell = wsA3.getCell(rowIdx, c); cell.font = {size:11}; cell.alignment = {vertical:'top', wrapText:true}; cell.border = BORDER; }
-    rowIdx++;
-  });
-  if(!(a.measures||[]).length){
-    wsA3.mergeCells(`B${rowIdx}:F${rowIdx}`);
-    const cell = wsA3.getCell(`B${rowIdx}`); cell.value = 'Нет мероприятий'; cell.font = {italic:true, size:11, color:{argb:'FF94A3B8'}}; cell.alignment = {horizontal:'center'};
-    for(let c=2; c<=6; c++) wsA3.getCell(rowIdx, c).border = BORDER;
-    rowIdx++;
-  }
+  (a.measures || []).forEach((m, idx)=>{ wsA3.getCell(rowIdx, 2).value = idx+1; wsA3.getCell(rowIdx, 3).value = m.what || ''; wsA3.getCell(rowIdx, 4).value = m.due || ''; wsA3.getCell(rowIdx, 5).value = m.owner || ''; wsA3.getCell(rowIdx, 6).value = m.status || ''; for(let c=2; c<=6; c++){ const cell = wsA3.getCell(rowIdx, c); cell.font = {size:11}; cell.alignment = {vertical:'top', wrapText:true}; cell.border = BORDER; } rowIdx++; });
+  if(!(a.measures||[]).length){ wsA3.mergeCells(`B${rowIdx}:F${rowIdx}`); const cell = wsA3.getCell(`B${rowIdx}`); cell.value = 'Нет мероприятий'; cell.font = {italic:true, size:11, color:{argb:'FF94A3B8'}}; cell.alignment = {horizontal:'center'}; for(let c=2; c<=6; c++) wsA3.getCell(rowIdx, c).border = BORDER; rowIdx++; }
   rowIdx++;
   addSection(a.titles.t6);
-  ['Показатель','План','Факт'].forEach((h, i)=>{
-    const cell = wsA3.getCell(rowIdx, i+2);
-    cell.value = h; cell.font = {bold:true, size:11}; cell.fill = {type:'pattern', pattern:'solid', fgColor:{argb:'FFF0F0F0'}};
-    cell.alignment = {horizontal:'center', vertical:'middle'}; cell.border = BORDER;
-  });
+  ['Показатель','План','Факт'].forEach((h, i)=>{ const cell = wsA3.getCell(rowIdx, i+2); cell.value = h; cell.font = {bold:true, size:11}; cell.fill = {type:'pattern', pattern:'solid', fgColor:{argb:'FFF0F0F0'}}; cell.alignment = {horizontal:'center', vertical:'middle'}; cell.border = BORDER; });
   rowIdx++;
-  (a.effRows || []).forEach(e=>{
-    wsA3.getCell(rowIdx, 2).value = e.name || '';
-    wsA3.getCell(rowIdx, 3).value = e.plan || '';
-    wsA3.getCell(rowIdx, 4).value = e.fact || '';
-    for(let c=2; c<=4; c++){ const cell = wsA3.getCell(rowIdx, c); cell.font = {size:11}; cell.alignment = {vertical:'top', wrapText:true}; cell.border = BORDER; }
-    rowIdx++;
-  });
+  (a.effRows || []).forEach(e=>{ wsA3.getCell(rowIdx, 2).value = e.name || ''; wsA3.getCell(rowIdx, 3).value = e.plan || ''; wsA3.getCell(rowIdx, 4).value = e.fact || ''; for(let c=2; c<=4; c++){ const cell = wsA3.getCell(rowIdx, c); cell.font = {size:11}; cell.alignment = {vertical:'top', wrapText:true}; cell.border = BORDER; } rowIdx++; });
   rowIdx++;
   addSection(a.titles.t7); addTextBlock(a.results, 50); rowIdx++;
   addSection(a.titles.t8);
-  ['№','Мероприятие','Срок','Ответственный','Статус'].forEach((h, i)=>{
-    const cell = wsA3.getCell(rowIdx, i+2);
-    cell.value = h; cell.font = {bold:true, size:11}; cell.fill = {type:'pattern', pattern:'solid', fgColor:{argb:'FFF0F0F0'}};
-    cell.alignment = {horizontal:'center', vertical:'middle'}; cell.border = BORDER;
-  });
+  ['№','Мероприятие','Срок','Ответственный','Статус'].forEach((h, i)=>{ const cell = wsA3.getCell(rowIdx, i+2); cell.value = h; cell.font = {bold:true, size:11}; cell.fill = {type:'pattern', pattern:'solid', fgColor:{argb:'FFF0F0F0'}}; cell.alignment = {horizontal:'center', vertical:'middle'}; cell.border = BORDER; });
   rowIdx++;
-  (a.nextSteps || []).forEach((m, idx)=>{
-    wsA3.getCell(rowIdx, 2).value = idx+1;
-    wsA3.getCell(rowIdx, 3).value = m.what || '';
-    wsA3.getCell(rowIdx, 4).value = m.due || '';
-    wsA3.getCell(rowIdx, 5).value = m.owner || '';
-    wsA3.getCell(rowIdx, 6).value = m.status || '';
-    for(let c=2; c<=6; c++){ const cell = wsA3.getCell(rowIdx, c); cell.font = {size:11}; cell.alignment = {vertical:'top', wrapText:true}; cell.border = BORDER; }
-    rowIdx++;
-  });
-  if(!(a.nextSteps||[]).length){
-    wsA3.mergeCells(`B${rowIdx}:F${rowIdx}`);
-    const cell = wsA3.getCell(`B${rowIdx}`); cell.value = 'Нет действий'; cell.font = {italic:true, size:11, color:{argb:'FF94A3B8'}}; cell.alignment = {horizontal:'center'};
-    for(let c=2; c<=6; c++) wsA3.getCell(rowIdx, c).border = BORDER;
-    rowIdx++;
-  }
+  (a.nextSteps || []).forEach((m, idx)=>{ wsA3.getCell(rowIdx, 2).value = idx+1; wsA3.getCell(rowIdx, 3).value = m.what || ''; wsA3.getCell(rowIdx, 4).value = m.due || ''; wsA3.getCell(rowIdx, 5).value = m.owner || ''; wsA3.getCell(rowIdx, 6).value = m.status || ''; for(let c=2; c<=6; c++){ const cell = wsA3.getCell(rowIdx, c); cell.font = {size:11}; cell.alignment = {vertical:'top', wrapText:true}; cell.border = BORDER; } rowIdx++; });
+  if(!(a.nextSteps||[]).length){ wsA3.mergeCells(`B${rowIdx}:F${rowIdx}`); const cell = wsA3.getCell(`B${rowIdx}`); cell.value = 'Нет действий'; cell.font = {italic:true, size:11, color:{argb:'FF94A3B8'}}; cell.alignment = {horizontal:'center'}; for(let c=2; c<=6; c++) wsA3.getCell(rowIdx, c).border = BORDER; rowIdx++; }
   const wsIdeas = wb.addWorksheet('Гипотезы 6М');
   wsIdeas.columns = [{width: 6}, {width: 22}, {width: 50}, {width: 8}, {width: 12}, {width: 12}];
-  ['№','Категория','Гипотеза','Балл','Приоритет','Корневая'].forEach((h, i)=>{
-    const cell = wsIdeas.getCell(1, i+1);
-    cell.value = h; cell.font = {bold:true, size:11}; cell.fill = {type:'pattern', pattern:'solid', fgColor:{argb:'FFF0F0F0'}};
-    cell.alignment = {horizontal:'center', vertical:'middle'}; cell.border = BORDER;
-  });
-  r.ideas.forEach((i, idx)=>{
-    const cat = CATS.find(c=>c.id===i.cat); const row = wsIdeas.getRow(idx+2);
-    row.getCell(1).value = idx+1; row.getCell(2).value = cat ? cat.name : ''; row.getCell(3).value = i.text || '';
-    row.getCell(4).value = i.score || ''; row.getCell(5).value = i.priority ? 'Да' : ''; row.getCell(6).value = i.root ? 'Да' : '';
-    for(let c=1; c<=6; c++){ const cell = row.getCell(c); cell.font = {size:11}; cell.alignment = {vertical:'top', wrapText:true}; cell.border = BORDER; }
-    if(i.score === 3) row.getCell(4).font = {size:11, bold:true, color:{argb:'FFDC2626'}};
-    else if(i.score === 2) row.getCell(4).font = {size:11, bold:true, color:{argb:'FFF59E0B'}};
-    else if(i.score === 1) row.getCell(4).font = {size:11, bold:true, color:{argb:'FF64748B'}};
-    if(i.priority){ for(let c=1; c<=6; c++){ row.getCell(c).fill = {type:'pattern', pattern:'solid', fgColor:{argb:'FFFFFBE6'}}; } }
-  });
+  ['№','Категория','Гипотеза','Балл','Приоритет','Корневая'].forEach((h, i)=>{ const cell = wsIdeas.getCell(1, i+1); cell.value = h; cell.font = {bold:true, size:11}; cell.fill = {type:'pattern', pattern:'solid', fgColor:{argb:'FFF0F0F0'}}; cell.alignment = {horizontal:'center', vertical:'middle'}; cell.border = BORDER; });
+  r.ideas.forEach((i, idx)=>{ const cat = CATS.find(c=>c.id===i.cat); const row = wsIdeas.getRow(idx+2); row.getCell(1).value = idx+1; row.getCell(2).value = cat ? cat.name : ''; row.getCell(3).value = i.text || ''; row.getCell(4).value = i.score || ''; row.getCell(5).value = i.priority ? 'Да' : ''; row.getCell(6).value = i.root ? 'Да' : ''; for(let c=1; c<=6; c++){ const cell = row.getCell(c); cell.font = {size:11}; cell.alignment = {vertical:'top', wrapText:true}; cell.border = BORDER; } if(i.priority){ for(let c=1; c<=6; c++){ row.getCell(c).fill = {type:'pattern', pattern:'solid', fgColor:{argb:'FFFFFBE6'}}; } } });
   const wsPlan = wb.addWorksheet('План мероприятий');
   wsPlan.columns = [{width: 6}, {width: 50}, {width: 20}, {width: 14}, {width: 14}, {width: 10}, {width: 30}];
-  ['№','Мероприятие','Исполнитель','Начало','Завершение','Готово %','Примечания'].forEach((h, i)=>{
-    const cell = wsPlan.getCell(1, i+1);
-    cell.value = h; cell.font = {bold:true, size:11}; cell.fill = {type:'pattern', pattern:'solid', fgColor:{argb:'FFF0F0F0'}};
-    cell.alignment = {horizontal:'center', vertical:'middle'}; cell.border = BORDER;
-  });
-  (r.plan || []).forEach((m, idx)=>{
-    const row = wsPlan.getRow(idx+2);
-    row.getCell(1).value = idx+1; row.getCell(2).value = m.what || ''; row.getCell(3).value = m.owner || '';
-    row.getCell(4).value = m.start || ''; row.getCell(5).value = m.end || ''; row.getCell(6).value = m.done || 0; row.getCell(7).value = m.notes || '';
-    for(let c=1; c<=7; c++){ const cell = row.getCell(c); cell.font = {size:11}; cell.alignment = {vertical:'top', wrapText:true}; cell.border = BORDER; }
-  });
+  ['№','Мероприятие','Исполнитель','Начало','Завершение','Готово %','Примечания'].forEach((h, i)=>{ const cell = wsPlan.getCell(1, i+1); cell.value = h; cell.font = {bold:true, size:11}; cell.fill = {type:'pattern', pattern:'solid', fgColor:{argb:'FFF0F0F0'}}; cell.alignment = {horizontal:'center', vertical:'middle'}; cell.border = BORDER; });
+  (r.plan || []).forEach((m, idx)=>{ const row = wsPlan.getRow(idx+2); row.getCell(1).value = idx+1; row.getCell(2).value = m.what || ''; row.getCell(3).value = m.owner || ''; row.getCell(4).value = m.start || ''; row.getCell(5).value = m.end || ''; row.getCell(6).value = m.done || 0; row.getCell(7).value = m.notes || ''; for(let c=1; c<=7; c++){ const cell = row.getCell(c); cell.font = {size:11}; cell.alignment = {vertical:'top', wrapText:true}; cell.border = BORDER; } });
   const wsWhy = wb.addWorksheet('5 почему');
   wsWhy.columns = [{width:6}, {width:60}, {width:60}];
-  ['№','Вопрос','Ответ'].forEach((h, i)=>{
-    const cell = wsWhy.getCell(1, i+1);
-    cell.value = h; cell.font = {bold:true, size:11}; cell.fill = {type:'pattern', pattern:'solid', fgColor:{argb:'FFF0F0F0'}};
-    cell.alignment = {horizontal:'center', vertical:'middle'}; cell.border = BORDER;
-  });
+  ['№','Вопрос','Ответ'].forEach((h, i)=>{ const cell = wsWhy.getCell(1, i+1); cell.value = h; cell.font = {bold:true, size:11}; cell.fill = {type:'pattern', pattern:'solid', fgColor:{argb:'FFF0F0F0'}}; cell.alignment = {horizontal:'center', vertical:'middle'}; cell.border = BORDER; });
   let prev = r.problem || '';
-  r.why1.chain.forEach((val, idx)=>{
-    const q = idx===0 ? 'Почему это происходит?' : `Почему «${prev}»?`;
-    const row = wsWhy.getRow(idx+2);
-    row.getCell(1).value = idx+1; row.getCell(2).value = q; row.getCell(3).value = val || '';
-    for(let c=1; c<=3; c++){ const cell = row.getCell(c); cell.font = {size:11}; cell.alignment = {vertical:'top', wrapText:true}; cell.border = BORDER; }
-    if(val) prev = val;
-  });
+  r.why1.chain.forEach((val, idx)=>{ const q = idx===0 ? 'Почему это происходит?' : `Почему «${prev}»?`; const row = wsWhy.getRow(idx+2); row.getCell(1).value = idx+1; row.getCell(2).value = q; row.getCell(3).value = val || ''; for(let c=1; c<=3; c++){ const cell = row.getCell(c); cell.font = {size:11}; cell.alignment = {vertical:'top', wrapText:true}; cell.border = BORDER; } if(val) prev = val; });
   const wsWas = wb.addWorksheet('Было-Стало');
   wsWas.columns = [{width:40}, {width:4}, {width:40}];
-  ['БЫЛО','','СТАЛО'].forEach((h, i)=>{
-    const cell = wsWas.getCell(1, i+1);
-    cell.value = h; cell.font = {bold:true, size:12};
-    cell.fill = {type:'pattern', pattern:'solid', fgColor:{argb: i===0 ? 'FFFEE2E2' : (i===2 ? 'FFDCFCE7' : 'FFFFFFFF')}};
-    cell.alignment = {horizontal:'center', vertical:'middle'}; cell.border = BORDER;
-  });
-  wsWas.getCell(2,1).value = 'Дата: ' + (r.wasBefore.date || '');
-  wsWas.getCell(2,3).value = 'Дата: ' + (r.wasAfter.date || '');
+  ['БЫЛО','','СТАЛО'].forEach((h, i)=>{ const cell = wsWas.getCell(1, i+1); cell.value = h; cell.font = {bold:true, size:12}; cell.fill = {type:'pattern', pattern:'solid', fgColor:{argb: i===0 ? 'FFFEE2E2' : (i===2 ? 'FFDCFCE7' : 'FFFFFFFF')}}; cell.alignment = {horizontal:'center', vertical:'middle'}; cell.border = BORDER; });
+  wsWas.getCell(2,1).value = 'Дата: ' + (r.wasBefore.date || ''); wsWas.getCell(2,3).value = 'Дата: ' + (r.wasAfter.date || '');
   wsWas.getCell(2,1).border = BORDER; wsWas.getCell(2,3).border = BORDER;
   wsWas.getCell(3,1).value = r.wasBefore.text || ''; wsWas.getCell(3,3).value = r.wasAfter.text || '';
   wsWas.getCell(3,1).alignment = {vertical:'top', wrapText:true}; wsWas.getCell(3,3).alignment = {vertical:'top', wrapText:true};
@@ -1388,119 +1217,23 @@ const XLSX_CAT_MAP = {
 };
 function mapCategory(groupName){ if(!groupName) return 'method'; const key = String(groupName).trim().toLowerCase(); return XLSX_CAT_MAP[key] || 'method'; }
 function convertScoreTo3(sum){ const s = Number(sum); if(isNaN(s)) return 0; if(s >= 15) return 3; if(s >= 8) return 2; if(s > 0) return 1; return 0; }
-function parseSheetRows(ws){
-  const rows = XLSX.utils.sheet_to_json(ws, {header:1, defval:''});
-  let headerIdx = 0, bestCount = 0;
-  for(let i=0; i<Math.min(5, rows.length); i++){ const cnt = rows[i].filter(c=>String(c).trim()!=='').length; if(cnt > bestCount){ bestCount = cnt; headerIdx = i; } }
-  const headers = rows[headerIdx].map(h=>String(h).trim().toLowerCase());
-  const data = [];
-  for(let i=headerIdx+1; i<rows.length; i++){ const r = rows[i]; if(!r || r.every(c=>String(c).trim()==='')) continue; data.push(r); }
-  return { headers, data };
-}
+function parseSheetRows(ws){ const rows = XLSX.utils.sheet_to_json(ws, {header:1, defval:''}); let headerIdx = 0, bestCount = 0; for(let i=0; i<Math.min(5, rows.length); i++){ const cnt = rows[i].filter(c=>String(c).trim()!=='').length; if(cnt > bestCount){ bestCount = cnt; headerIdx = i; } } const headers = rows[headerIdx].map(h=>String(h).trim().toLowerCase()); const data = []; for(let i=headerIdx+1; i<rows.length; i++){ const r = rows[i]; if(!r || r.every(c=>String(c).trim()==='')) continue; data.push(r); } return { headers, data }; }
 function findCol(headers, names){ for(const name of names){ const n = name.toLowerCase(); for(let i=0; i<headers.length; i++){ if(headers[i].includes(n)) return i; } } return -1; }
-function parseProtocolSheet(ws){
-  const {headers, data} = parseSheetRows(ws);
-  const colIdea = findCol(headers, ['идея']); const colGroup = findCol(headers, ['группа']);
-  const colEffect = findCol(headers, ['эффект (1–5)', 'эффект']); const colFeas = findCol(headers, ['реализуемость']);
-  const colSpeed = findCol(headers, ['скорость']); const colEcon = findCol(headers, ['экономичность']);
-  const colComment = findCol(headers, ['комментарий']); const colRank = findCol(headers, ['ранг']); const colStatus = findCol(headers, ['статус проверки']);
-  return data.map(r=>{
-    const idea = String(r[colIdea]||'').trim(); if(!idea) return null;
-    const sum = (Number(r[colEffect])||0) + (Number(r[colFeas])||0) + (Number(r[colSpeed])||0) + (Number(r[colEcon])||0);
-    return { text: idea, group: String(r[colGroup]||'').trim(), comment: String(r[colComment]||'').trim(), sum, score: convertScoreTo3(sum), rank: Number(r[colRank]) || null, status: String(r[colStatus]||'').trim() };
-  }).filter(Boolean);
-}
-function parsePlanSheet(ws){
-  const {headers, data} = parseSheetRows(ws);
-  const colAction = findCol(headers, ['действие', 'мероприятие', 'мероприятия']);
-  const colOwner  = findCol(headers, ['ответственный', 'исполнитель', 'исполнители']);
-  const colDue    = findCol(headers, ['срок']);
-  const colStatus = findCol(headers, ['статус', 'выполнено']);
-  const colResult = findCol(headers, ['результат', 'критерий', 'примечания', 'примечание']);
-  return data.map(r => {
-    const what = String(r[colAction] || '').trim(); if (!what) return null;
-    let status = 'План', done = 0;
-    if (colStatus >= 0) {
-      const raw = r[colStatus]; const num = Number(raw);
-      if (raw !== '' && !isNaN(num)) { done = Math.round(num * 100); status = done >= 100 ? 'Сделано' : done > 0 ? 'В работе' : 'План'; }
-      else {
-        const s = String(raw || '').trim();
-        if (/в работе/i.test(s)) { status = 'В работе'; done = 50; }
-        else if (/сделано|готово|завершено|выполнено/i.test(s)) { status = 'Сделано'; done = 100; }
-      }
-    }
-    return { what, owner: String(r[colOwner] || '').trim(), due: String(r[colDue] || '').trim(), status, done, notes: String(r[colResult] || '').trim() };
-  }).filter(Boolean);
-}
-function parsePPUSheet(ws){
-  const {headers, data} = parseSheetRows(ws);
-  const colName = findCol(headers, ['наименование']); const colValue = findCol(headers, ['заполнение', 'предложение', 'значение']);
-  const out = {};
-  data.forEach(r=>{ const k = String(r[colName]||'').trim(); const v = String(r[colValue]||'').trim(); if(k) out[k.toLowerCase()] = v; });
-  return out;
-}
-function parseTeamSheet(ws){
-  const {headers, data} = parseSheetRows(ws);
-  const colRole = findCol(headers, ['роль']); const out = [];
-  data.forEach(r=>{ const role = String(r[colRole]||'').trim(); if(!role) return; out.push(role.replace(/<br\s*\/?>/gi, ' / ').replace(/\s+/g,' ').trim()); });
-  return out;
-}
-function parsePanelSheet(ws){
-  const {headers, data} = parseSheetRows(ws);
-  const colName = findCol(headers, ['показатель']); const colValue = findCol(headers, ['значение']);
-  const out = {};
-  data.forEach(r=>{ const k = String(r[colName]||'').trim(); const v = String(r[colValue]||'').trim(); if(k) out[k.toLowerCase()] = v; });
-  return out;
-}
-function parseConclusionSheet(ws){
-  const rows = XLSX.utils.sheet_to_json(ws, {header:1, defval:''});
-  const parts = [];
-  rows.forEach(r=>{ const cells = r.map(c=>String(c).trim()).filter(Boolean); if(!cells.length) return; const joined = cells.join(' '); if(/:\s*$/.test(joined)) return; parts.push(joined); });
-  return parts.join('\n\n');
-}
+function parseProtocolSheet(ws){ const {headers, data} = parseSheetRows(ws); const colIdea = findCol(headers, ['идея']); const colGroup = findCol(headers, ['группа']); const colEffect = findCol(headers, ['эффект (1–5)', 'эффект']); const colFeas = findCol(headers, ['реализуемость']); const colSpeed = findCol(headers, ['скорость']); const colEcon = findCol(headers, ['экономичность']); const colComment = findCol(headers, ['комментарий']); const colRank = findCol(headers, ['ранг']); const colStatus = findCol(headers, ['статус проверки']); return data.map(r=>{ const idea = String(r[colIdea]||'').trim(); if(!idea) return null; const sum = (Number(r[colEffect])||0) + (Number(r[colFeas])||0) + (Number(r[colSpeed])||0) + (Number(r[colEcon])||0); return { text: idea, group: String(r[colGroup]||'').trim(), comment: String(r[colComment]||'').trim(), sum, score: convertScoreTo3(sum), rank: Number(r[colRank]) || null, status: String(r[colStatus]||'').trim() }; }).filter(Boolean); }
+function parsePlanSheet(ws){ const {headers, data} = parseSheetRows(ws); const colAction = findCol(headers, ['действие', 'мероприятие', 'мероприятия']); const colOwner  = findCol(headers, ['ответственный', 'исполнитель', 'исполнители']); const colDue    = findCol(headers, ['срок']); const colStatus = findCol(headers, ['статус', 'выполнено']); const colResult = findCol(headers, ['результат', 'критерий', 'примечания', 'примечание']); return data.map(r => { const what = String(r[colAction] || '').trim(); if (!what) return null; let status = 'План', done = 0; if (colStatus >= 0) { const raw = r[colStatus]; const num = Number(raw); if (raw !== '' && !isNaN(num)) { done = Math.round(num * 100); status = done >= 100 ? 'Сделано' : done > 0 ? 'В работе' : 'План'; } else { const s = String(raw || '').trim(); if (/в работе/i.test(s)) { status = 'В работе'; done = 50; } else if (/сделано|готово|завершено|выполнено/i.test(s)) { status = 'Сделано'; done = 100; } } } return { what, owner: String(r[colOwner] || '').trim(), due: String(r[colDue] || '').trim(), status, done, notes: String(r[colResult] || '').trim() }; }).filter(Boolean); }
+function parsePPUSheet(ws){ const {headers, data} = parseSheetRows(ws); const colName = findCol(headers, ['наименование']); const colValue = findCol(headers, ['заполнение', 'предложение', 'значение']); const out = {}; data.forEach(r=>{ const k = String(r[colName]||'').trim(); const v = String(r[colValue]||'').trim(); if(k) out[k.toLowerCase()] = v; }); return out; }
+function parseTeamSheet(ws){ const {headers, data} = parseSheetRows(ws); const colRole = findCol(headers, ['роль']); const out = []; data.forEach(r=>{ const role = String(r[colRole]||'').trim(); if(!role) return; out.push(role.replace(/<br\s*\/?>/gi, ' / ').replace(/\s+/g,' ').trim()); }); return out; }
+function parsePanelSheet(ws){ const {headers, data} = parseSheetRows(ws); const colName = findCol(headers, ['показатель']); const colValue = findCol(headers, ['значение']); const out = {}; data.forEach(r=>{ const k = String(r[colName]||'').trim(); const v = String(r[colValue]||'').trim(); if(k) out[k.toLowerCase()] = v; }); return out; }
+function parseConclusionSheet(ws){ const rows = XLSX.utils.sheet_to_json(ws, {header:1, defval:''}); const parts = []; rows.forEach(r=>{ const cells = r.map(c=>String(c).trim()).filter(Boolean); if(!cells.length) return; const joined = cells.join(' '); if(/:\s*$/.test(joined)) return; parts.push(joined); }); return parts.join('\n\n'); }
 
 /* ============ ПАРСЕРЫ СТАНДАРТНОЙ ФОРМЫ А3 ============ */
-function _cleanCell(v) {
-  return String(v || '')
-    .replace(/<br\s*\/?>/gi, '\n')
-    .replace(/&nbsp;/g, ' ')
-    .replace(/\u00a0/g, ' ')
-    .replace(/\r\n/g, '\n')
-    .trim();
-}
-function _findRow(rows, needle, colIdx = 1) {
-  const n = String(needle).toLowerCase();
-  for (let i = 0; i < rows.length; i++) {
-    if (String(rows[i]?.[colIdx] ?? '').toLowerCase().includes(n)) return i;
-  }
-  return -1;
-}
-function _extractField(rows, label, opts = {}) {
-  const col = opts.col ?? 1;
-  const idx = _findRow(rows, label, col);
-  if (idx === -1) return '';
-  const same = _cleanCell(rows[idx]?.[col + 1]);
-  if (same) return same;
-  const parts = [];
-  const max = opts.maxLines ?? 1;
-  for (let i = idx + 1; i < Math.min(idx + 1 + max * 2, rows.length); i++) {
-    const v = _cleanCell(rows[i]?.[col]);
-    if (!v) { if (parts.length) break; continue; }
-    if (parts.length && /^\d+\.\s/.test(v) && v.length < 150) break;
-    parts.push(v);
-    if (parts.length >= max) break;
-  }
-  return parts.join('\n');
-}
+function _cleanCell(v) { return String(v || '').replace(/<br\s*\/?>/gi, '\n').replace(/&nbsp;/g, ' ').replace(/\u00a0/g, ' ').replace(/\r\n/g, '\n').trim(); }
+function _findRow(rows, needle, colIdx = 1) { const n = String(needle).toLowerCase(); for (let i = 0; i < rows.length; i++) { if (String(rows[i]?.[colIdx] ?? '').toLowerCase().includes(n)) return i; } return -1; }
+function _extractField(rows, label, opts = {}) { const col = opts.col ?? 1; const idx = _findRow(rows, label, col); if (idx === -1) return ''; const same = _cleanCell(rows[idx]?.[col + 1]); if (same) return same; const parts = []; const max = opts.maxLines ?? 1; for (let i = idx + 1; i < Math.min(idx + 1 + max * 2, rows.length); i++) { const v = _cleanCell(rows[i]?.[col]); if (!v) { if (parts.length) break; continue; } if (parts.length && /^\d+\.\s/.test(v) && v.length < 150) break; parts.push(v); if (parts.length >= max) break; } return parts.join('\n'); }
 
 function parseStandardA3Sheet(ws) {
   const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
-  const data = {
-    projectName: '', department: '', openDate: '', closeDate: '',
-    manager: '', team: '', problem: '', currentState: '',
-    analysisMethods: '', results: '', goalsText: '', numbersText: '',
-    planRows: [], effRows: [], nextRows: []
-  };
+  const data = { projectName:'', department:'', openDate:'', closeDate:'', manager:'', team:'', problem:'', currentState:'', analysisMethods:'', results:'', goalsText:'', numbersText:'', planRows:[], effRows:[], nextRows:[] };
   try { data.projectName = _extractField(rows, 'Название проекта'); } catch(e){ console.warn(e); }
   try { data.department  = _extractField(rows, 'ПП, отдел, служба'); } catch(e){ console.warn(e); }
   try { data.openDate    = _extractField(rows, 'Дата открытия'); } catch(e){ console.warn(e); }
@@ -1509,281 +1242,23 @@ function parseStandardA3Sheet(ws) {
   try { data.problem     = _extractField(rows, '1. Проблема, задача',  { maxLines: 8 }); } catch(e){ console.warn(e); }
   try { data.currentState = _extractField(rows, '2. Текущая состояние', { maxLines: 8 }); } catch(e){ console.warn(e); }
   try { data.analysisMethods = _extractField(rows, '4. Анализ проблемы', { maxLines: 10 }); } catch(e){ console.warn(e); }
-
-  try {
-    const resultsIdx = _findRow(rows, '7. Результаты проекта', 3);
-    if (resultsIdx >= 0) {
-      const parts = [];
-      for (let i = resultsIdx + 1; i < Math.min(resultsIdx + 20, rows.length); i++) {
-        const dVal = _cleanCell(rows[i]?.[3]);
-        const eVal = _cleanCell(rows[i]?.[4]);
-        if (/^8\.\s/.test(dVal) || /Дальнейшие действия/i.test(dVal)) break;
-        const val = eVal || (/^7\.\s/.test(dVal) ? '' : dVal);
-        if (!val) { if (parts.length) break; continue; }
-        parts.push(val);
-      }
-      data.results = parts.join('\n');
-    }
-  } catch(e){ console.warn('results', e); }
-
-  try {
-    outer:
-    for (let i = 0; i < rows.length; i++) {
-      for (let c = 0; c < (rows[i]?.length || 0); c++) {
-        const m = _cleanCell(rows[i]?.[c]).match(/Дата закрытия[^:]*:\s*(.+)/i);
-        if (m) { data.closeDate = m[1].trim(); break outer; }
-      }
-    }
-  } catch(e){ console.warn(e); }
-
-  try {
-    const goalsIdx = _findRow(rows, 'ЦЕЛИ ПРОЕКТА', 1);
-    if (goalsIdx >= 0) {
-      const cell = _cleanCell(rows[goalsIdx]?.[1]);
-      const m = cell.match(/SMART\)?\s*:\s*([\s\S]+)/i);
-      if (m && m[1].trim().length > 10) data.goalsText = m[1].trim();
-      else {
-        const lines = [];
-        for (let i = goalsIdx + 1; i < Math.min(goalsIdx + 20, rows.length); i++) {
-          const v = _cleanCell(rows[i]?.[1]);
-          if (v) lines.push(v); else if (lines.length) break;
-        }
-        data.goalsText = lines.join('\n');
-      }
-    }
-  } catch(e){ console.warn('goals', e); }
-
-  try {
-    const numbersIdx = _findRow(rows, 'Приведите цифры', 1);
-    if (numbersIdx >= 0) {
-      const lines = [];
-      for (let i = numbersIdx + 1; i < Math.min(numbersIdx + 10, rows.length); i++) {
-        const v = _cleanCell(rows[i]?.[1]);
-        if (v) lines.push(v); else if (lines.length) break;
-      }
-      data.numbersText = lines.join('\n');
-    }
-  } catch(e){ console.warn('numbers', e); }
-
-  try {
-    const planIdx = _findRow(rows, '5. План мероприятий', 3);
-    if (planIdx >= 0) {
-      let headerIdx = -1;
-      for (let i = planIdx; i < Math.min(planIdx + 6, rows.length); i++) {
-        if (String(rows[i]?.[4] || '').toLowerCase().includes('мероприятие')) { headerIdx = i; break; }
-      }
-      if (headerIdx >= 0) {
-        for (let i = headerIdx + 1; i < rows.length; i++) {
-          const num  = _cleanCell(rows[i]?.[3]);
-          const what = _cleanCell(rows[i]?.[4]);
-          if (!num && data.planRows.length > 0) break;
-          if (!num) continue;
-          if (!/^\d+$/.test(num)) break;
-          if (!what) continue;
-          data.planRows.push({ what, due: _cleanCell(rows[i]?.[5]), owner: _cleanCell(rows[i]?.[6]), status: _cleanCell(rows[i]?.[7]) || 'План' });
-          if (data.planRows.length > 50) break;
-        }
-      }
-    }
-  } catch(e){ console.warn('planRows', e); }
-
-  try {
-    const effIdx = _findRow(rows, '6. Оценка эффективности', 3);
-    if (effIdx >= 0) {
-      for (let i = effIdx + 1; i < Math.min(effIdx + 15, rows.length); i++) {
-        const num  = _cleanCell(rows[i]?.[3]).replace(/\.$/, '');
-        const name = _cleanCell(rows[i]?.[4]);
-        if (!name) continue;
-        if (!/^\d+$/.test(num)) { if (data.effRows.length) break; continue; }
-        const val = _cleanCell(rows[i]?.[6]) || _cleanCell(rows[i]?.[5]);
-        data.effRows.push({ name, plan: val, fact: '' });
-        if (data.effRows.length > 20) break;
-      }
-    }
-  } catch(e){ console.warn('effRows', e); }
-
-  try {
-    const nextIdx = _findRow(rows, '8. Дальнейшие действия', 3);
-    if (nextIdx >= 0) {
-      let headerIdx = -1;
-      for (let i = nextIdx; i < Math.min(nextIdx + 6, rows.length); i++) {
-        if (String(rows[i]?.[4] || '').toLowerCase().includes('мероприятие')) { headerIdx = i; break; }
-      }
-      if (headerIdx >= 0) {
-        for (let i = headerIdx + 1; i < rows.length; i++) {
-          const num  = _cleanCell(rows[i]?.[3]);
-          const what = _cleanCell(rows[i]?.[4]);
-          if (!num && data.nextRows.length > 0) break;
-          if (!num) continue;
-          if (!/^\d+$/.test(num)) break;
-          if (!what) continue;
-          data.nextRows.push({ what, due: _cleanCell(rows[i]?.[5]), owner: _cleanCell(rows[i]?.[6]), status: _cleanCell(rows[i]?.[7]) || 'План' });
-          if (data.nextRows.length > 30) break;
-        }
-      }
-    }
-  } catch(e){ console.warn('nextRows', e); }
-
-  console.log('[parseStandardA3Sheet] результат:', data);
+  try { const resultsIdx = _findRow(rows, '7. Результаты проекта', 3); if (resultsIdx >= 0) { const parts = []; for (let i = resultsIdx + 1; i < Math.min(resultsIdx + 20, rows.length); i++) { const dVal = _cleanCell(rows[i]?.[3]); const eVal = _cleanCell(rows[i]?.[4]); if (/^8\.\s/.test(dVal) || /Дальнейшие действия/i.test(dVal)) break; const val = eVal || (/^7\.\s/.test(dVal) ? '' : dVal); if (!val) { if (parts.length) break; continue; } parts.push(val); } data.results = parts.join('\n'); } } catch(e){ console.warn('results', e); }
+  try { outer: for (let i = 0; i < rows.length; i++) { for (let c = 0; c < (rows[i]?.length || 0); c++) { const m = _cleanCell(rows[i]?.[c]).match(/Дата закрытия[^:]*:\s*(.+)/i); if (m) { data.closeDate = m[1].trim(); break outer; } } } } catch(e){ console.warn(e); }
+  try { const goalsIdx = _findRow(rows, 'ЦЕЛИ ПРОЕКТА', 1); if (goalsIdx >= 0) { const cell = _cleanCell(rows[goalsIdx]?.[1]); const m = cell.match(/SMART\)?\s*:\s*([\s\S]+)/i); if (m && m[1].trim().length > 10) data.goalsText = m[1].trim(); else { const lines = []; for (let i = goalsIdx + 1; i < Math.min(goalsIdx + 20, rows.length); i++) { const v = _cleanCell(rows[i]?.[1]); if (v) lines.push(v); else if (lines.length) break; } data.goalsText = lines.join('\n'); } } } catch(e){ console.warn('goals', e); }
+  try { const numbersIdx = _findRow(rows, 'Приведите цифры', 1); if (numbersIdx >= 0) { const lines = []; for (let i = numbersIdx + 1; i < Math.min(numbersIdx + 10, rows.length); i++) { const v = _cleanCell(rows[i]?.[1]); if (v) lines.push(v); else if (lines.length) break; } data.numbersText = lines.join('\n'); } } catch(e){ console.warn('numbers', e); }
+  try { const planIdx = _findRow(rows, '5. План мероприятий', 3); if (planIdx >= 0) { let headerIdx = -1; for (let i = planIdx; i < Math.min(planIdx + 6, rows.length); i++) { if (String(rows[i]?.[4] || '').toLowerCase().includes('мероприятие')) { headerIdx = i; break; } } if (headerIdx >= 0) { for (let i = headerIdx + 1; i < rows.length; i++) { const num = _cleanCell(rows[i]?.[3]); const what = _cleanCell(rows[i]?.[4]); if (!num && data.planRows.length > 0) break; if (!num) continue; if (!/^\d+$/.test(num)) break; if (!what) continue; data.planRows.push({ what, due: _cleanCell(rows[i]?.[5]), owner: _cleanCell(rows[i]?.[6]), status: _cleanCell(rows[i]?.[7]) || 'План' }); if (data.planRows.length > 50) break; } } } } catch(e){ console.warn('planRows', e); }
+  try { const effIdx = _findRow(rows, '6. Оценка эффективности', 3); if (effIdx >= 0) { for (let i = effIdx + 1; i < Math.min(effIdx + 15, rows.length); i++) { const num = _cleanCell(rows[i]?.[3]).replace(/\.$/, ''); const name = _cleanCell(rows[i]?.[4]); if (!name) continue; if (!/^\d+$/.test(num)) { if (data.effRows.length) break; continue; } const val = _cleanCell(rows[i]?.[6]) || _cleanCell(rows[i]?.[5]); data.effRows.push({ name, plan: val, fact: '' }); if (data.effRows.length > 20) break; } } } catch(e){ console.warn('effRows', e); }
+  try { const nextIdx = _findRow(rows, '8. Дальнейшие действия', 3); if (nextIdx >= 0) { let headerIdx = -1; for (let i = nextIdx; i < Math.min(nextIdx + 6, rows.length); i++) { if (String(rows[i]?.[4] || '').toLowerCase().includes('мероприятие')) { headerIdx = i; break; } } if (headerIdx >= 0) { for (let i = headerIdx + 1; i < rows.length; i++) { const num = _cleanCell(rows[i]?.[3]); const what = _cleanCell(rows[i]?.[4]); if (!num && data.nextRows.length > 0) break; if (!num) continue; if (!/^\d+$/.test(num)) break; if (!what) continue; data.nextRows.push({ what, due: _cleanCell(rows[i]?.[5]), owner: _cleanCell(rows[i]?.[6]), status: _cleanCell(rows[i]?.[7]) || 'План' }); if (data.nextRows.length > 30) break; } } } } catch(e){ console.warn('nextRows', e); }
   return data;
 }
 
-function parseWhySheet(ws) {
-  const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
-  const empty = { problem: '', chain: ['', '', '', '', ''], planText: '' };
-  let headerIdx = -1;
-  for (let i = 0; i < Math.min(15, rows.length); i++) {
-    const joined = (rows[i] || []).map(c => String(c).toLowerCase()).join('|');
-    if (joined.includes('1 почему')) { headerIdx = i; break; }
-  }
-  if (headerIdx === -1) return empty;
-  for (let i = headerIdx + 1; i < Math.min(headerIdx + 15, rows.length); i++) {
-    const dVal = _cleanCell(rows[i]?.[3]);
-    if (!dVal || dVal.length < 4) continue;
-    if (/связывайте/i.test(dVal)) continue;
-    return {
-      problem: _cleanCell(rows[i]?.[1]),
-      chain: [ dVal, _cleanCell(rows[i]?.[5]), _cleanCell(rows[i]?.[7]), _cleanCell(rows[i]?.[9]), _cleanCell(rows[i]?.[11]) ],
-      planText: _cleanCell(rows[i]?.[13])
-    };
-  }
-  return empty;
-}
-
-function parseWhy2Sheet(ws) {
-  const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
-  const branches = [];
-  let curBranch = null, curSub = null;
-
-  const isBranch = s => /^[А-ЯA-Z]\.\s/.test(s) && !/^\d/.test(s);
-  const isCause  = s => /^[А-ЯA-Z]\d+\.\s/.test(s);
-  const isSub    = s => /^[А-ЯA-Z]\d+\.\d+\.\s/.test(s);
-
-  for (let i = 0; i < rows.length; i++) {
-    const D = _cleanCell(rows[i]?.[3]);
-    const F = _cleanCell(rows[i]?.[5]);
-    const G = _cleanCell(rows[i]?.[6]);
-    const H = _cleanCell(rows[i]?.[7]);
-
-    if (isBranch(D)) {
-      curBranch = { id: uid(), name: D, sub: [] };
-      branches.push(curBranch);
-      curSub = null;
-      continue;
-    }
-    if (isCause(F)) {
-      if (!curBranch) { curBranch = { id: uid(), name: 'Ветвь', sub: [] }; branches.push(curBranch); }
-      curSub = { id: uid(), name: F, sub: [] };
-      curBranch.sub.push(curSub);
-      for (const cell of [G, H]) {
-        if (isSub(cell)) curSub.sub.push({ id: uid(), name: cell });
-      }
-      continue;
-    }
-    for (const cell of [G, H]) {
-      if (isSub(cell)) {
-        if (!curBranch) { curBranch = { id: uid(), name: 'Ветвь', sub: [] }; branches.push(curBranch); }
-        if (!curSub)    { curSub    = { id: uid(), name: 'Причина', sub: [] }; curBranch.sub.push(curSub); }
-        curSub.sub.push({ id: uid(), name: cell });
-      }
-    }
-  }
-
-  if (!branches.length) {
-    for (let i = 0; i < rows.length; i++) {
-      for (let c = 0; c < (rows[i]?.length || 0); c++) {
-        const v = _cleanCell(rows[i]?.[c]);
-        if (isBranch(v)) branches.push({ id: uid(), name: v, sub: [] });
-      }
-    }
-  }
-
-  console.log('[parseWhy2Sheet] ветвей:', branches.length, branches);
-  return branches.length ? { branches } : null;
-}
-
-function guessCatFromText(t) {
-  const s = String(t).toLowerCase();
-  if (/персонал|обучен|ответствен|команд|мозгов/i.test(s))         return 'people';
-  if (/оборудован|пресс|дробилк|измельч|кипован/i.test(s))         return 'machine';
-  if (/материал|сырь[её]|фракци|влажност|стекл|связующ/i.test(s))   return 'material';
-  if (/измер|замер|контрол|учёт|учет/i.test(s))                     return 'measure';
-  if (/логистик|перевоз|транспорт|контейнер/i.test(s))              return 'env';
-  return 'method';
-}
-
-function parseIshikawaSheet(ws) {
-  const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
-  const ideas = [];
-  const seen = new Set();
-  for (let i = 0; i < rows.length; i++) {
-    for (let c = 0; c < (rows[i]?.length || 0); c++) {
-      const raw = String(rows[i]?.[c] || '').trim();
-      if (!raw) continue;
-      const m = raw.match(/►\s*([\s\S]+?)(?:\n|$)/);
-      if (!m) continue;
-      let text = m[1].trim();
-      if (!text || text.length < 5) continue;
-      if (seen.has(text.toLowerCase())) continue;
-      seen.add(text.toLowerCase());
-      const isRoot = /корневая причина/i.test(text);
-      text = text.replace(/^корневая причина:\s*/i, '').trim();
-      ideas.push({ text, root: isRoot, cat: guessCatFromText(text) });
-    }
-  }
-  return ideas;
-}
-
-function parseWasBecameSheet(ws) {
-  const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
-  const result = { wasDate: '', wasText: '', becameDate: '', becameText: '' };
-  for (let i = 0; i < rows.length; i++) {
-    const r = rows[i] || [];
-    for (let c = 0; c < r.length; c++) {
-      if (String(r[c] || '').toUpperCase().trim() !== 'БЫЛО') continue;
-      const dateRow = rows[i + 1] || [];
-      const dm = _cleanCell(dateRow[c]).match(/Дата[^:]*:\s*(.+)/i);
-      if (dm) result.wasDate = dm[1].trim();
-      for (let j = i + 2; j < Math.min(i + 6, rows.length); j++) {
-        const v = _cleanCell(rows[j]?.[c]);
-        if (v && v.length > 10) { result.wasText = v.replace(/^БЫЛО[^:]*:\s*/i, ''); break; }
-      }
-      for (let cc = c + 1; cc < r.length; cc++) {
-        if (String(r[cc] || '').toUpperCase().trim() !== 'СТАЛО') continue;
-        const dm2 = _cleanCell(dateRow[cc]).match(/Дата[^:]*:\s*(.+)/i);
-        if (dm2) result.becameDate = dm2[1].trim();
-        for (let j = i + 2; j < Math.min(i + 6, rows.length); j++) {
-          const v = _cleanCell(rows[j]?.[cc]);
-          if (v && v.length > 10) { result.becameText = v.replace(/^СТАЛО[^:]*:\s*/i, ''); break; }
-        }
-        return result;
-      }
-      return result;
-    }
-  }
-  return result;
-}
-
-function parseRaschetySheet(ws) {
-  const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
-  const map = {};
-  for (let i = 2; i < rows.length; i++) {
-    const key = _cleanCell(rows[i]?.[1]).toLowerCase();
-    const val = _cleanCell(rows[i]?.[2]);
-    if (key && val) map[key] = val;
-  }
-  return map;
-}
-
-function normalizeDate(val) {
-  if (!val) return '';
-  const s = String(val).trim();
-  const dmY = s.match(/(\d{1,2})[./](\d{1,2})[./](\d{4})/);
-  if (dmY) return `${dmY[3]}-${dmY[2].padStart(2,'0')}-${dmY[1].padStart(2,'0')}`;
-  const iso = s.match(/(\d{4})-(\d{2})-(\d{2})/);
-  if (iso) return `${iso[1]}-${iso[2]}-${iso[3]}`;
-  return '';
-}
+function parseWhySheet(ws) { const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' }); const empty = { problem: '', chain: ['', '', '', '', ''], planText: '' }; let headerIdx = -1; for (let i = 0; i < Math.min(15, rows.length); i++) { const joined = (rows[i] || []).map(c => String(c).toLowerCase()).join('|'); if (joined.includes('1 почему')) { headerIdx = i; break; } } if (headerIdx === -1) return empty; for (let i = headerIdx + 1; i < Math.min(headerIdx + 15, rows.length); i++) { const dVal = _cleanCell(rows[i]?.[3]); if (!dVal || dVal.length < 4) continue; if (/связывайте/i.test(dVal)) continue; return { problem: _cleanCell(rows[i]?.[1]), chain: [ dVal, _cleanCell(rows[i]?.[5]), _cleanCell(rows[i]?.[7]), _cleanCell(rows[i]?.[9]), _cleanCell(rows[i]?.[11]) ], planText: _cleanCell(rows[i]?.[13]) }; } return empty; }
+function parseWhy2Sheet(ws) { const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' }); const branches = []; let curBranch = null, curSub = null; const isBranch = s => /^[А-ЯA-Z]\.\s/.test(s) && !/^\d/.test(s); const isCause = s => /^[А-ЯA-Z]\d+\.\s/.test(s); const isSub = s => /^[А-ЯA-Z]\d+\.\d+\.\s/.test(s); for (let i = 0; i < rows.length; i++) { const D = _cleanCell(rows[i]?.[3]); const F = _cleanCell(rows[i]?.[5]); const G = _cleanCell(rows[i]?.[6]); const H = _cleanCell(rows[i]?.[7]); if (isBranch(D)) { curBranch = { id: uid(), name: D, sub: [] }; branches.push(curBranch); curSub = null; continue; } if (isCause(F)) { if (!curBranch) { curBranch = { id: uid(), name: 'Ветвь', sub: [] }; branches.push(curBranch); } curSub = { id: uid(), name: F, sub: [] }; curBranch.sub.push(curSub); for (const cell of [G, H]) { if (isSub(cell)) curSub.sub.push({ id: uid(), name: cell }); } continue; } for (const cell of [G, H]) { if (isSub(cell)) { if (!curBranch) { curBranch = { id: uid(), name: 'Ветвь', sub: [] }; branches.push(curBranch); } if (!curSub) { curSub = { id: uid(), name: 'Причина', sub: [] }; curBranch.sub.push(curSub); } curSub.sub.push({ id: uid(), name: cell }); } } } if (!branches.length) { for (let i = 0; i < rows.length; i++) { for (let c = 0; c < (rows[i]?.length || 0); c++) { const v = _cleanCell(rows[i]?.[c]); if (isBranch(v)) branches.push({ id: uid(), name: v, sub: [] }); } } } return branches.length ? { branches } : null; }
+function guessCatFromText(t) { const s = String(t).toLowerCase(); if (/персонал|обучен|ответствен|команд|мозгов/i.test(s)) return 'people'; if (/оборудован|пресс|дробилк|измельч|кипован/i.test(s)) return 'machine'; if (/материал|сырь[её]|фракци|влажност|стекл|связующ/i.test(s)) return 'material'; if (/измер|замер|контрол|учёт|учет/i.test(s)) return 'measure'; if (/логистик|перевоз|транспорт|контейнер/i.test(s)) return 'env'; return 'method'; }
+function parseIshikawaSheet(ws) { const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' }); const ideas = []; const seen = new Set(); for (let i = 0; i < rows.length; i++) { for (let c = 0; c < (rows[i]?.length || 0); c++) { const raw = String(rows[i]?.[c] || '').trim(); if (!raw) continue; const m = raw.match(/►\s*([\s\S]+?)(?:\n|$)/); if (!m) continue; let text = m[1].trim(); if (!text || text.length < 5) continue; if (seen.has(text.toLowerCase())) continue; seen.add(text.toLowerCase()); const isRoot = /корневая причина/i.test(text); text = text.replace(/^корневая причина:\s*/i, '').trim(); ideas.push({ text, root: isRoot, cat: guessCatFromText(text) }); } } return ideas; }
+function parseWasBecameSheet(ws) { const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' }); const result = { wasDate: '', wasText: '', becameDate: '', becameText: '' }; for (let i = 0; i < rows.length; i++) { const r = rows[i] || []; for (let c = 0; c < r.length; c++) { if (String(r[c] || '').toUpperCase().trim() !== 'БЫЛО') continue; const dateRow = rows[i + 1] || []; const dm = _cleanCell(dateRow[c]).match(/Дата[^:]*:\s*(.+)/i); if (dm) result.wasDate = dm[1].trim(); for (let j = i + 2; j < Math.min(i + 6, rows.length); j++) { const v = _cleanCell(rows[j]?.[c]); if (v && v.length > 10) { result.wasText = v.replace(/^БЫЛО[^:]*:\s*/i, ''); break; } } for (let cc = c + 1; cc < r.length; cc++) { if (String(r[cc] || '').toUpperCase().trim() !== 'СТАЛО') continue; const dm2 = _cleanCell(dateRow[cc]).match(/Дата[^:]*:\s*(.+)/i); if (dm2) result.becameDate = dm2[1].trim(); for (let j = i + 2; j < Math.min(i + 6, rows.length); j++) { const v = _cleanCell(rows[j]?.[cc]); if (v && v.length > 10) { result.becameText = v.replace(/^СТАЛО[^:]*:\s*/i, ''); break; } } return result; } return result; } } return result; }
+function parseRaschetySheet(ws) { const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' }); const map = {}; for (let i = 2; i < rows.length; i++) { const key = _cleanCell(rows[i]?.[1]).toLowerCase(); const val = _cleanCell(rows[i]?.[2]); if (key && val) map[key] = val; } return map; }
+function normalizeDate(val) { if (!val) return ''; const s = String(val).trim(); const dmY = s.match(/(\d{1,2})[./](\d{1,2})[./](\d{4})/); if (dmY) return `${dmY[3]}-${dmY[2].padStart(2,'0')}-${dmY[1].padStart(2,'0')}`; const iso = s.match(/(\d{4})-(\d{2})-(\d{2})/); if (iso) return `${iso[1]}-${iso[2]}-${iso[3]}`; return ''; }
 
 function importFromXLSX(file){
   if(typeof XLSX === 'undefined'){ alert('Библиотека XLSX не загружена.'); return; }
@@ -1792,21 +1267,8 @@ function importFromXLSX(file){
     try {
       const wb = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
       console.log('[import] Листы в файле:', wb.SheetNames);
-
-      const findSheet = (names) => {
-        for (const name of names) {
-          const n = name.toLowerCase();
-          const found = wb.SheetNames.find(sn => sn.toLowerCase().includes(n));
-          if (found) return wb.Sheets[found];
-        }
-        return null;
-      };
-      const findSheetExact = (name) => {
-        const n = name.toLowerCase();
-        const found = wb.SheetNames.find(sn => sn.toLowerCase() === n);
-        return found ? wb.Sheets[found] : null;
-      };
-
+      const findSheet = (names) => { for (const name of names) { const n = name.toLowerCase(); const found = wb.SheetNames.find(sn => sn.toLowerCase().includes(n)); if (found) return wb.Sheets[found]; } return null; };
+      const findSheetExact = (name) => { const n = name.toLowerCase(); const found = wb.SheetNames.find(sn => sn.toLowerCase() === n); return found ? wb.Sheets[found] : null; };
       const wsStdA3 = findSheetExact('Отчёт А3') || findSheetExact('Отчет А3') || findSheet(['отчёт а3']) || findSheet(['отчет а3']);
       const wsWhy1 = findSheet(['5почему - в.1', '5 почему в.1', '5почему в.1']);
       const wsWhy2 = findSheet(['5почему - в.2', '5 почему в.2', '5почему в.2']);
@@ -1814,21 +1276,14 @@ function importFromXLSX(file){
       const wsWas  = findSheet(['было-стало', 'было стало']);
       const wsCalc = findSheet(['расчёты', 'расчеты']);
       const wsPlanDed = findSheetExact('План мероприятий');
-
       const wsProtocol = findSheet(['протокол идей', 'протокол']);
       const wsPPU      = findSheet(['ппу']);
       const wsTeam     = findSheet(['команда']);
       const wsPanel    = findSheet(['панель']);
       const wsConclusion = findSheet(['вывод']);
-
       const hasStdA3 = !!wsStdA3;
       const hasOld   = !!(wsProtocol || wsPPU || wsPanel || wsConclusion);
-
-      if (!hasStdA3 && !hasOld && !wsPlanDed) {
-        alert('Не найден ни один ожидаемый лист.\n\nПоддерживаются:\n• «Отчёт А3» (стандартная форма)\n• «Протокол идей» / «ППУ» / «План 180»\n\nЛисты в файле:\n' + wb.SheetNames.join(', '));
-        return;
-      }
-
+      if (!hasStdA3 && !hasOld && !wsPlanDed) { alert('Не найден ни один ожидаемый лист.\n\nЛисты в файле:\n' + wb.SheetNames.join(', ')); return; }
       const stdData    = hasStdA3 ? parseStandardA3Sheet(wsStdA3) : null;
       const why1Data   = wsWhy1 ? parseWhySheet(wsWhy1) : null;
       const why2Data   = wsWhy2 ? parseWhy2Sheet(wsWhy2) : null;
@@ -1840,242 +1295,44 @@ function importFromXLSX(file){
       const team       = wsTeam ? parseTeamSheet(wsTeam) : [];
       const panel      = wsPanel ? parsePanelSheet(wsPanel) : {};
       const conclusion = wsConclusion ? parseConclusionSheet(wsConclusion) : '';
-
       let planRows = [], planSource = '';
-      if (wsPlanDed) {
-        planRows = parsePlanSheet(wsPlanDed);
-        planSource = 'лист «План мероприятий»';
-      } else if (stdData && stdData.planRows.length) {
-        planRows = stdData.planRows.map(p => ({
-          what: p.what, owner: p.owner, due: p.due, status: p.status,
-          done: /выполнено/i.test(p.status) ? 100 : /в работе/i.test(p.status) ? 50 : 0,
-          notes: ''
-        }));
-        planSource = 'секция 5 «Отчёт А3»';
-      }
-
+      if (wsPlanDed) { planRows = parsePlanSheet(wsPlanDed); planSource = 'лист «План мероприятий»'; }
+      else if (stdData && stdData.planRows.length) { planRows = stdData.planRows.map(p => ({ what: p.what, owner: p.owner, due: p.due, status: p.status, done: /выполнено/i.test(p.status) ? 100 : /в работе/i.test(p.status) ? 50 : 0, notes: '' })); planSource = 'секция 5 «Отчёт А3»'; }
       const preview = [];
-      if (stdData) {
-        const lines = ['📋 Форма А3:'];
-        if (stdData.projectName)  lines.push('   • Проект: '     + stdData.projectName.slice(0, 60) + '…');
-        if (stdData.department)   lines.push('   • Отдел: '      + stdData.department.slice(0, 40));
-        if (stdData.manager)      lines.push('   • Рук.: '       + stdData.manager.slice(0, 40));
-        if (stdData.team)         lines.push('   • Команда: '    + stdData.team.slice(0, 40) + '…');
-        if (stdData.problem)      lines.push('   • Проблема: '   + stdData.problem.split('\n')[0].slice(0, 60) + '…');
-        if (stdData.currentState) lines.push('   • Текущее: '    + stdData.currentState.split('\n')[0].slice(0, 40) + '…');
-        if (stdData.analysisMethods) lines.push('   • Анализ: '  + stdData.analysisMethods.split('\n')[0].slice(0, 40) + '…');
-        if (stdData.results)      lines.push('   • Результаты: ' + stdData.results.split('\n')[0].slice(0, 40) + '…');
-        if (stdData.goalsText)    lines.push('   • Цели: '       + stdData.goalsText.split('\n')[0].slice(0, 50) + '…');
-        if (stdData.numbersText)  lines.push('   • Цифры: '      + stdData.numbersText.split('\n')[0].slice(0, 50) + '…');
-        preview.push(lines.join('\n'));
-      }
-      if (planRows.length)              preview.push(`📌 План: ${planRows.length} мероприятий (${planSource})`);
-      if (stdData?.effRows.length)      preview.push(`📊 Эффективность: ${stdData.effRows.length} показателей`);
-      if (stdData?.nextRows.length)     preview.push(`➡️ Дальнейшие действия: ${stdData.nextRows.length}`);
-      if (why1Data?.chain.some(x => x)) preview.push(`❓ 5 почему (линейный): ${why1Data.chain.filter(x => x).length} шагов`);
-      if (why2Data?.branches?.length)   preview.push(`🌳 5 почему (дерево): ${why2Data.branches.length} ветвей`);
-      if (ishData?.length)              preview.push(`🐟 Исикава: ${ishData.length} причин`);
+      if (stdData) { const lines = ['📋 Форма А3:']; if (stdData.projectName) lines.push('   • Проект: ' + stdData.projectName.slice(0, 60) + '…'); if (stdData.problem) lines.push('   • Проблема: ' + stdData.problem.split('\n')[0].slice(0, 60) + '…'); preview.push(lines.join('\n')); }
+      if (planRows.length) preview.push(`📌 План: ${planRows.length} мероприятий (${planSource})`);
+      if (stdData?.effRows.length) preview.push(`📊 Эффективность: ${stdData.effRows.length}`);
+      if (stdData?.nextRows.length) preview.push(`➡️ Дальнейшие действия: ${stdData.nextRows.length}`);
+      if (why1Data?.chain.some(x => x)) preview.push(`❓ 5 почему: ${why1Data.chain.filter(x => x).length}`);
+      if (why2Data?.branches?.length) preview.push(`🌳 5 почему (дерево): ${why2Data.branches.length}`);
+      if (ishData?.length) preview.push(`🐟 Исикава: ${ishData.length}`);
       if (wasData?.wasText || wasData?.becameText) preview.push('🔄 Было-Стало: заполнено');
-      if (calcData && Object.keys(calcData).length) preview.push(`💰 Расчёты: ${Object.keys(calcData).length} показателей`);
-      if (ideas.length)                 preview.push(`💡 Гипотезы: ${ideas.length}`);
-
-      if (!preview.length) {
-        alert('Файл прочитан, но данные не найдены.\nЛисты: ' + wb.SheetNames.join(', '));
-        return;
-      }
-
-      const replace = confirm('Найдено:\n\n' + preview.join('\n\n') + '\n\n━━━━━━━━━━━━━━━━━━━━\nОК — ЗАМЕНИТЬ.\nОтмена — ДОБАВИТЬ к существующим.');
-
+      if (!preview.length) { alert('Данные не найдены.'); return; }
+      const replace = confirm('Найдено:\n\n' + preview.join('\n\n') + '\n\n━━━━━━━━━━━━━━━━━━━━\nОК — ЗАМЕНИТЬ.\nОтмена — ДОБАВИТЬ.');
       const r = getR();
       const a = r.a3;
-
       if (stdData) {
-        const setIf = (key, val) => {
-          if (!val) return;
-          const v = String(val).trim();
-          if (!v) return;
-          if (replace || !a[key]) a[key] = v;
-        };
-        setIf('projectName', stdData.projectName);
-        setIf('department',  stdData.department);
-        setIf('openDate',    normalizeDate(stdData.openDate));
-        setIf('closeDate',   normalizeDate(stdData.closeDate));
-        setIf('manager',     stdData.manager);
-        setIf('team',        stdData.team);
-        setIf('problem',     stdData.problem);
-        setIf('currentState', stdData.currentState);
-        setIf('analysisMethods', stdData.analysisMethods);
-        setIf('results',     stdData.results);
+        const setIf = (key, val) => { if (!val) return; const v = String(val).trim(); if (!v) return; if (replace || !a[key]) a[key] = v; };
+        setIf('projectName', stdData.projectName); setIf('department', stdData.department); setIf('openDate', normalizeDate(stdData.openDate)); setIf('closeDate', normalizeDate(stdData.closeDate)); setIf('manager', stdData.manager); setIf('team', stdData.team); setIf('problem', stdData.problem); setIf('currentState', stdData.currentState); setIf('analysisMethods', stdData.analysisMethods); setIf('results', stdData.results);
         if (stdData.problem && (replace || !r.problem)) r.problem = stdData.problem.split('\n')[0].slice(0, 200);
-
-        if (stdData.numbersText) {
-          const nums = stdData.numbersText.split('\n').map(l => l.replace(/^\d+\.\s*/, '').trim()).filter(Boolean);
-          nums.forEach(line => {
-            if (/объ[её]м образования|образование отходов/i.test(line))                a.defectRate = line;
-            else if (/затрат.*обращени|затраты на/i.test(line))                       a.lostProfit = line;
-            else if (/доля.*вовлечен|повторного вовлечения/i.test(line))              a.timeLoss   = line;
-            else if (/претенз/i.test(line))                                           a.claimsCount = line;
-          });
-          if (!a.defectRate && nums[0]) a.defectRate = nums[0];
-          if (!a.lostProfit && nums[1]) a.lostProfit = nums[1];
-          if (!a.timeLoss   && nums[2]) a.timeLoss   = nums[2];
-        }
-
-        if (stdData.goalsText) {
-          const goals = stdData.goalsText.split('\n').map(l => l.replace(/^\d+\.\s*/, '').trim()).filter(Boolean);
-          if (goals[0] && (replace || !a.goalDefect)) a.goalDefect = goals[0];
-          if (goals[1] && (replace || !a.goalClaims)) a.goalClaims = goals[1];
-          if (goals[2] && (replace || !a.goalLoss))   a.goalLoss   = goals[2];
-          if (goals[3] && (replace || !a.goalProfit)) a.goalProfit = goals[3];
-        }
-
-        /* ⬇⬇⬇ ДЕДУПЛИКАЦИЯ ЭФФЕКТИВНОСТИ ⬇⬇⬇ */
-        if (stdData.effRows.length) {
-          if (replace) a.effRows = stdData.effRows.map(e => ({ id: uid(), name: e.name, plan: e.plan, fact: e.fact }));
-          else {
-            const seen = new Set(a.effRows.map(e => normKey(e.name)));
-            stdData.effRows.forEach(e => {
-              const k = normKey(e.name);
-              if (!k || seen.has(k)) return;
-              a.effRows.push({ id: uid(), name: e.name, plan: e.plan, fact: e.fact });
-              seen.add(k);
-            });
-          }
-        }
-
-        /* ⬇⬇⬇ ДЕДУПЛИКАЦИЯ ДАЛЬНЕЙШИХ ДЕЙСТВИЙ ⬇⬇⬇ */
-        if (stdData.nextRows.length) {
-          const toRow = p => ({
-            id: uid(), what: p.what, due: normalizeDate(p.due), owner: p.owner,
-            status: /выполнено/i.test(p.status) ? 'Сделано' : /в работе/i.test(p.status) ? 'В работе' : 'План'
-          });
-          if (replace) a.nextSteps = stdData.nextRows.map(toRow);
-          else {
-            const seen = new Set(a.nextSteps.map(m => normKey(m.what)));
-            stdData.nextRows.forEach(p => {
-              const k = normKey(p.what);
-              if (!k || seen.has(k)) return;
-              a.nextSteps.push(toRow(p));
-              seen.add(k);
-            });
-          }
-        }
+        if (stdData.effRows.length) { if (replace) a.effRows = stdData.effRows.map(e => ({ id: uid(), name: e.name, plan: e.plan, fact: e.fact })); else { const seen = new Set(a.effRows.map(e => normKey(e.name))); stdData.effRows.forEach(e => { const k = normKey(e.name); if (!k || seen.has(k)) return; a.effRows.push({ id: uid(), name: e.name, plan: e.plan, fact: e.fact }); seen.add(k); }); } }
+        if (stdData.nextRows.length) { const toRow = p => ({ id: uid(), what: p.what, due: normalizeDate(p.due), owner: p.owner, status: /выполнено/i.test(p.status) ? 'Сделано' : /в работе/i.test(p.status) ? 'В работе' : 'План' }); if (replace) a.nextSteps = stdData.nextRows.map(toRow); else { const seen = new Set(a.nextSteps.map(m => normKey(m.what))); stdData.nextRows.forEach(p => { const k = normKey(p.what); if (!k || seen.has(k)) return; a.nextSteps.push(toRow(p)); seen.add(k); }); } }
       }
-
-      if (planRows.length) {
-        const toPlan = p => ({
-          id: uid(), what: p.what, owner: p.owner, start: '',
-          end: normalizeDate(p.due), done: p.done, notes: p.notes || p.status
-        });
-        const toMeasure = p => ({
-          id: uid(), what: p.what, due: normalizeDate(p.due), owner: p.owner,
-          status: /сделано|выполнено|готово/i.test(p.status) ? 'Сделано'
-                : /в работе/i.test(p.status) ? 'В работе' : 'План'
-        });
-        if (replace) {
-          r.plan = planRows.map(toPlan);
-          a.measures = planRows.map(toMeasure);
-        } else {
-          const seen = new Set(r.plan.map(x => normKey(x.what)));
-          planRows.forEach(p => {
-            if (seen.has(normKey(p.what))) return;
-            r.plan.push(toPlan(p));
-            a.measures.push(toMeasure(p));
-            seen.add(normKey(p.what));
-          });
-        }
-      }
-
-      if (why1Data && why1Data.chain.some(x => x)) {
-        if (replace) r.why1.chain = why1Data.chain;
-        else why1Data.chain.forEach((v, i) => { if (v && !r.why1.chain[i]) r.why1.chain[i] = v; });
-      }
-
-      if (why2Data && why2Data.branches?.length) {
-        if (replace) r.why2.branches = why2Data.branches;
-        else r.why2.branches = r.why2.branches.concat(why2Data.branches);
-        if (!r.enabledTabs.includes('why2')) {
-          r.enabledTabs.push('why2');
-        }
-      }
-
-      if (ishData && ishData.length) {
-        const existing = new Set(r.ideas.map(x => normKey(x.text)));
-        ishData.forEach(item => {
-          if (existing.has(normKey(item.text))) return;
-          r.ideas.push({
-            id: uid(), text: item.text, cat: item.cat || 'method',
-            root: !!item.root, score: 0, priority: !!item.root
-          });
-          existing.add(normKey(item.text));
-        });
-      }
-
-      if (wasData) {
-        if (replace || !r.wasBefore.text) r.wasBefore.text = wasData.wasText;
-        if (replace || !r.wasAfter.text)  r.wasAfter.text  = wasData.becameText;
-        if (replace || !r.wasBefore.date) r.wasBefore.date = normalizeDate(wasData.wasDate);
-        if (replace || !r.wasAfter.date)  r.wasAfter.date  = normalizeDate(wasData.becameDate);
-      }
-
-      if (calcData) {
-        if (calcData['базовое образование отходов'] && (replace || !a.defectRate))
-          a.defectRate = calcData['базовое образование отходов'];
-        if (calcData['годовой показатель из карточки'] && (replace || !a.lostProfit))
-          a.lostProfit = calcData['годовой показатель из карточки'];
-        if (calcData['разовые затраты i'] && (replace || !a.goalDefect))
-          a.goalDefect = calcData['разовые затраты i'];
-        if (calcData['повторное вовлечение после пилота'] && (replace || !a.goalLoss))
-          a.goalLoss = `Вовлечение: ${calcData['повторное вовлечение после пилота']} т/мес.`;
-      }
-
-      if (ideas.length) {
-        const toIdea = i => ({
-          id: uid(), text: i.text, cat: mapCategory(i.group),
-          root: false, score: i.score, priority: false
-        });
-        if (replace) r.ideas = ideas.map(toIdea);
-        else {
-          const seen = new Set(r.ideas.map(x => normKey(x.text)));
-          ideas.forEach(i => {
-            if (seen.has(normKey(i.text))) return;
-            r.ideas.push(toIdea(i));
-            seen.add(normKey(i.text));
-          });
-        }
-      }
-
-      if (ppu) {
-        const setIf = (k, v) => { if (v && (replace || !a[k])) a[k] = v; };
-        setIf('projectName', ppu['наименование']);
-        setIf('problem',     ppu['проблема']);
-        setIf('currentState', ppu['baseline']);
-        setIf('analysisMethods', ppu['предлагаемое улучшение']);
-        setIf('results',     ppu['ожидаемый эффект']);
-        setIf('manager',     ppu['владелец процесса']);
-        if (team.length && (replace || !a.team)) a.team = team.join('; ');
-        if (ppu['проблема'] && (replace || !r.problem)) r.problem = ppu['проблема'];
-      }
-      if (panel) {
-        if (panel['baseline, т/мес.'] && (replace || !a.defectRate))
-          a.defectRate = panel['baseline, т/мес.'];
-      }
+      if (planRows.length) { const toPlan = p => ({ id: uid(), what: p.what, owner: p.owner, start: '', end: normalizeDate(p.due), done: p.done, notes: p.notes || p.status }); const toMeasure = p => ({ id: uid(), what: p.what, due: normalizeDate(p.due), owner: p.owner, status: /сделано|выполнено|готово/i.test(p.status) ? 'Сделано' : /в работе/i.test(p.status) ? 'В работе' : 'План' }); if (replace) { r.plan = planRows.map(toPlan); a.measures = planRows.map(toMeasure); } else { const seen = new Set(r.plan.map(x => normKey(x.what))); planRows.forEach(p => { if (seen.has(normKey(p.what))) return; r.plan.push(toPlan(p)); a.measures.push(toMeasure(p)); seen.add(normKey(p.what)); }); } }
+      if (why1Data && why1Data.chain.some(x => x)) { if (replace) r.why1.chain = why1Data.chain; else why1Data.chain.forEach((v, i) => { if (v && !r.why1.chain[i]) r.why1.chain[i] = v; }); }
+      if (why2Data && why2Data.branches?.length) { if (replace) r.why2.branches = why2Data.branches; else r.why2.branches = r.why2.branches.concat(why2Data.branches); if (!r.enabledTabs.includes('why2')) r.enabledTabs.push('why2'); }
+      if (ishData && ishData.length) { const existing = new Set(r.ideas.map(x => normKey(x.text))); ishData.forEach(item => { if (existing.has(normKey(item.text))) return; r.ideas.push({ id: uid(), text: item.text, cat: item.cat || 'method', root: !!item.root, score: 0, priority: !!item.root }); existing.add(normKey(item.text)); }); }
+      if (wasData) { if (replace || !r.wasBefore.text) r.wasBefore.text = wasData.wasText; if (replace || !r.wasAfter.text) r.wasAfter.text = wasData.becameText; if (replace || !r.wasBefore.date) r.wasBefore.date = normalizeDate(wasData.wasDate); if (replace || !r.wasAfter.date) r.wasAfter.date = normalizeDate(wasData.becameDate); }
+      if (calcData) { if (calcData['базовое образование отходов'] && (replace || !a.defectRate)) a.defectRate = calcData['базовое образование отходов']; if (calcData['годовой показатель из карточки'] && (replace || !a.lostProfit)) a.lostProfit = calcData['годовой показатель из карточки']; if (calcData['разовые затраты i'] && (replace || !a.goalDefect)) a.goalDefect = calcData['разовые затраты i']; if (calcData['повторное вовлечение после пилота'] && (replace || !a.goalLoss)) a.goalLoss = `Вовлечение: ${calcData['повторное вовлечение после пилота']} т/мес.`; }
+      if (ideas.length) { const toIdea = i => ({ id: uid(), text: i.text, cat: mapCategory(i.group), root: false, score: i.score, priority: false }); if (replace) r.ideas = ideas.map(toIdea); else { const seen = new Set(r.ideas.map(x => normKey(x.text))); ideas.forEach(i => { if (seen.has(normKey(i.text))) return; r.ideas.push(toIdea(i)); seen.add(normKey(i.text)); }); } }
+      if (ppu) { const setIf = (k, v) => { if (v && (replace || !a[k])) a[k] = v; }; setIf('projectName', ppu['наименование']); setIf('problem', ppu['проблема']); setIf('currentState', ppu['baseline']); setIf('analysisMethods', ppu['предлагаемое улучшение']); setIf('results', ppu['ожидаемый эффект']); setIf('manager', ppu['владелец процесса']); if (team.length && (replace || !a.team)) a.team = team.join('; '); if (ppu['проблема'] && (replace || !r.problem)) r.problem = ppu['проблема']; }
+      if (panel) { if (panel['baseline, т/мес.'] && (replace || !a.defectRate)) a.defectRate = panel['baseline, т/мес.']; }
       if (conclusion) a.results = (a.results ? a.results + '\n\n' : '') + conclusion;
-
-      addLog('import.xlsx',
-        `Импорт XLSX: A3=${!!stdData}, план=${planRows.length} (${planSource || '—'}), ` +
-        `эффект=${stdData?.effRows.length || 0}, следующ.=${stdData?.nextRows.length || 0}, ` +
-        `5why=${why1Data?.chain.filter(x=>x).length || 0}, 5why2=${why2Data?.branches?.length || 0}, ` +
-        `исикава=${ishData?.length || 0}, гипотез=${ideas.length}`);
-
-      save(true);
-      renderAll();
-
-      alert('✅ Готово!\n\n' + preview.join('\n\n') + '\n\nОткрываю вкладку «8. А3».');
-
+      addLog('import.xlsx', `Импорт XLSX: A3=${!!stdData}, план=${planRows.length}, эффект=${stdData?.effRows.length || 0}, 5why=${why1Data?.chain.filter(x=>x).length || 0}, 5why2=${why2Data?.branches?.length || 0}, исикава=${ishData?.length || 0}`);
+      save(true); renderAll();
+      alert('✅ Готово!\n\n' + preview.join('\n\n'));
       const tabA3 = document.querySelector('.tab[data-tab="a3"]');
       if (tabA3) tabA3.click();
-
     } catch (err) {
       console.error('[import] Ошибка:', err);
       alert('Ошибка при чтении XLSX: ' + (err.message || err));
@@ -2096,53 +1353,31 @@ function buildPrintView(){
   const a = r.a3;
   const box = $('#printView'); if(!box) return;
   const T = a.titles;
-  const ranked = r.ideas.slice().sort((x,y)=>{
-    if((y.score||0) !== (x.score||0)) return (y.score||0) - (x.score||0);
-    if(x.priority !== y.priority) return (y.priority?1:0) - (x.priority?1:0);
-    return x.text.localeCompare(y.text);
-  });
+  const ranked = r.ideas.slice().sort((x,y)=>{ if((y.score||0) !== (x.score||0)) return (y.score||0) - (x.score||0); if(x.priority !== y.priority) return (y.priority?1:0) - (x.priority?1:0); return x.text.localeCompare(y.text); });
   let lastScore = null, lastRank = 0;
-  const ratingRows = ranked.map((i, idx)=>{
-    if(i.score !== lastScore){ lastRank = idx+1; lastScore = i.score; }
-    const cat = CATS.find(c=>c.id===i.cat);
-    return `<tr>
-      <td style="border:1px solid #000;padding:4px;text-align:center;width:40px">${lastRank}</td>
-      <td style="border:1px solid #000;padding:4px">${esc(cat?cat.name:'')}</td>
-      <td style="border:1px solid #000;padding:4px">${esc(i.text)}</td>
-      <td style="border:1px solid #000;padding:4px;text-align:center;width:50px">${i.score||'—'}</td>
-      <td style="border:1px solid #000;padding:4px;text-align:center;width:40px">${i.priority?'★':''}</td>
-    </tr>`;
-  }).join('');
+  const ratingRows = ranked.map((i, idx)=>{ if(i.score !== lastScore){ lastRank = idx+1; lastScore = i.score; } const cat = CATS.find(c=>c.id===i.cat); return `<tr><td style="border:1px solid #000;padding:4px;text-align:center;width:40px">${lastRank}</td><td style="border:1px solid #000;padding:4px">${esc(cat?cat.name:'')}</td><td style="border:1px solid #000;padding:4px">${esc(i.text)}</td><td style="border:1px solid #000;padding:4px;text-align:center;width:50px">${i.score||'—'}</td><td style="border:1px solid #000;padding:4px;text-align:center;width:40px">${i.priority?'★':''}</td></tr>`; }).join('');
   const measRows = (a.measures||[]).map((m,i)=>`<tr><td style="border:1px solid #000;padding:4px;text-align:center;width:30px">${i+1}</td><td style="border:1px solid #000;padding:4px">${esc(m.what||'')}</td><td style="border:1px solid #000;padding:4px;width:80px">${esc(m.due||'')}</td><td style="border:1px solid #000;padding:4px;width:120px">${esc(m.owner||'')}</td><td style="border:1px solid #000;padding:4px;width:90px">${esc(m.status||'')}</td></tr>`).join('');
   const effRows = (a.effRows||[]).map((e,i)=>`<tr><td style="border:1px solid #000;padding:4px">${esc(e.name||'')}</td><td style="border:1px solid #000;padding:4px;text-align:center;width:80px">${esc(e.plan||'')}</td><td style="border:1px solid #000;padding:4px;text-align:center;width:80px">${esc(e.fact||'')}</td></tr>`).join('');
   const nextRows = (a.nextSteps||[]).map((m,i)=>`<tr><td style="border:1px solid #000;padding:4px;text-align:center;width:30px">${i+1}</td><td style="border:1px solid #000;padding:4px">${esc(m.what||'')}</td><td style="border:1px solid #000;padding:4px;width:80px">${esc(m.due||'')}</td><td style="border:1px solid #000;padding:4px;width:120px">${esc(m.owner||'')}</td><td style="border:1px solid #000;padding:4px;width:90px">${esc(m.status||'')}</td></tr>`).join('');
   let prev = r.problem || '';
-  const whyRows = r.why1.chain.map((val,i)=>{
-    const q = i===0 ? 'Почему это происходит?' : `Почему «${prev}»?`;
-    if(val) prev = val;
-    return `<tr><td style="border:1px solid #000;padding:4px;text-align:center;width:30px">${i+1}</td><td style="border:1px solid #000;padding:4px;width:45%">${esc(q)}</td><td style="border:1px solid #000;padding:4px">${esc(val||'')}</td></tr>`;
-  }).join('');
+  const whyRows = r.why1.chain.map((val,i)=>{ const q = i===0 ? 'Почему это происходит?' : `Почему «${prev}»?`; if(val) prev = val; return `<tr><td style="border:1px solid #000;padding:4px;text-align:center;width:30px">${i+1}</td><td style="border:1px solid #000;padding:4px;width:45%">${esc(q)}</td><td style="border:1px solid #000;padding:4px">${esc(val||'')}</td></tr>`; }).join('');
   const secTitle = (text) => `<table style="width:100%;border-collapse:collapse;margin-top:10px"><tr><td style="border:2px solid #000;background:#d9d9d9;padding:5px 8px;font-weight:bold;font-size:12px;text-transform:uppercase">${esc(text)}</td></tr></table>`;
   const secBlock = (html) => `<table style="width:100%;border-collapse:collapse;border:2px solid #000"><tr><td style="padding:6px;vertical-align:top">${html}</td></tr></table>`;
   box.innerHTML = `
     <div style="font-family:Arial,sans-serif;color:#000;font-size:11px;border:3px solid #000;padding:10px">
       <div style="text-align:center;margin-bottom:10px"><div style="font-size:14px;font-weight:bold;letter-spacing:1px">ОТЧЁТ А3</div><div style="font-size:13px;margin-top:2px"><b>${esc(a.projectName||reportName(r))}</b></div></div>
-      <table style="width:100%;border-collapse:collapse;margin-bottom:10px">
-        <tr><td style="border:1px solid #000;padding:4px;width:18%;background:#f0f0f0"><b>ПП, отдел</b></td><td style="border:1px solid #000;padding:4px">${esc(a.department||'')}</td><td style="border:1px solid #000;padding:4px;width:18%;background:#f0f0f0"><b>Руководитель</b></td><td style="border:1px solid #000;padding:4px">${esc(a.manager||'')}</td></tr>
-        <tr><td style="border:1px solid #000;padding:4px;background:#f0f0f0"><b>Дата открытия</b></td><td style="border:1px solid #000;padding:4px">${esc(a.openDate||'')}</td><td style="border:1px solid #000;padding:4px;background:#f0f0f0"><b>Дата закрытия</b></td><td style="border:1px solid #000;padding:4px">${esc(a.closeDate||'')}</td></tr>
-        <tr><td style="border:1px solid #000;padding:4px;background:#f0f0f0"><b>Команда</b></td><td colspan="3" style="border:1px solid #000;padding:4px">${esc(a.team||'')}</td></tr>
-      </table>
+      <table style="width:100%;border-collapse:collapse;margin-bottom:10px"><tr><td style="border:1px solid #000;padding:4px;width:18%;background:#f0f0f0"><b>ПП, отдел</b></td><td style="border:1px solid #000;padding:4px">${esc(a.department||'')}</td><td style="border:1px solid #000;padding:4px;width:18%;background:#f0f0f0"><b>Руководитель</b></td><td style="border:1px solid #000;padding:4px">${esc(a.manager||'')}</td></tr><tr><td style="border:1px solid #000;padding:4px;background:#f0f0f0"><b>Дата открытия</b></td><td style="border:1px solid #000;padding:4px">${esc(a.openDate||'')}</td><td style="border:1px solid #000;padding:4px;background:#f0f0f0"><b>Дата закрытия</b></td><td style="border:1px solid #000;padding:4px">${esc(a.closeDate||'')}</td></tr><tr><td style="border:1px solid #000;padding:4px;background:#f0f0f0"><b>Команда</b></td><td colspan="3" style="border:1px solid #000;padding:4px">${esc(a.team||'')}</td></tr></table>
       ${secTitle(T.t1)}${secBlock(`<div style="min-height:36px;white-space:pre-wrap">${esc(a.problem||'')}</div>`)}
-      ${secTitle(T.t2)}${secBlock(`<div style="min-height:60px;white-space:pre-wrap;margin-bottom:6px">${esc(a.currentState||'')}</div><table style="width:100%;border-collapse:collapse"><tr><td style="border:1px solid #000;padding:4px;width:40%">Дефектность, %</td><td style="border:1px solid #000;padding:4px">${esc(a.defectRate||'')}</td></tr><tr><td style="border:1px solid #000;padding:4px">Претензии, шт.</td><td style="border:1px solid #000;padding:4px">${esc(a.claimsCount||'')}</td></tr><tr><td style="border:1px solid #000;padding:4px">Потери, мин.</td><td style="border:1px solid #000;padding:4px">${esc(a.timeLoss||'')}</td></tr><tr><td style="border:1px solid #000;padding:4px">Недополученная прибыль, руб.</td><td style="border:1px solid #000;padding:4px">${esc(a.lostProfit||'')}</td></tr></table>`)}
-      ${secTitle(T.t3)}${secBlock(`<table style="width:100%;border-collapse:collapse"><tr><td style="border:1px solid #000;padding:4px;width:40%">Снижение брака, %</td><td style="border:1px solid #000;padding:4px">${esc(a.goalDefect||'')}</td></tr><tr><td style="border:1px solid #000;padding:4px">Сокращение рекламаций</td><td style="border:1px solid #000;padding:4px">${esc(a.goalClaims||'')}</td></tr><tr><td style="border:1px solid #000;padding:4px">Устранение потерь, %</td><td style="border:1px solid #000;padding:4px">${esc(a.goalLoss||'')}</td></tr><tr><td style="border:1px solid #000;padding:4px">Прибыль, руб.</td><td style="border:1px solid #000;padding:4px">${esc(a.goalProfit||'')}</td></tr></table>`)}
-      ${secTitle(T.t4)}${secBlock(`<div style="white-space:pre-wrap">${esc(a.analysisMethods||'')}</div><div style="margin-top:6px;border:1px solid #000;padding:6px;background:#fffbeb"><b>Корневая причина:</b> ${esc(a.rootCause || (r.why1.chain.filter(x=>x.trim()).slice(-1)[0] || ''))}</div>`)}
-      ${secTitle(T.t5)}${secBlock(`<table style="width:100%;border-collapse:collapse"><thead><tr><th style="border:1px solid #000;padding:4px;background:#f0f0f0;width:30px">№</th><th style="border:1px solid #000;padding:4px;background:#f0f0f0">Мероприятие</th><th style="border:1px solid #000;padding:4px;background:#f0f0f0;width:80px">Срок</th><th style="border:1px solid #000;padding:4px;background:#f0f0f0;width:120px">Ответственный</th><th style="border:1px solid #000;padding:4px;background:#f0f0f0;width:90px">Статус</th></tr></thead><tbody>${measRows || '<tr><td colspan="5" style="border:1px solid #000;padding:6px;text-align:center;color:#666">—</td></tr>'}</tbody></table>`)}
-      ${secTitle(T.t6)}${secBlock(`<table style="width:100%;border-collapse:collapse"><thead><tr><th style="border:1px solid #000;padding:4px;background:#f0f0f0">Показатель</th><th style="border:1px solid #000;padding:4px;background:#f0f0f0;width:80px">План</th><th style="border:1px solid #000;padding:4px;background:#f0f0f0;width:80px">Факт</th></tr></thead><tbody>${effRows || '<tr><td colspan="3" style="border:1px solid #000;padding:6px;text-align:center;color:#666">—</td></tr>'}</tbody></table>`)}
+      ${secTitle(T.t2)}${secBlock(`<div style="min-height:60px;white-space:pre-wrap;margin-bottom:6px">${esc(a.currentState||'')}</div>`)}
+      ${secTitle(T.t3)}${secBlock(`<div style="white-space:pre-wrap">${esc(a.goalDefect||'')}\n${esc(a.goalClaims||'')}\n${esc(a.goalLoss||'')}\n${esc(a.goalProfit||'')}</div>`)}
+      ${secTitle(T.t4)}${secBlock(`<div style="white-space:pre-wrap">${esc(a.analysisMethods||'')}</div>`)}
+      ${secTitle(T.t5)}${secBlock(`<table style="width:100%;border-collapse:collapse"><thead><tr><th style="border:1px solid #000;padding:4px;background:#f0f0f0">№</th><th style="border:1px solid #000;padding:4px;background:#f0f0f0">Мероприятие</th><th style="border:1px solid #000;padding:4px;background:#f0f0f0">Срок</th><th style="border:1px solid #000;padding:4px;background:#f0f0f0">Ответственный</th><th style="border:1px solid #000;padding:4px;background:#f0f0f0">Статус</th></tr></thead><tbody>${measRows || '<tr><td colspan="5" style="padding:6px;text-align:center">—</td></tr>'}</tbody></table>`)}
+      ${secTitle(T.t6)}${secBlock(`<table style="width:100%;border-collapse:collapse"><thead><tr><th style="border:1px solid #000;padding:4px;background:#f0f0f0">Показатель</th><th style="border:1px solid #000;padding:4px;background:#f0f0f0">План</th><th style="border:1px solid #000;padding:4px;background:#f0f0f0">Факт</th></tr></thead><tbody>${effRows || '<tr><td colspan="3" style="padding:6px;text-align:center">—</td></tr>'}</tbody></table>`)}
       ${secTitle(T.t7)}${secBlock(`<div style="min-height:50px;white-space:pre-wrap">${esc(a.results||'')}</div>`)}
-      ${secTitle(T.t8)}${secBlock(`<table style="width:100%;border-collapse:collapse"><thead><tr><th style="border:1px solid #000;padding:4px;background:#f0f0f0;width:30px">№</th><th style="border:1px solid #000;padding:4px;background:#f0f0f0">Мероприятие</th><th style="border:1px solid #000;padding:4px;background:#f0f0f0;width:80px">Срок</th><th style="border:1px solid #000;padding:4px;background:#f0f0f0;width:120px">Ответственный</th><th style="border:1px solid #000;padding:4px;background:#f0f0f0;width:90px">Статус</th></tr></thead><tbody>${nextRows || '<tr><td colspan="5" style="border:1px solid #000;padding:6px;text-align:center;color:#666">—</td></tr>'}</tbody></table>`)}
-      ${secTitle('Рейтинг гипотез (6М)')}${secBlock(`<table style="width:100%;border-collapse:collapse"><thead><tr><th style="border:1px solid #000;padding:4px;background:#f0f0f0;width:40px">Ранг</th><th style="border:1px solid #000;padding:4px;background:#f0f0f0;width:130px">Категория</th><th style="border:1px solid #000;padding:4px;background:#f0f0f0">Гипотеза</th><th style="border:1px solid #000;padding:4px;background:#f0f0f0;width:50px">Балл</th><th style="border:1px solid #000;padding:4px;background:#f0f0f0;width:40px">★</th></tr></thead><tbody>${ratingRows || '<tr><td colspan="5" style="border:1px solid #000;padding:6px;text-align:center;color:#666">—</td></tr>'}</tbody></table>`)}
-      ${secTitle('5 почему (линейный)')}${secBlock(`<table style="width:100%;border-collapse:collapse"><tbody>${whyRows || '<tr><td style="border:1px solid #000;padding:6px;text-align:center;color:#666">—</td></tr>'}</tbody></table>`)}
-      ${secTitle('Было — Стало')}${secBlock(`<table style="width:100%;border-collapse:collapse"><tr><td style="border:1px solid #000;padding:4px;width:50%;background:#fee2e2"><b>БЫЛО</b> ${esc(r.wasBefore.date||'')}</td><td style="border:1px solid #000;padding:4px;width:50%;background:#dcfce7"><b>СТАЛО</b> ${esc(r.wasAfter.date||'')}</td></tr><tr><td style="border:1px solid #000;padding:6px;white-space:pre-wrap;vertical-align:top">${esc(r.wasBefore.text||'')}</td><td style="border:1px solid #000;padding:6px;white-space:pre-wrap;vertical-align:top">${esc(r.wasAfter.text||'')}</td></tr></table>`)}
+      ${secTitle(T.t8)}${secBlock(`<table style="width:100%;border-collapse:collapse"><thead><tr><th style="border:1px solid #000;padding:4px;background:#f0f0f0">№</th><th style="border:1px solid #000;padding:4px;background:#f0f0f0">Мероприятие</th><th style="border:1px solid #000;padding:4px;background:#f0f0f0">Срок</th><th style="border:1px solid #000;padding:4px;background:#f0f0f0">Ответственный</th><th style="border:1px solid #000;padding:4px;background:#f0f0f0">Статус</th></tr></thead><tbody>${nextRows || '<tr><td colspan="5" style="padding:6px;text-align:center">—</td></tr>'}</tbody></table>`)}
+      ${secTitle('Рейтинг гипотез (6М)')}${secBlock(`<table style="width:100%;border-collapse:collapse"><thead><tr><th style="border:1px solid #000;padding:4px;background:#f0f0f0">Ранг</th><th style="border:1px solid #000;padding:4px;background:#f0f0f0">Категория</th><th style="border:1px solid #000;padding:4px;background:#f0f0f0">Гипотеза</th><th style="border:1px solid #000;padding:4px;background:#f0f0f0">Балл</th><th style="border:1px solid #000;padding:4px;background:#f0f0f0">★</th></tr></thead><tbody>${ratingRows || '<tr><td colspan="5" style="padding:6px;text-align:center">—</td></tr>'}</tbody></table>`)}
+      ${secTitle('5 почему (линейный)')}${secBlock(`<table style="width:100%;border-collapse:collapse"><tbody>${whyRows || '<tr><td style="padding:6px;text-align:center">—</td></tr>'}</tbody></table>`)}
+      ${secTitle('Было — Стало')}${secBlock(`<table style="width:100%;border-collapse:collapse"><tr><td style="border:1px solid #000;padding:4px;background:#fee2e2"><b>БЫЛО</b> ${esc(r.wasBefore.date||'')}</td><td style="border:1px solid #000;padding:4px;background:#dcfce7"><b>СТАЛО</b> ${esc(r.wasAfter.date||'')}</td></tr><tr><td style="border:1px solid #000;padding:6px;white-space:pre-wrap">${esc(r.wasBefore.text||'')}</td><td style="border:1px solid #000;padding:6px;white-space:pre-wrap">${esc(r.wasAfter.text||'')}</td></tr></table>`)}
       <div style="margin-top:14px;text-align:center;font-size:10px;color:#666">Сформировано: ${new Date().toLocaleString('ru-RU')}</div>
     </div>`;
 }
@@ -2153,31 +1388,158 @@ $$('[data-close]').forEach(b=>b.addEventListener('click', ()=>$('#'+b.dataset.cl
 $$('.modal-overlay').forEach(m=>m.addEventListener('click', e=>{ if(e.target===m) m.classList.remove('active'); }));
 document.addEventListener('keydown', e=>{ if(e.key === 'Escape') $$('.modal-overlay.active').forEach(m=>m.classList.remove('active')); });
 
+/* ⬇⬇⬇ НОВЫЙ ПРИМЕР ИЗ «Практического задания №24 Отчет А3» ⬇⬇⬇ */
 $('#demoBtn')?.addEventListener('click', ()=>{
-  if(!confirm('Заполнить примером?')) return;
-  const r = getR();
-  r.problem = 'Сборка линии №2 срывает план на 12%';
-  r.a3 = Object.assign(emptyReport().a3, {
-    projectName:'Снижение простоев на линии №2', department:'Производственный отдел', openDate: today(),
-    manager:'Иванов А.А.', team:'Петров С.С., Сидоров В.В.', problem:'Сборка линии срывает план из-за простоев',
-    currentState:'Простой 40 мин/смену, OEE 68%', defectRate:'4.5', claimsCount:'12', timeLoss:'240', lostProfit:'150000',
-    goalDefect:'2.0', goalClaims:'3', goalLoss:'0', goalProfit:'300000', analysisMethods:'5 почему, Исикава', results:'Внедрён регламент'
-  });
-  r.ideas = [
-    {id:uid(), text:'Нет эталона', cat:'method', root:false, score:2, priority:false},
-    {id:uid(), text:'Пневмоинструмент', cat:'machine', root:true, score:3, priority:true},
-    {id:uid(), text:'Износ инструмента', cat:'machine', root:false, score:2, priority:false},
-    {id:uid(), text:'Отклонение партии', cat:'material', root:false, score:2, priority:false},
-    {id:uid(), text:'Плохое освещение', cat:'env', root:false, score:1, priority:false},
-    {id:uid(), text:'Недостаточное обучение', cat:'people', root:false, score:2, priority:true},
-    {id:uid(), text:'Измерение в конце смены', cat:'measure', root:false, score:1, priority:false}
-  ];
-  r.why1.chain = ['Остановка','Болты не тянутся','Нет давления','Утечка','Нет регламента'];
-  r.plan = [{id:uid(), what:'Внести в чек-лист', owner:'Иванов', start:today(), end:'', done:50, notes:''}];
-  r.wasBefore = {date:'', text:'Простой 40 мин'};
-  r.wasAfter = {date:'', text:'Простой 10 мин'};
-  addLog('demo','заполнено примером');
-  save(true); renderAll();
+  if(!confirm('Заполнить примером из «Практического задания №24 Отчет А3»?')) return;
+  try {
+    const r = getR();
+
+    r.problem = 'Накопление 120 т/мес. отходов стеклохолста (кромка, срезы, бракованные рулоны) из-за отсутствия системного вовлечения во вторичную переработку. Затраты на хранение, перевалку и вывоз сторонними операторами составляют 20 млн руб./год (~13 888 руб./т). Существуют риски накопления отходов, ограничение приёма полигонами, затраты на хранение и обращение. Задача: подтвердить переработку стеклохолста и экономику до покупки оборудования.';
+
+    const a3 = emptyReport().a3;
+    a3.projectName  = 'Вовлечение отходов стеклохолста во вторичную переработку внешним и внутренним потребителям';
+    a3.department   = 'Завод ООО «Никогласс», Производственная площадка «Холст 1»';
+    a3.openDate     = '2026-10-20';
+    a3.closeDate    = '2027-05-20';
+    a3.manager      = 'Шилин В.Ю. (Генеральный директор / Владелец процесса)';
+    a3.team         = 'Грачёв И.В., Кузнецов Н.А., Занозин В.В., Поймалин А.А., Новоселов П.И., Блинова Е.А., Зенин А.Е., Сяманов И.В., Першин А.А.';
+    a3.problem      = r.problem;
+    a3.currentState = '1. Нулевой процент (0%) повторного вовлечения отходов стеклохолста во вторичную переработку.\n' +
+                      '2. Отсутствие систематизированных каналов сбыта внешним потребителям (строительные смеси, мастики, абразивы, утеплители) и внутренним заводам (каменная вата).\n' +
+                      '3. Промышленные результаты и экономический эффект маршрутов не подтверждены.\n' +
+                      '4. Отсутствие стандартизированной подготовки сырья (дробление, фракционирование 100–300 мкм, отжиг связующего).';
+    a3.defectRate   = '1. Объём образования отходов: 120 т/мес. (1 440 т/год)';
+    a3.claimsCount  = '2. Затраты на обращение и утилизацию: 20 млн руб./год';
+    a3.timeLoss     = '3. Доля повторного вовлечения отходов в оборот: 0%';
+    a3.lostProfit   = '';
+    a3.goalDefect   = '1. Достичь уровня повторного вовлечения отходов стеклохолста во вторичную переработку не менее 35% (42 т/мес.) за 180 дней.';
+    a3.goalClaims   = '2. Подтвердить и квалифицировать не менее 3 различных направлений вторичного использования (мастики/сухие смеси, каменная вата, мягкая кровля/Шинглас и т.д.).';
+    a3.goalLoss     = '3. Снизить годовые затраты на обращение с отходами на 35% (~7,0 млн руб./год) за счёт сбыта вторичного сырья и снижения объёма вывоза на полигон.';
+    a3.goalProfit   = '4. Реализовать стратегию «Минимальных CAPEX»: проверка спроса внешних потребителей до закупки крупного оборудования.';
+    a3.analysisMethods =
+      '• Сырьё и переработка: разные требования потребителей к фракции (рубка 100–300 мкм) и наличию связующего (требуется отжиг для ряда производств).\n' +
+      '• Сбыт / потребители: отсутствие официальных соглашений и ТУ с заводами каменной ваты, производителями мастик, сухих смесей и абразивов.\n' +
+      '• Подготовка сырья: отсутствие технологии и оборудования первичного измельчения/рубки отходов под требования потребителей.\n' +
+      '• Логистика: высокая стоимость транспортировки рыхлого отхода до удалённых переработчиков без предварительного уплотнения/кипования.';
+    a3.rootCause = 'Отсутствовал системный проект БП по обращению с отходами и учёту их стоимости';
+    a3.results   = '1. Выбраны направления для проработки сбыта вторичного сырья: заводы мастик (помол 100 мкм), бытовки/ангары, абразивные круги.';
+
+    a3.effRows = [
+      { id: uid(), name: '1. Затраты на реализацию проекта, тыс. рублей',           plan: '500',     fact: '' },
+      { id: uid(), name: '2. Выгода от реализации проекта за 12 месяцев, тыс. руб.', plan: '5992',    fact: '' },
+      { id: uid(), name: '3. Выгода от реализации проекта за 36 месяцев, тыс. руб.', plan: '17976',   fact: '' },
+      { id: uid(), name: '4. Эффективность проекта, %',                              plan: '35.95',   fact: '' },
+      { id: uid(), name: '5. Окупаемость',                                           plan: '31 день', fact: '' }
+    ];
+
+    a3.measures = [
+      { id: uid(), what: 'Сверить баланс отходов (Занозин В.В.)', due: '2026-10-31', owner: 'Занозин В.В.', status: 'Сделано' },
+      { id: uid(), what: 'Проработать вовлечение отходов в производство каменной ваты (ТехноНИКОЛЬ)', due: '2026-11-25', owner: 'Шилин В.Ю.', status: 'План' },
+      { id: uid(), what: 'Организовать тесты помола/рубки (100–300 мкм) для наполнителя мастик, Технофлекса и цементных смесей', due: '2027-01-15', owner: 'Блинова Е.А.', status: 'В работе' },
+      { id: uid(), what: 'Провести промышленные испытания использования отходов в абразивных отрезных кругах и утеплителе бытовок (ППУ №273486, №273483)', due: '2027-02-10', owner: 'Кузнецов Н.А. / Блинова Е.А.', status: 'План' },
+      { id: uid(), what: 'Проработать технологию отжига связующего для переработки в стекловаренной печи (Полоцк) (ППУ №273487)', due: '2027-02-28', owner: 'Поймалин А.А.', status: 'План' },
+      { id: uid(), what: 'Сравнить пресс/компактор/подряд; рассчитать собственную дробилку', due: '2027-02-10', owner: 'Поймалин А.А.', status: 'План' },
+      { id: uid(), what: 'Утвердить экономику поставок внешним потребителям, заключить договоры и тиражировать на «Холст 2»', due: '2027-04-15', owner: 'Шилин В.Ю. / Блинова Е.А.', status: 'План' }
+    ];
+
+    a3.nextSteps = [
+      { id: uid(), what: 'Запустить переговоры с потенциальными потребителями', due: '2026-11-20', owner: 'Блинова Е.А.', status: 'План' },
+      { id: uid(), what: 'Провести испытания рубки/помола и определить параметры сырья (в т.ч. фракция и влажность)', due: '2027-01-15', owner: 'Блинова Е.А.', status: 'План' },
+      { id: uid(), what: 'Заключить долгосрочный контракт на поставку кромки и наполнителя', due: '2027-05-01', owner: 'Блинова Е.А.', status: 'План' },
+      { id: uid(), what: 'Тиражировать технологию брикетирования на производственную площадку «Холст 2»', due: '2027-05-15', owner: 'Поймалин А.А.', status: 'План' }
+    ];
+
+    r.a3 = a3;
+
+    r.ideas = [
+      { id: uid(), text: 'Не был системно проверен сбыт', cat: 'method', root: true, score: 0, priority: true },
+      { id: uid(), text: 'Требуется гидравлическое кипование (плотность >300 кг/м³)', cat: 'machine', root: false, score: 0, priority: false },
+      { id: uid(), text: 'Для мастик нужен помол 100–300 мкм и влажность <1%', cat: 'material', root: false, score: 0, priority: false },
+      { id: uid(), text: 'Для пеностекла и варки нужен предварительный отжиг (ППУ №273487)', cat: 'material', root: false, score: 0, priority: false },
+      { id: uid(), text: 'Не отработан режим помола на роторных и мобильных дробилках', cat: 'machine', root: false, score: 0, priority: false },
+      { id: uid(), text: 'Падение на пол загрязняет сырьё песком', cat: 'env', root: false, score: 0, priority: false },
+      { id: uid(), text: 'Линия не оборудована для прессования/дробления обрезной кромки', cat: 'machine', root: true, score: 0, priority: true },
+      { id: uid(), text: 'Отсутствует оборудование для дробления бракованного стеклохолста (ППУ №273481)', cat: 'machine', root: false, score: 0, priority: false },
+      { id: uid(), text: 'Не закуплены услуги мобильного измельчения до подтверждения ТЭО', cat: 'machine', root: false, score: 0, priority: false },
+      { id: uid(), text: 'Не использовался потенциал командного мозгового штурма', cat: 'people', root: false, score: 0, priority: false },
+      { id: uid(), text: 'Не было ответственного за сбыт вторичных ресурсов', cat: 'people', root: false, score: 0, priority: false },
+      { id: uid(), text: 'Нет согласованных требований от заводов каменной ваты ТН', cat: 'method', root: false, score: 0, priority: false },
+      { id: uid(), text: 'Заводы мастик и абразивов не получали опытные партии помола', cat: 'method', root: false, score: 0, priority: false },
+      { id: uid(), text: 'Не проработаны локальные рынки (бытовки, ангары, асфальт)', cat: 'env', root: false, score: 0, priority: false },
+      { id: uid(), text: 'Перевозка «воздуха» при навальной загрузке спецконтейнеров (13,8 тыс. руб/т)', cat: 'env', root: false, score: 0, priority: false },
+      { id: uid(), text: 'Рыхлые отходы занимают полезную площадь', cat: 'env', root: false, score: 0, priority: false }
+    ];
+
+    r.why1.chain = [
+      'Высокие расходы на вывоз и утилизацию отходов сторонними операторами',
+      'Вывозится рыхлый (неуплотнённый) материал с низкой насыпной плотностью («перевозка воздуха»)',
+      'Отсутствует оборудование для первичного прессования/брикетирования отходов у линии',
+      'Процесс сбора отходов не был рассчитан под вторичный оборот и уплотнение',
+      'Отсутствовал системный проект БП по обращению с отходами и учёту их стоимости'
+    ];
+
+    r.why2.branches = [
+      { id: uid(), name: 'А. Организационно-логистические причины (высокие затраты на вывоз)',
+        sub: [
+          { id: uid(), name: 'А1. Низкая плотность загрузки спецконтейнеров', sub: [
+            { id: uid(), name: 'А1.1. Отходы загружаются вручную в навальном виде' },
+            { id: uid(), name: 'А1.2. Отсутствует пресс-уплотнитель на складе накопителя' }
+          ]},
+          { id: uid(), name: 'А2. Загромождение складских площадей', sub: [
+            { id: uid(), name: 'А2.1. Большой габаритный объём рыхлой обрези' }
+          ]}
+        ]
+      },
+      { id: uid(), name: 'Б. Технологические причины и отсутствие сбыта',
+        sub: [
+          { id: uid(), name: 'Б1. Различие отходов по типу стекла (борное/безборное)', sub: [
+            { id: uid(), name: 'Б1.1. Смешивание разных марок обрези в один контейнер' },
+            { id: uid(), name: 'Б1.2. Отсутствие маркировки и раздельного сбора на линии' }
+          ]},
+          { id: uid(), name: 'Б2. Неизвестны требования внешних переработчиков', sub: [
+            { id: uid(), name: 'Б2.1. Отсутствие официальных запросов ТУ у заводов-потребителей' },
+            { id: uid(), name: 'Б2.2. Задержка в проведении лабораторных испытаний помола' }
+          ]}
+        ]
+      }
+    ];
+
+    r.plan = [
+      { id: uid(), what: 'Сверить фактический баланс отходов: масса, виды, места образования, влажность/связующее, текущие затраты и маршруты', owner: 'Занозин В.В.', start: '', end: '', done: 100, notes: '1–2 неделя. Подтверждённая базовая линия; разбивка по видам отходов.' },
+      { id: uid(), what: 'Проработать переработку отходов стеклохолста каменной ваты вне ТН', owner: 'Шилин В.Ю.', start: '', end: '', done: 0, notes: '1–6 неделя. Подтверждённый маршрут, ограничения и следующий шаг.' },
+      { id: uid(), what: 'Связаться с площадками по каменной вате ТН, уточнить статус прошлых партий 5 т и 30 т, получить официальную обратную связь', owner: 'Шилин В.Ю.', start: '', end: '', done: 50, notes: '1–6 неделя. Подтверждённый маршрут, ограничения и следующий шаг.' },
+      { id: uid(), what: 'Запустить переговоры с потенциальными потребителями. Использование в качестве утеплителя в бытовках, хозблоках и ангарах', owner: 'Блинова Е.А.', start: '', end: '', done: 0, notes: '1–6 неделя. Подтверждённый маршрут, ограничения и следующий шаг.' },
+      { id: uid(), what: 'Запустить переговоры с потенциальными потребителями. Использование в абразивных отрезных кругах', owner: 'Блинова Е.А.', start: '', end: '', done: 0, notes: '1–6 неделя. Подтверждённый маршрут, ограничения и следующий шаг.' },
+      { id: uid(), what: 'Сформировать перечень потенциальных потребителей мастик, Технофлекса, цемента и сухих смесей; согласовать образцы и параметры', owner: 'Блинова Е.А.', start: '', end: '', done: 0, notes: '5–10 неделя. Не менее 3 запросов требований/интереса.' },
+      { id: uid(), what: 'Провести испытания рубки/помола и определить параметры сырья (в т.ч. фракция и влажность)', owner: 'Поймалин А.А. / Блинова Е.А.', start: '', end: '', done: 0, notes: '4–11 неделя. Протоколы испытаний и решение по каждому направлению.' },
+      { id: uid(), what: 'Сравнить пресс, компактор и внешнее прессование по затратам, плотности, логистике, производительности и безопасности', owner: 'Поймалин А.А.', start: '', end: '', done: 0, notes: '12–14 неделя. Сравнительная калькуляция и рекомендация.' },
+      { id: uid(), what: 'Составить технико-экономическое сравнение собственной дробилки и услуг подрядчика', owner: 'Поймалин А.А.', start: '', end: '', done: 0, notes: '15–19 неделя. CAPEX/OPEX, стоимость подготовки 1 т и порог окупаемости.' },
+      { id: uid(), what: 'Провести анализ по наиболее перспективному маршруту с подтверждённым потребителем', owner: 'Блинова Е.А.', start: '', end: '', done: 0, notes: '20–22 неделя. Акт пилота, качество и стоимость.' },
+      { id: uid(), what: 'Подвести итоги: сравнить фактический эффект с baseline, выбрать масштабируемый маршрут и план тиражирования на «Холст 2»', owner: 'Шилин В.Ю. / Блинова Е.А.', start: '', end: '', done: 0, notes: '23–25 неделя. Решение о масштабировании и обновлённый ППУ.' }
+    ];
+
+    r.wasBefore = { date: '2026-10-15',
+      text: 'БЫЛО (Текущее состояние):\n\n' +
+            '1. Объём отходов стеклохолста: 120 тонн в месяц (1 440 т/год).\n' +
+            '2. Годовые затраты на обращение и утилизацию: 20 000 тыс. рублей.\n' +
+            '3. Занятость складских площадей отходами: 40% полезной площади накопителя.\n' +
+            '4. Доля вторичного вовлечения / сбыта отходов: 0%.\n' +
+            '5. Логистика: вывоз рыхлого отхода контейнерами с высокой удельной стоимостью.' };
+    r.wasAfter = { date: '2027-05-20',
+      text: 'СТАЛО (Целевое состояние по итогам проекта):\n\n(заполняется по результатам проекта)' };
+
+    ['brain','fish','6m','why1','why2','plan','was','a3','log'].forEach(t => { if (!r.enabledTabs.includes(t)) r.enabledTabs.push(t); });
+
+    addLog('demo', 'Заполнено примером из «Практического задания №24 Отчет А3»');
+    save(true);
+    renderAll();
+
+    const tabA3 = document.querySelector('.tab[data-tab="a3"]');
+    if (tabA3) tabA3.click();
+  } catch (err) {
+    console.error('demo error', err);
+    alert('Не удалось заполнить примером: ' + (err.message || err));
+  }
 });
 
 $('#resetBtn')?.addEventListener('click', ()=>{
@@ -2195,19 +1557,10 @@ $('#modeBtn')?.addEventListener('click', ()=>setMode(!document.body.classList.co
 setMode(localStorage.getItem('lean_mode')==='mobile' || window.innerWidth<820);
 
 function renderAll(){
-  renderReportList();
-  renderTabs();
+  renderReportList(); renderTabs();
   const r = getR(); if(!r) return;
   if($('#problemInput')) $('#problemInput').value = r.problem || '';
-  renderIdeas();
-  renderFish();
-  render6M();
-  renderWhy1();
-  renderWhy2();
-  renderPlan();
-  renderWas();
-  renderA3();
-  renderLog();
+  renderIdeas(); renderFish(); render6M(); renderWhy1(); renderWhy2(); renderPlan(); renderWas(); renderA3(); renderLog();
 }
 
 $('#problemInput')?.addEventListener('input', ()=>{ getR().problem = $('#problemInput').value; save(); renderFishDebounced(); });
@@ -2224,36 +1577,17 @@ const copyLinkBtn = document.getElementById('copyLinkBtn');
 const installHint = document.getElementById('installHint');
 
 window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); deferredPrompt = e; });
-
-shareBtn?.addEventListener('click', () => {
-  qrCodeImg.src = 'https://quickchart.io/qr?text=' + encodeURIComponent(window.location.href) + '&size=250';
-  installHint.style.display = 'none';
-  shareModal.classList.add('active');
-});
-
+shareBtn?.addEventListener('click', () => { qrCodeImg.src = 'https://quickchart.io/qr?text=' + encodeURIComponent(window.location.href) + '&size=250'; installHint.style.display = 'none'; shareModal.classList.add('active'); });
 doInstallBtn?.addEventListener('click', async () => {
-  if (deferredPrompt) {
-    deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    if (outcome === 'accepted') shareModal.classList.remove('active');
-    deferredPrompt = null; return;
-  }
+  if (deferredPrompt) { deferredPrompt.prompt(); const { outcome } = await deferredPrompt.userChoice; if (outcome === 'accepted') shareModal.classList.remove('active'); deferredPrompt = null; return; }
   installHint.style.display = 'block';
-  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-  const isAndroid = /Android/i.test(navigator.userAgent);
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent); const isAndroid = /Android/i.test(navigator.userAgent);
   if (isIOS) installHint.innerHTML = '<b>Для iPhone (Safari):</b><br>1. «Поделиться» → <b>«На экран "Домой"»</b>.';
   else if (isAndroid) installHint.innerHTML = '<b>Для Android (Chrome):</b><br>1. ⋮ → <b>«Установить приложение»</b>.';
   else installHint.innerHTML = 'Откройте сайт на смартфоне для установки.';
 });
-
-copyLinkBtn?.addEventListener('click', async () => {
-  try { await navigator.clipboard.writeText(window.location.href); copyLinkBtn.textContent = '✅ Скопировано!'; setTimeout(() => { copyLinkBtn.textContent = 'Скопировать ссылку'; }, 2000); }
-  catch (err) { alert('Ссылка: ' + window.location.href); }
-});
-
-if ('serviceWorker' in navigator && isHttp) {
-  window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js', { scope: './' }).catch(err => console.warn('SW registration failed:', err)); });
-}
+copyLinkBtn?.addEventListener('click', async () => { try { await navigator.clipboard.writeText(window.location.href); copyLinkBtn.textContent = '✅ Скопировано!'; setTimeout(() => { copyLinkBtn.textContent = 'Скопировать ссылку'; }, 2000); } catch (err) { alert('Ссылка: ' + window.location.href); } });
+if ('serviceWorker' in navigator && isHttp) { window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js', { scope: './' }).catch(err => console.warn('SW registration failed:', err)); }); }
 </script>
 </body>
 </html>
